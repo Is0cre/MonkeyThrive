@@ -179,7 +179,7 @@ class _WimHofScreenState extends State<WimHofScreen>
           },
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

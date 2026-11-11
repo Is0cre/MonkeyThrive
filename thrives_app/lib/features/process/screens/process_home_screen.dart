@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/emergency_button.dart';
 import 'emdr_screen.dart';
 
 class ProcessHomeScreen extends StatelessWidget {
@@ -24,7 +23,6 @@ class ProcessHomeScreen extends StatelessWidget {
         final lockedReason = wot?.lockedReason ?? '';
 
         return Scaffold(
-          floatingActionButton: const EmergencyButton(),
           body: SafeArea(
             child: CustomScrollView(
               slivers: [

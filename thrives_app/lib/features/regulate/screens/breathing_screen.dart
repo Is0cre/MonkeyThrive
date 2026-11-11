@@ -197,7 +197,7 @@ class _BreathingScreenState extends State<BreathingScreen>
           },
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Column(
           children: [

@@ -176,7 +176,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
             ),
         ],
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: _editing ? _buildEditor(context) : _buildMain(context),
       ),

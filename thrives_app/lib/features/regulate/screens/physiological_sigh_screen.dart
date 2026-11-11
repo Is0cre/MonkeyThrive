@@ -198,7 +198,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Column(
           children: [

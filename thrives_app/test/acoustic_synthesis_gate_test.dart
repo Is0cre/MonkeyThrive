@@ -98,6 +98,9 @@ void main() {
       80,
       scrollable: find.byType(Scrollable),
     );
+    // ensureVisible jumps during scrollUntilVisible. Lay that jump out before
+    // the tap, so the label is above the docked anchor.
+    await tester.pump();
     await tester.tap(find.text('All three'));
     await tester.pumpAndSettle();
     expect(find.text(AcousticSynthesisGate.message), findsOneWidget);

@@ -4,6 +4,8 @@ import '../../../core/storage/prefs_service.dart';
 import '../../../core/storage/session_log.dart';
 import '../../../core/storage/tier_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../somatic_body_map.dart';
+import '../somatic_map.dart';
 
 // CLINICAL SAFETY — Window of Tolerance check-in
 // What this does: Asks the user how they are right now before they enter the
@@ -25,208 +27,181 @@ class CheckInScreen extends StatefulWidget {
 }
 
 class _CheckInScreenState extends State<CheckInScreen> {
-  ToleranceState? _selected;
+  final Map<SomaticZone, SomaticQuality> _marks = {
+    for (final zone in SomaticZone.values) zone: SomaticQuality.unmarked,
+  };
+  bool _explicitPresent = false;
   bool _confirming = false;
 
-  void _select(ToleranceState state) {
-    setState(() => _selected = state);
+  ToleranceState? get _reading {
+    if (_explicitPresent) return ToleranceState.regulated;
+    return stateFromBodyMap(_marks);
+  }
+
+  void _tapZone(SomaticZone zone) {
+    setState(() {
+      _explicitPresent = false;
+      _marks[zone] = nextQuality(_marks[zone] ?? SomaticQuality.unmarked);
+    });
+  }
+
+  void _markPresent() {
+    setState(() {
+      _explicitPresent = true;
+      for (final zone in SomaticZone.values) {
+        _marks[zone] = SomaticQuality.unmarked;
+      }
+    });
   }
 
   Future<void> _confirm() async {
-    if (_selected == null || _confirming) return;
+    final reading = _reading;
+    if (reading == null || _confirming) return;
     setState(() => _confirming = true);
 
-    await PrefsService.saveWotState(_selected!);
+    await PrefsService.saveWotState(reading);
     await SessionLog.logTolerance(ToleranceEntry(
-      state: _selected!.name,
+      state: reading.name,
       timestamp: DateTime.now(),
     ));
     TierService.recheck(); // fire-and-forget
 
-    widget.onComplete(_selected!);
+    widget.onComplete(reading);
   }
 
   @override
   Widget build(BuildContext context) {
+    final reading = _reading;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              Text(
-                'how are you\nright now?',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 36,
-                      height: 1.2,
-                    ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(28, 36, 28, 24),
+          children: [
+            Text(
+              'how are you\nright now?',
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontSize: 36,
+                    height: 1.2,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Tap where the body is speaking. Tap again to change it. '
+              'This shapes what is available.',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                height: 1.5,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'this shapes what\'s available to you',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 15,
-                  height: 1.5,
+            ),
+            const SizedBox(height: 16),
+            const _Legend(),
+            const SizedBox(height: 8),
+            SomaticBodyMap(marks: _marks, onTap: _tapZone),
+            const SizedBox(height: 8),
+            if (reading != null)
+              Text(
+                'this reads as ${reading.displayName}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 30),
-              _StateOption(
-                label: 'overwhelmed',
-                description:
-                    'anxious, scattered, can\'t settle, racing thoughts',
-                color: const Color(0xFFDA3633),
-                state: ToleranceState.hyperaroused,
-                selected: _selected == ToleranceState.hyperaroused,
-                onTap: () => _select(ToleranceState.hyperaroused),
+            TextButton(
+              onPressed: _markPresent,
+              child: Text(
+                'nothing stands out',
+                style: TextStyle(
+                  color: _explicitPresent
+                      ? AppColors.teal
+                      : AppColors.textSecondary,
+                  fontSize: 14,
+                ),
               ),
-              const SizedBox(height: 14),
-              _StateOption(
-                label: 'present',
-                description: 'here and aware, able to make choices',
-                color: AppColors.teal,
-                state: ToleranceState.regulated,
-                selected: _selected == ToleranceState.regulated,
-                onTap: () => _select(ToleranceState.regulated),
-              ),
-              const SizedBox(height: 14),
-              _StateOption(
-                label: 'flat or numb',
-                description: 'disconnected, low energy, hard to feel anything',
-                color: const Color(0xFF6B8EAD),
-                state: ToleranceState.hypoaroused,
-                selected: _selected == ToleranceState.hypoaroused,
-                onTap: () => _select(ToleranceState.hypoaroused),
-              ),
-              const Spacer(),
-              AnimatedOpacity(
-                opacity: _selected != null ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                child: GestureDetector(
-                  onTap: _confirm,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.surfaceVariant,
-                        width: 1,
-                      ),
-                    ),
-                    child: Center(
-                      child: _confirming
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.teal,
-                              ),
-                            )
-                          : const Text(
-                              'continue',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.3,
-                              ),
+            ),
+            const SizedBox(height: 8),
+            AnimatedOpacity(
+              opacity: reading != null ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: GestureDetector(
+                onTap: reading == null ? null : _confirm,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.surfaceVariant),
+                  ),
+                  child: Center(
+                    child: _confirming
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.teal,
                             ),
-                    ),
+                          )
+                        : const Text(
+                            'continue',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _StateOption extends StatelessWidget {
-  final String label;
-  final String description;
-  final Color color;
-  final ToleranceState state;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _StateOption({
-    required this.label,
-    required this.description,
-    required this.color,
-    required this.state,
-    required this.selected,
-    required this.onTap,
-  });
+class _Legend extends StatelessWidget {
+  const _Legend();
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: selected ? color.withValues(alpha: 0.12) : AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: selected ? color.withValues(alpha: 0.6) : Colors.transparent,
-          width: 1.5,
+    return const Row(
+      children: [
+        _Swatch(color: Color(0xFFDA3633), label: 'tight'),
+        SizedBox(width: 16),
+        _Swatch(color: Color(0xFF6B8EAD), label: 'heavy'),
+      ],
+    );
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _Swatch({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-            child: Row(
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected ? color : AppColors.surfaceVariant,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          color: selected ? color : AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
-      ),
+      ],
     );
   }
 }

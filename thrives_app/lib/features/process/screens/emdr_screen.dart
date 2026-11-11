@@ -341,7 +341,7 @@ class _EmdrScreenState extends State<EmdrScreen>
             ),
         ],
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: _showSettings ? _buildSettings() : _buildSession(),
       ),

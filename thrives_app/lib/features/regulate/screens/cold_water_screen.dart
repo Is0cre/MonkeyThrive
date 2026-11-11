@@ -65,7 +65,7 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

@@ -3,11 +3,22 @@ package app.monkeythrive
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.view.KeyEvent
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val volume = event.keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+        val handled = super.dispatchKeyEvent(event)
+        // Flutter sees the key first. Consuming it keeps the ringer still
+        // while the sigh opens. The web build has no Activity.
+        if (volume) return true
+        return handled
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(

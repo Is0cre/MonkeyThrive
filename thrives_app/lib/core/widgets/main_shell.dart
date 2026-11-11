@@ -182,7 +182,6 @@ class _MainShellState extends State<MainShell> {
                 ),
               ],
             ),
-            floatingActionButton: const EmergencyButton(),
             bottomNavigationBar: _ThriveNavBar(
               currentIndex: safeIndex,
               tabs: tabs,
@@ -214,7 +213,7 @@ class _ThriveNavBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
         child: Container(
-          height: 64,
+          height: 72,
           decoration: BoxDecoration(
             color: colors.surface.withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(8),
@@ -226,7 +225,8 @@ class _ThriveNavBar extends StatelessWidget {
             padding: const EdgeInsets.all(6),
             child: Row(
               children: [
-                for (int i = 0; i < tabs.length; i++)
+                for (int i = 0; i < tabs.length; i++) ...[
+                  if (i == tabs.length ~/ 2) const _DockedAnchor(),
                   Expanded(
                     child: _NavItem(
                       tab: tabs[i],
@@ -234,11 +234,24 @@ class _ThriveNavBar extends StatelessWidget {
                       onTap: () => onTap(i),
                     ),
                   ),
+                ],
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _DockedAnchor extends StatelessWidget {
+  const _DockedAnchor();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4),
+      child: Center(child: EmergencyButton()),
     );
   }
 }

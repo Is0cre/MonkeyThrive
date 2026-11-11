@@ -5,6 +5,7 @@ import '../../../core/baseline/baseline_monitor.dart';
 import '../../../core/storage/tier_service.dart';
 import '../../../core/theme/app_appearance.dart';
 import '../../../core/theme/app_theme.dart';
+import '../data_portability.dart';
 import 'crisis_directory_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -325,6 +326,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ── Your data ────────────────────────────────────────────────────
             _Section('Your data'),
+            _TileButton(
+              icon: Icons.file_download_outlined,
+              iconColor: AppColors.teal,
+              label: 'Export',
+              subtitle: 'Passphrase-sealed file on this device',
+              onTap: () => showLocalExportDialog(context),
+            ),
+            const SizedBox(height: 8),
+            _TileButton(
+              icon: Icons.file_upload_outlined,
+              iconColor: AppColors.teal,
+              label: 'Import',
+              subtitle: 'Restore a sealed copy onto this device',
+              onTap: () => showLocalImportDialog(context),
+            ),
+            const SizedBox(height: 8),
             _TileButton(
               icon: Icons.delete_outline_rounded,
               iconColor: AppColors.danger,

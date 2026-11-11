@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/main_shell.dart';
@@ -7,8 +9,10 @@ import '../../settings/screens/crisis_directory_screen.dart';
 
 // CLINICAL SAFETY — Panic sequence / physiological sigh
 // What this does: On emergency button press, auto-plays 3 cycles of the
-//   physiological sigh without requiring any input from the user. After
-//   3 cycles, offers access to Regulate tools.
+//   physiological sigh without requiring any input from the user. The screen
+//   is black. One dim circle grows on the double inhale and shrinks on the
+//   long exhale. Words, cards, and choices stay off until the three cycles
+//   finish. After 3 cycles, offers access to Regulate tools.
 // Why it exists: A person in acute distress cannot navigate menus, make
 //   decisions, or find tools. The panic button must require zero cognitive
 //   load. The physiological sigh is the fastest known method to reduce
@@ -41,8 +45,8 @@ class _PanicScreenState extends State<PanicScreen>
   late Animation<double> _circleAnim;
 
   int _cycle = 1;
-  _Phase _phase = _Phase.inhale1;
   bool _done = false;
+  bool _canVibrate = false;
   Timer? _phaseTimer;
 
   @override
@@ -52,6 +56,7 @@ class _PanicScreenState extends State<PanicScreen>
     _circleController = AnimationController(vsync: this);
     _circleAnim =
         Tween<double>(begin: 0.0, end: 1.0).animate(_circleController);
+    unawaited(_prepareHaptics());
     _startPhase(_Phase.inhale1);
   }
 
@@ -62,9 +67,35 @@ class _PanicScreenState extends State<PanicScreen>
     super.dispose();
   }
 
-  void _startPhase(_Phase phase) {
-    setState(() => _phase = phase);
+  Future<void> _prepareHaptics() async {
+    try {
+      final available = await Vibration.hasVibrator();
+      if (!mounted) return;
+      _canVibrate = available == true;
+    } catch (_) {
+      _canVibrate = false;
+    }
+  }
 
+  void _pulse(int milliseconds) {
+    HapticFeedback.lightImpact();
+    if (!_canVibrate) return;
+    unawaited(
+      Vibration.vibrate(duration: milliseconds, amplitude: 48).catchError((_) {}),
+    );
+  }
+
+  void _startPhase(_Phase phase) {
+    switch (phase) {
+      case _Phase.inhale1:
+        _pulse(45);
+      case _Phase.inhale2:
+        _pulse(25);
+      case _Phase.exhale:
+        _pulse(70);
+      case _Phase.between:
+        break;
+    }
     switch (phase) {
       case _Phase.inhale1:
         _circleController.animateTo(
@@ -109,19 +140,6 @@ class _PanicScreenState extends State<PanicScreen>
     }
   }
 
-  String get _phaseLabel {
-    switch (_phase) {
-      case _Phase.inhale1:
-        return 'breathe in';
-      case _Phase.inhale2:
-        return 'one more sniff';
-      case _Phase.exhale:
-        return 'breathe out slowly';
-      case _Phase.between:
-        return '';
-    }
-  }
-
   void _goToRegulate() {
     Navigator.of(context, rootNavigator: true).pop();
     MainShell.emergencyJumpToRegulate(context);
@@ -142,40 +160,32 @@ class _PanicScreenState extends State<PanicScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFF000000),
       body: SafeArea(
         child: Stack(
           children: [
-            // Main content
             Center(
               child: _done
                   ? _DoneView(
                       onGoRegulate: _goToRegulate,
                       onOpenDirectory: _openDirectory,
                     )
-                  : _BreathView(
-                      cycle: _cycle,
-                      totalCycles: _totalCycles,
-                      phaseLabel: _phaseLabel,
-                      circleAnim: _circleAnim,
-                    ),
+                  : _BreathView(circleAnim: _circleAnim),
             ),
-
-            // Unobtrusive dismiss — for accidental taps
-            Positioned(
-              bottom: 24,
-              right: 24,
-              child: GestureDetector(
-                onTap: _dismiss,
-                child: const Text(
-                  'I\'m ok',
-                  style: TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
+            if (!_done)
+              Positioned(
+                left: 8,
+                bottom: 8,
+                child: Semantics(
+                  button: true,
+                  label: 'Leave',
+                  child: GestureDetector(
+                    onTap: _dismiss,
+                    behavior: HitTestBehavior.opaque,
+                    child: const SizedBox(width: 48, height: 48),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -184,67 +194,33 @@ class _PanicScreenState extends State<PanicScreen>
 }
 
 class _BreathView extends StatelessWidget {
-  final int cycle;
-  final int totalCycles;
-  final String phaseLabel;
   final Animation<double> circleAnim;
 
-  const _BreathView({
-    required this.cycle,
-    required this.totalCycles,
-    required this.phaseLabel,
-    required this.circleAnim,
-  });
+  const _BreathView({required this.circleAnim});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$cycle of $totalCycles',
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            fontSize: 13,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 48),
-        AnimatedBuilder(
-          animation: circleAnim,
-          builder: (context, _) {
-            final size = 120.0 + (circleAnim.value * 100.0);
-            return Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.teal
-                    .withValues(alpha: 0.08 + circleAnim.value * 0.12),
-                border: Border.all(
-                  color: AppColors.teal
-                      .withValues(alpha: 0.3 + circleAnim.value * 0.4),
-                  width: 1.5,
-                ),
+    return Semantics(
+      label: 'Double inhale, long exhale',
+      child: AnimatedBuilder(
+        animation: circleAnim,
+        builder: (context, _) {
+          final t = circleAnim.value;
+          final size = 150.0 + (t * 150.0);
+          return Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF8A6228).withValues(alpha: 0.16 + t * 0.20),
+              border: Border.all(
+                color: const Color(0xFFE8A645).withValues(alpha: 0.22 + t * 0.18),
+                width: 1.5,
               ),
-            );
-          },
-        ),
-        const SizedBox(height: 48),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: Text(
-            phaseLabel,
-            key: ValueKey(phaseLabel),
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 20,
-              fontWeight: FontWeight.w300,
-              letterSpacing: 0.3,
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 }
@@ -281,22 +257,14 @@ class _DoneView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 56),
-        GestureDetector(
-          onTap: onGoRegulate,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.surfaceVariant),
-            ),
-            child: const Text(
-              'go to regulate',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
+        TextButton(
+          onPressed: onGoRegulate,
+          child: const Text(
+            'go to regulate',
+            style: TextStyle(
+              color: Color(0xFFE8A645),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

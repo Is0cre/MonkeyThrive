@@ -381,7 +381,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           },
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),

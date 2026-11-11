@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'core/widgets/emergency_button.dart';
 import 'core/models/tolerance_state.dart';
 import 'core/state/wot_scope.dart';
 import 'core/theme/app_appearance.dart';
@@ -44,6 +45,7 @@ class ThrivesApp extends StatefulWidget {
 }
 
 class _ThrivesAppState extends State<ThrivesApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
   late bool _onboardingDone;
   late final ValueNotifier<ToleranceState?> _wotNotifier;
 
@@ -59,12 +61,29 @@ class _ThrivesAppState extends State<ThrivesApp> {
     super.initState();
     _onboardingDone = widget.onboardingDone;
     _wotNotifier = ValueNotifier(widget.initialWot);
+    HardwareKeyboard.instance.addHandler(_onVolumeKey);
   }
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onVolumeKey);
     _wotNotifier.dispose();
     super.dispose();
+  }
+
+  /// Volume keys open the sigh. The handler is a no-op for every other key,
+  /// including on the web build where these keys usually never arrive.
+  bool _onVolumeKey(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    final key = event.logicalKey;
+    if (key != LogicalKeyboardKey.audioVolumeUp &&
+        key != LogicalKeyboardKey.audioVolumeDown) {
+      return false;
+    }
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return false;
+    EmergencyButton.open(navigator);
+    return true;
   }
 
   void _onOnboardingComplete([ToleranceState? initialWot]) {
@@ -103,6 +122,7 @@ class _ThrivesAppState extends State<ThrivesApp> {
             systemNavigationBarIconBrightness: Brightness.light,
           ));
           return MaterialApp(
+            navigatorKey: _navigatorKey,
             title: 'MonkeyThrive',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.dark(appearance),

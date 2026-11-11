@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/storage/session_log.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../settings/data_portability.dart';
 
 class ReflectHomeScreen extends StatefulWidget {
   const ReflectHomeScreen({super.key});
@@ -110,7 +111,23 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
                       style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 14),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => showLocalExportDialog(context),
+                          child: const Text('Export'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await showLocalImportDialog(context);
+                            if (mounted) await _load();
+                          },
+                          child: const Text('Import'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

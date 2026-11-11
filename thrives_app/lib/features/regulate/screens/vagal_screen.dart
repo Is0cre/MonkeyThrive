@@ -82,7 +82,7 @@ class _VagalScreenState extends State<VagalScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: _activeToolIndex != null
             ? _VagalToolDetail(

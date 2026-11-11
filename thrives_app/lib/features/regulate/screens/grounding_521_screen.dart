@@ -134,7 +134,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      floatingActionButton: const EmergencyButton(),
+      bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
         child: Column(
           children: [
