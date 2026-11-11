@@ -5,7 +5,7 @@ const CACHE_NAME = 'flutter-app-cache';
 
 const RESOURCES = {"index.html": "168409cc36335fc8dad7fa1753ac0dc2",
 "/": "168409cc36335fc8dad7fa1753ac0dc2",
-"flutter_bootstrap.js": "bceeb47174d77473e695ce7c4e6b3c42",
+"flutter_bootstrap.js": "deac693459b06e42145bc525bd40fe66",
 "canvaskit/skwasm.worker.js": "89990e8c92bcb123999aa81f7e203b1c",
 "canvaskit/chromium/canvaskit.js": "b7ba6d908089f706772b2007c37e6da4",
 "canvaskit/chromium/canvaskit.wasm": "ea5ab288728f7200f398f60089048b48",
@@ -20,10 +20,11 @@ const RESOURCES = {"index.html": "168409cc36335fc8dad7fa1753ac0dc2",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/fonts/MaterialIcons-Regular.otf": "df770c25880cec6c3d58a94f11a16459",
-"assets/NOTICES": "eaf71d9e0d1eef094fa1553c0771192a",
-"assets/AssetManifest.bin": "5c17281f822ae9ba9ec4e60668045ac9",
-"assets/AssetManifest.json": "0531b9830f8854a97373c9c70e99684d",
-"assets/AssetManifest.bin.json": "6c07477eae58bd118ea38f7cf6b26b13",
+"assets/NOTICES": "766c2b905151a94b371eee34171d13a4",
+"assets/assets/vectors/anatomy_silhouette.svg": "f57a2232586f472e23b193bd121c13bf",
+"assets/AssetManifest.bin": "1cc34ce98872804ea1e6ae165a5c6474",
+"assets/AssetManifest.json": "9178644df80c165cfec295f76a6bff98",
+"assets/AssetManifest.bin.json": "6346c138719cd2665ef345055d4400ff",
 "assets/packages/wakelock_plus/assets/no_sleep.js": "7748a45cd593f33280669b29c2c8919a",
 "flutter.js": "4b2350e14c6650ba82871f60906437ea",
 "icons/Icon-512.png": "afca8828f7d48e14bb41b165bb8bcb0e",
@@ -32,7 +33,7 @@ const RESOURCES = {"index.html": "168409cc36335fc8dad7fa1753ac0dc2",
 "icons/Icon-maskable-192.png": "29786adc9f66b6509828429de0aa304e",
 "manifest.json": "47b7a93a67d20791a8d7f8e0ce953e1e",
 "version.json": "6a5ac168b4a8ac028a8fa5a2f1b9197d",
-"main.dart.js": "e5f63d5dd5ff1a167dff11b082c6a24d"};
+"main.dart.js": "dfbb6da02568f352676b72327fe54b23"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
