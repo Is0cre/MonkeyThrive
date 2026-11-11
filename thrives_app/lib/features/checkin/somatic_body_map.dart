@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../core/theme/app_theme.dart';
 import 'somatic_map.dart';
 
-/// Calm silhouette. Zones share one geometry with the hit targets.
+/// Anatomical silhouette. Hitboxes use the SVG viewBox, then scale with it.
+///
+/// [canvas] is `assets/vectors/anatomy_silhouette.svg` viewBox (200 by 420).
+/// A region is a rectangle in that same pixel space. At layout time each edge
+/// is multiplied by the drawn width or height, so the target stays on the
+/// same part of the figure when the widget changes size. Keep the widget's
+/// aspect ratio equal to [canvas] and load the SVG with [BoxFit.fill].
 class SomaticBodyMap extends StatelessWidget {
   final Map<SomaticZone, SomaticQuality> marks;
   final ValueChanged<SomaticZone> onTap;
@@ -14,13 +20,16 @@ class SomaticBodyMap extends StatelessWidget {
     required this.onTap,
   });
 
+  static const asset = 'assets/vectors/anatomy_silhouette.svg';
   static const canvas = Size(200, 420);
 
+  /// ViewBox rectangles. Head sits on the skull, throat on the neck,
+  /// chest on the upper torso, stomach below the ribs.
   static const regions = <SomaticZone, Rect>{
-    SomaticZone.head: Rect.fromLTWH(58, 16, 84, 84),
-    SomaticZone.throat: Rect.fromLTWH(82, 104, 36, 36),
-    SomaticZone.chest: Rect.fromLTWH(52, 146, 96, 100),
-    SomaticZone.stomach: Rect.fromLTWH(64, 252, 72, 84),
+    SomaticZone.head: Rect.fromLTWH(66, 14, 68, 76),
+    SomaticZone.throat: Rect.fromLTWH(82, 82, 36, 42),
+    SomaticZone.chest: Rect.fromLTWH(72, 136, 56, 92),
+    SomaticZone.stomach: Rect.fromLTWH(70, 232, 60, 84),
   };
 
   @override
@@ -35,10 +44,15 @@ class SomaticBodyMap extends StatelessWidget {
             height: height,
             child: Stack(
               children: [
-                CustomPaint(
-                  size: Size(width, height),
-                  painter: _SilhouettePainter(marks: marks),
+                SvgPicture.asset(
+                  asset,
+                  width: width,
+                  height: height,
+                  fit: BoxFit.fill,
+                  excludeFromSemantics: true,
                 ),
+                for (final zone in SomaticZone.values)
+                  _glow(zone, width, height),
                 for (final zone in SomaticZone.values)
                   _zoneTarget(zone, width, height),
               ],
@@ -49,108 +63,73 @@ class SomaticBodyMap extends StatelessWidget {
     );
   }
 
+  Widget _glow(SomaticZone zone, double width, double height) {
+    final quality = marks[zone] ?? SomaticQuality.unmarked;
+    final color = _glowColor(quality);
+    if (color == null) return const SizedBox.shrink();
+
+    final rect = _placed(regions[zone]!, width, height);
+    final pad = rect.shortestSide * 0.42;
+    return Positioned(
+      left: rect.left - pad,
+      top: rect.top - pad,
+      width: rect.width + pad * 2,
+      height: rect.height + pad * 2,
+      child: IgnorePointer(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                color.withValues(alpha: 0.55),
+                color.withValues(alpha: 0.20),
+                color.withValues(alpha: 0.0),
+              ],
+              stops: const [0.0, 0.42, 1.0],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _zoneTarget(SomaticZone zone, double width, double height) {
-    final rect = regions[zone]!;
+    final rect = _placed(regions[zone]!, width, height);
     final quality = marks[zone] ?? SomaticQuality.unmarked;
     return Positioned(
-      left: rect.left / canvas.width * width,
-      top: rect.top / canvas.height * height,
-      width: rect.width / canvas.width * width,
-      height: rect.height / canvas.height * height,
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
       child: Semantics(
         button: true,
         label: '${_zoneName(zone)}, ${_qualityName(quality)}',
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onTap(zone),
+          child: const SizedBox.expand(),
         ),
       ),
     );
   }
+
+  Rect _placed(Rect rect, double width, double height) {
+    return Rect.fromLTWH(
+      rect.left / canvas.width * width,
+      rect.top / canvas.height * height,
+      rect.width / canvas.width * width,
+      rect.height / canvas.height * height,
+    );
+  }
 }
 
-class _SilhouettePainter extends CustomPainter {
-  final Map<SomaticZone, SomaticQuality> marks;
-
-  _SilhouettePainter({required this.marks});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final sx = size.width / SomaticBodyMap.canvas.width;
-    final sy = size.height / SomaticBodyMap.canvas.height;
-    canvas.save();
-    canvas.scale(sx, sy);
-
-    final outline = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..color = AppColors.surfaceVariant;
-    canvas.drawPath(_bodyPath(), outline);
-
-    for (final zone in SomaticZone.values) {
-      final rect = SomaticBodyMap.regions[zone]!;
-      final quality = marks[zone] ?? SomaticQuality.unmarked;
-      final fill = Paint()..color = _fill(quality);
-      final edge = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4
-        ..color = _edge(quality);
-      final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(18));
-      if (zone == SomaticZone.head) {
-        canvas.drawOval(rect, fill);
-        canvas.drawOval(rect, edge);
-      } else {
-        canvas.drawRRect(rrect, fill);
-        canvas.drawRRect(rrect, edge);
-      }
-    }
-
-    canvas.restore();
-  }
-
-  Path _bodyPath() {
-    return Path()
-      ..moveTo(78, 108)
-      ..lineTo(70, 150)
-      ..cubicTo(28, 168, 24, 230, 40, 280)
-      ..lineTo(58, 276)
-      ..lineTo(64, 168)
-      ..lineTo(72, 320)
-      ..cubicTo(78, 390, 92, 404, 100, 404)
-      ..cubicTo(108, 404, 122, 390, 128, 320)
-      ..lineTo(136, 168)
-      ..lineTo(142, 276)
-      ..lineTo(160, 280)
-      ..cubicTo(176, 230, 172, 168, 130, 150)
-      ..lineTo(122, 108)
-      ..close();
-  }
-
-  Color _fill(SomaticQuality quality) {
-    switch (quality) {
-      case SomaticQuality.unmarked:
-        return AppColors.surface;
-      case SomaticQuality.tight:
-        return const Color(0xFFDA3633).withValues(alpha: 0.38);
-      case SomaticQuality.heavy:
-        return const Color(0xFF6B8EAD).withValues(alpha: 0.45);
-    }
-  }
-
-  Color _edge(SomaticQuality quality) {
-    switch (quality) {
-      case SomaticQuality.unmarked:
-        return AppColors.surfaceVariant;
-      case SomaticQuality.tight:
-        return const Color(0xFFDA3633);
-      case SomaticQuality.heavy:
-        return const Color(0xFF6B8EAD);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _SilhouettePainter oldDelegate) {
-    return oldDelegate.marks != marks;
+Color? _glowColor(SomaticQuality quality) {
+  switch (quality) {
+    case SomaticQuality.unmarked:
+      return null;
+    case SomaticQuality.tight:
+      return const Color(0xFFDA3633);
+    case SomaticQuality.heavy:
+      return const Color(0xFF6B8EAD);
   }
 }
 
