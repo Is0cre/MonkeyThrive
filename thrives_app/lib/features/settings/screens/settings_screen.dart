@@ -173,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 12),
                   const _RowDetail(
                     icon: Icons.code_rounded,
-                    text: 'github.com/Is0cre/THRIVE',
+                    text: 'github.com/Is0cre/MonkeyThrive',
                   ),
                   const SizedBox(height: 6),
                   const _RowDetail(
