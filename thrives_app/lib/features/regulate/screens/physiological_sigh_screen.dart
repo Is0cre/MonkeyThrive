@@ -73,7 +73,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
   }
 
   void _start() {
-    beginTracking('Physiological Sigh', 'Regulate');
+    beginTracking('Physiological Sigh', 'Regulate', onEmergencyStop: _pause);
     setState(() {
       _running = true;
       _done = false;
@@ -86,7 +86,8 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
   void _pause() {
     _phaseTimer?.cancel();
     _circleController.stop();
-    setState(() => _running = false);
+    endTracking();
+    if (mounted) setState(() => _running = false);
   }
 
   void _reset() {
@@ -340,8 +341,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                                             ? AppColors.teal
                                                 .withValues(alpha: 0.15)
                                             : AppColors.surface,
-                                        borderRadius:
-                                            BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(10),
                                         border: Border.all(
                                           color: _targetRounds == n
                                               ? AppColors.teal

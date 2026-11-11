@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:just_audio/just_audio.dart';
+
+import 'wav_source.dart';
 
 /// Frequency bands for binaural/isochronic entrainment.
 enum BrainwaveBand {
@@ -70,7 +71,7 @@ extension BrainwaveBandInfo on BrainwaveBand {
 /// Binaural beats: left ear gets [carrierHz], right ear gets [carrierHz + beatHz].
 /// The brain perceives the difference as a beat at [beatHz].
 /// Requires stereo headphones.
-class BinauralBeatSource extends StreamAudioSource {
+class BinauralBeatSource extends CachedWavSource {
   final double carrierHz;
   final double beatHz;
   final double amplitude;
@@ -85,24 +86,16 @@ class BinauralBeatSource extends StreamAudioSource {
   });
 
   @override
-  Future<StreamAudioResponse> request([int? start, int? end]) async {
-    final bytes = _buildWav();
-    start ??= 0;
-    end ??= bytes.length;
-    return StreamAudioResponse(
-      sourceLength: bytes.length,
-      contentLength: end - start,
-      offset: start,
-      stream: Stream.value(bytes.sublist(start, end)),
-      contentType: 'audio/wav',
-    );
-  }
-
-  Uint8List _buildWav() {
+  Uint8List buildWav() {
     final numSamples = _sampleRate * _durationSeconds;
     // 44-byte WAV header + stereo int16 samples (2 channels × 2 bytes)
     final buf = ByteData(44 + numSamples * 4);
-    _writeHeader(buf, numSamples);
+    writeWavHeader(
+      buf,
+      sampleRate: _sampleRate,
+      numSamples: numSamples,
+      channels: 2,
+    );
 
     for (int i = 0; i < numSamples; i++) {
       final t = i / _sampleRate;
@@ -111,49 +104,15 @@ class BinauralBeatSource extends StreamAudioSource {
       final left = env * amplitude * math.sin(2 * math.pi * carrierHz * t);
       final right =
           env * amplitude * math.sin(2 * math.pi * (carrierHz + beatHz) * t);
-      buf.setInt16(44 + i * 4, _clamp(left), Endian.little);
-      buf.setInt16(44 + i * 4 + 2, _clamp(right), Endian.little);
+      buf.setInt16(44 + i * 4, pcm16(left), Endian.little);
+      buf.setInt16(44 + i * 4 + 2, pcm16(right), Endian.little);
     }
     return buf.buffer.asUint8List();
   }
 
-  static void _writeHeader(ByteData d, int numSamples) {
-    const channels = 2;
-    const bitsPerSample = 16;
-    final dataSize = numSamples * channels * (bitsPerSample ~/ 8);
-    // RIFF
-    _writeAscii(d, 0, 'RIFF');
-    d.setUint32(4, 36 + dataSize, Endian.little);
-    _writeAscii(d, 8, 'WAVE');
-    // fmt
-    _writeAscii(d, 12, 'fmt ');
-    d.setUint32(16, 16, Endian.little);
-    d.setUint16(20, 1, Endian.little); // PCM
-    d.setUint16(22, channels, Endian.little);
-    d.setUint32(24, _sampleRate, Endian.little);
-    d.setUint32(
-        28, _sampleRate * channels * bitsPerSample ~/ 8, Endian.little);
-    d.setUint16(32, channels * bitsPerSample ~/ 8, Endian.little);
-    d.setUint16(34, bitsPerSample, Endian.little);
-    // data
-    _writeAscii(d, 36, 'data');
-    d.setUint32(40, dataSize, Endian.little);
-  }
-
-  static void _writeAscii(ByteData d, int offset, String s) {
-    for (int i = 0; i < s.length; i++) {
-      d.setUint8(offset + i, s.codeUnitAt(i));
-    }
-  }
-
-  static int _clamp(double v) =>
-      (v * 32767).round().clamp(-32768, 32767);
-
   static double _envelope(int i, int total) {
     const fadeFrames = 4410; // 0.1s
-    if (i < fadeFrames) return i / fadeFrames;
-    if (i > total - fadeFrames) return (total - i) / fadeFrames;
-    return 1.0;
+    return fadeEnvelope(i, total, fadeFrames);
   }
 }
 
@@ -161,7 +120,7 @@ class BinauralBeatSource extends StreamAudioSource {
 ///
 /// A single carrier frequency with amplitude pulsed at [beatHz].
 /// Sharper than binaural, audible on speakers.
-class IsochronicToneSource extends StreamAudioSource {
+class IsochronicToneSource extends CachedWavSource {
   final double carrierHz;
   final double beatHz;
   final double amplitude;
@@ -176,24 +135,16 @@ class IsochronicToneSource extends StreamAudioSource {
   });
 
   @override
-  Future<StreamAudioResponse> request([int? start, int? end]) async {
-    final bytes = _buildWav();
-    start ??= 0;
-    end ??= bytes.length;
-    return StreamAudioResponse(
-      sourceLength: bytes.length,
-      contentLength: end - start,
-      offset: start,
-      stream: Stream.value(bytes.sublist(start, end)),
-      contentType: 'audio/wav',
-    );
-  }
-
-  Uint8List _buildWav() {
+  Uint8List buildWav() {
     final numSamples = _sampleRate * _durationSeconds;
     // Mono: 1 channel × 2 bytes per sample
     final buf = ByteData(44 + numSamples * 2);
-    _writeMonoHeader(buf, numSamples);
+    writeWavHeader(
+      buf,
+      sampleRate: _sampleRate,
+      numSamples: numSamples,
+      channels: 1,
+    );
 
     for (int i = 0; i < numSamples; i++) {
       final t = i / _sampleRate;
@@ -202,9 +153,11 @@ class IsochronicToneSource extends StreamAudioSource {
       // Smooth the gate edges slightly to reduce harshness
       final smoothedGate = gate * _softgate(i, beatHz);
       final env = BinauralBeatSource._envelope(i, numSamples);
-      final sample =
-          env * amplitude * smoothedGate * math.sin(2 * math.pi * carrierHz * t);
-      buf.setInt16(44 + i * 2, BinauralBeatSource._clamp(sample), Endian.little);
+      final sample = env *
+          amplitude *
+          smoothedGate *
+          math.sin(2 * math.pi * carrierHz * t);
+      buf.setInt16(44 + i * 2, pcm16(sample), Endian.little);
     }
     return buf.buffer.asUint8List();
   }
@@ -218,29 +171,12 @@ class IsochronicToneSource extends StreamAudioSource {
       return (1 - math.cos(math.pi * phaseInCycle / fadeWidth)) / 2;
     }
     if (phaseInCycle > 0.5 - fadeWidth && phaseInCycle < 0.5) {
-      return (1 + math.cos(math.pi * (phaseInCycle - (0.5 - fadeWidth)) / fadeWidth)) / 2;
+      return (1 +
+              math.cos(
+                  math.pi * (phaseInCycle - (0.5 - fadeWidth)) / fadeWidth)) /
+          2;
     }
     if (phaseInCycle >= 0.5) return 0.0;
     return 1.0;
-  }
-
-  static void _writeMonoHeader(ByteData d, int numSamples) {
-    const channels = 1;
-    const bitsPerSample = 16;
-    final dataSize = numSamples * channels * (bitsPerSample ~/ 8);
-    BinauralBeatSource._writeAscii(d, 0, 'RIFF');
-    d.setUint32(4, 36 + dataSize, Endian.little);
-    BinauralBeatSource._writeAscii(d, 8, 'WAVE');
-    BinauralBeatSource._writeAscii(d, 12, 'fmt ');
-    d.setUint32(16, 16, Endian.little);
-    d.setUint16(20, 1, Endian.little);
-    d.setUint16(22, channels, Endian.little);
-    d.setUint32(24, _sampleRate, Endian.little);
-    d.setUint32(
-        28, _sampleRate * channels * bitsPerSample ~/ 8, Endian.little);
-    d.setUint16(32, channels * bitsPerSample ~/ 8, Endian.little);
-    d.setUint16(34, bitsPerSample, Endian.little);
-    BinauralBeatSource._writeAscii(d, 36, 'data');
-    d.setUint32(40, dataSize, Endian.little);
   }
 }

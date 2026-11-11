@@ -59,7 +59,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
   // Raw PPG samples (rolling 75-second buffer at ~30fps)
   final List<_Sample> _samples = [];
   static const int _measureSeconds = 60;
-  static const int _minSeconds = 30; // earliest the user can stop and get results
+  static const int _minSeconds =
+      30; // earliest the user can stop and get results
   int _secondsElapsed = 0;
   Timer? _ticker;
 
@@ -69,7 +70,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
   @override
   void dispose() {
     _ticker?.cancel();
-    _camera?.dispose();
+    unawaited(_stopCamera());
     super.dispose();
   }
 
@@ -101,7 +102,16 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
       _samples.clear();
       _secondsElapsed = 0;
 
-      beginTracking('HRV Measurement', 'Monitor');
+      beginTracking(
+        'HRV Measurement',
+        'Monitor',
+        onEmergencyStop: () {
+          _ticker?.cancel();
+          _ticker = null;
+          unawaited(_stopCamera());
+          if (mounted) setState(() => _phase = _HrvPhase.idle);
+        },
+      );
 
       setState(() => _phase = _HrvPhase.measuring);
 
@@ -185,10 +195,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
   Future<void> _finishMeasurement() async {
     _ticker?.cancel();
     _ticker = null;
-    await _camera?.stopImageStream();
-    await _camera?.setFlashMode(FlashMode.off);
-    await _camera?.dispose();
-    _camera = null;
+    await _stopCamera();
     endTracking();
 
     if (_samples.length < 200) {
@@ -210,6 +217,22 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
     });
   }
 
+  Future<void> _stopCamera() async {
+    final camera = _camera;
+    _camera = null;
+    if (camera == null) return;
+
+    try {
+      if (camera.value.isStreamingImages) {
+        await camera.stopImageStream();
+      }
+    } catch (_) {}
+    try {
+      await camera.setFlashMode(FlashMode.off);
+    } catch (_) {}
+    await camera.dispose();
+  }
+
   // ── Signal processing (runs in isolate) ────────────────────────────────────
 
   static HrvReading? _processSignal(List<_Sample> samples) {
@@ -226,7 +249,9 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
       final lo = math.max(0, i - trendWindow ~/ 2);
       final hi = math.min(raw.length - 1, i + trendWindow ~/ 2);
       double s = 0;
-      for (int j = lo; j <= hi; j++) { s += raw[j]; }
+      for (int j = lo; j <= hi; j++) {
+        s += raw[j];
+      }
       detrended[i] = raw[i] - s / (hi - lo + 1);
     }
 
@@ -237,7 +262,9 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
       final lo = math.max(0, i - smoothWindow ~/ 2);
       final hi = math.min(raw.length - 1, i + smoothWindow ~/ 2);
       double s = 0;
-      for (int j = lo; j <= hi; j++) { s += detrended[j]; }
+      for (int j = lo; j <= hi; j++) {
+        s += detrended[j];
+      }
       smoothed[i] = s / (hi - lo + 1);
     }
 
@@ -349,7 +376,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
             _ticker?.cancel();
-            _camera?.stopImageStream().then((_) => _camera?.dispose());
+            unawaited(_stopCamera());
             Navigator.pop(context);
           },
         ),
@@ -408,7 +435,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
         const SizedBox(height: 12),
         _InstructionCard(
           icon: Icons.do_not_touch_rounded,
-          text: 'Stay as still as possible. Motion creates noise in the signal.',
+          text:
+              'Stay as still as possible. Motion creates noise in the signal.',
         ),
         const SizedBox(height: 12),
         _InstructionCard(
@@ -426,8 +454,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               foregroundColor: AppColors.background,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
-              textStyle: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w500),
+              textStyle:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             child: const Text('Start measurement'),
           ),
@@ -472,8 +500,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                 ),
                 const Text(
                   'seconds',
-                  style:
-                      TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -493,8 +520,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                         color: AppColors.teal, size: 14),
                     SizedBox(width: 6),
                     Text('signal detected',
-                        style: TextStyle(
-                            color: AppColors.teal, fontSize: 13)),
+                        style: TextStyle(color: AppColors.teal, fontSize: 13)),
                   ],
                 )
               : const Row(
@@ -504,8 +530,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                         color: AppColors.amber, size: 14),
                     SizedBox(width: 6),
                     Text('place finger on camera + flash',
-                        style: TextStyle(
-                            color: AppColors.amber, fontSize: 13)),
+                        style: TextStyle(color: AppColors.amber, fontSize: 13)),
                   ],
                 ),
         ),
@@ -529,8 +554,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                 )
               : const Center(
                   child: Text('waiting for signal…',
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
+                      style:
+                          TextStyle(color: AppColors.textMuted, fontSize: 12)),
                 ),
         ),
 
@@ -577,8 +602,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
         const SizedBox(height: 4),
         Text(
           'Based on ${r.rrCount} heartbeats · not a medical device',
-          style:
-              const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
         ),
         const SizedBox(height: 28),
 
@@ -659,8 +683,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               color: AppColors.textMuted, size: 40),
           const SizedBox(height: 16),
           Text(title,
-              style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 16)),
+              style:
+                  const TextStyle(color: AppColors.textPrimary, fontSize: 16)),
           const SizedBox(height: 8),
           Text(
             body,
@@ -671,8 +695,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Go back',
-                style: TextStyle(color: AppColors.teal)),
+            child:
+                const Text('Go back', style: TextStyle(color: AppColors.teal)),
           ),
         ],
       ),
@@ -703,9 +727,7 @@ class _InstructionCard extends StatelessWidget {
             child: Text(
               text,
               style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.4),
+                  color: AppColors.textSecondary, fontSize: 13, height: 1.4),
             ),
           ),
         ],
@@ -749,8 +771,7 @@ class _MetricCard extends StatelessWidget {
                 if (sub != null)
                   Text(sub!,
                       style: TextStyle(
-                          color: color.withValues(alpha: 0.8),
-                          fontSize: 11)),
+                          color: color.withValues(alpha: 0.8), fontSize: 11)),
               ],
             ),
           ),
@@ -767,8 +788,8 @@ class _MetricCard extends StatelessWidget {
                 ),
                 TextSpan(
                   text: ' $unit',
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 13),
+                  style:
+                      const TextStyle(color: AppColors.textMuted, fontSize: 13),
                 ),
               ],
             ),

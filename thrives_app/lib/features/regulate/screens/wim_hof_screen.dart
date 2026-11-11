@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/models/tolerance_state.dart';
+import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
@@ -17,12 +19,22 @@ class WimHofScreen extends StatefulWidget {
 class _WimHofScreenState extends State<WimHofScreen>
     with TickerProviderStateMixin, SessionTracking {
   static const int _totalBreaths = 30;
+  static const _safetyItems = [
+    'I am not in water, driving, or standing.',
+    'I am lying down or seated somewhere safe.',
+    'I do not have a seizure disorder.',
+    'I do not have a serious heart, blood pressure, or respiratory condition.',
+    'I am not pregnant.',
+    'If this is my first time, another person is nearby.',
+    'I will stop immediately if I feel unwell.',
+  ];
 
   _WimHofPhase _phase = _WimHofPhase.idle;
   int _breathCount = 0;
   int _timerSeconds = 0;
   int _round = 1;
   Timer? _timer;
+  final Set<int> _confirmedSafetyItems = {};
 
   late AnimationController _pulseController;
 
@@ -43,7 +55,30 @@ class _WimHofScreenState extends State<WimHofScreen>
   }
 
   void _startBreathing() {
-    beginTracking('Wim Hof', 'Regulate');
+    final wot = WoTScope.stateOf(context);
+    if (wot == null || !wot.canWimHof) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Wim Hof breathing is only available when present.'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (_confirmedSafetyItems.length != _safetyItems.length) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Complete the safety checks before starting.'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    beginTracking('Wim Hof', 'Regulate', onEmergencyStop: _reset);
     setState(() {
       _phase = _WimHofPhase.breathing;
       _breathCount = 0;
@@ -107,16 +142,20 @@ class _WimHofScreenState extends State<WimHofScreen>
       _phase = _WimHofPhase.idle;
       _breathCount = 0;
       _timerSeconds = 0;
+      _confirmedSafetyItems.clear();
     });
   }
 
   void _reset() {
     _timer?.cancel();
+    endTracking();
+    if (!mounted) return;
     setState(() {
       _phase = _WimHofPhase.idle;
       _breathCount = 0;
       _timerSeconds = 0;
       _round = 1;
+      _confirmedSafetyItems.clear();
     });
   }
 
@@ -200,13 +239,7 @@ class _WimHofScreenState extends State<WimHofScreen>
   Widget _buildPhaseContent(BuildContext context) {
     switch (_phase) {
       case _WimHofPhase.idle:
-        return _CentredContent(
-          icon: Icons.waves_rounded,
-          title: '30 Deep Breaths',
-          body: 'Breathe in fully, let go without forcing. '
-              'You will feel tingling — this is normal. '
-              'After 30 breaths, exhale and let go.',
-        );
+        return _buildSafetyGate();
 
       case _WimHofPhase.breathing:
         return Column(
@@ -223,8 +256,8 @@ class _WimHofScreenState extends State<WimHofScreen>
                     height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.teal
-                          .withValues(alpha: 0.12 + _pulseController.value * 0.1),
+                      color: AppColors.teal.withValues(
+                          alpha: 0.12 + _pulseController.value * 0.1),
                       border: Border.all(
                         color: AppColors.teal.withValues(alpha: 0.5),
                         width: 1.5,
@@ -299,7 +332,9 @@ class _WimHofScreenState extends State<WimHofScreen>
         return _BigButton(
           label: 'Begin',
           color: AppColors.teal,
-          onTap: _startBreathing,
+          onTap: _confirmedSafetyItems.length == _safetyItems.length
+              ? _startBreathing
+              : null,
         );
       case _WimHofPhase.breathing:
         return const SizedBox.shrink();
@@ -339,6 +374,45 @@ class _WimHofScreenState extends State<WimHofScreen>
           ],
         );
     }
+  }
+
+  Widget _buildSafetyGate() {
+    return ListView(
+      children: [
+        const _CentredContent(
+          icon: Icons.waves_rounded,
+          title: '30 Deep Breaths',
+          body: 'Breathe in fully, let go without forcing. '
+              'After 30 breaths, exhale and hold only as long as comfortable.',
+        ),
+        const SizedBox(height: 12),
+        for (var i = 0; i < _safetyItems.length; i++)
+          CheckboxListTile(
+            value: _confirmedSafetyItems.contains(i),
+            onChanged: (checked) {
+              setState(() {
+                if (checked == true) {
+                  _confirmedSafetyItems.add(i);
+                } else {
+                  _confirmedSafetyItems.remove(i);
+                }
+              });
+            },
+            dense: true,
+            controlAffinity: ListTileControlAffinity.leading,
+            activeColor: AppColors.teal,
+            checkColor: AppColors.background,
+            title: Text(
+              _safetyItems[i],
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
@@ -390,7 +464,7 @@ class _CentredContent extends StatelessWidget {
 class _BigButton extends StatelessWidget {
   final String label;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _BigButton(
       {required this.label, required this.color, required this.onTap});

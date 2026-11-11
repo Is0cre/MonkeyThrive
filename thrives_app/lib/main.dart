@@ -1,11 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/models/tolerance_state.dart';
 import 'core/state/wot_scope.dart';
+import 'core/theme/app_appearance.dart';
 import 'core/theme/app_theme.dart';
 import 'core/storage/prefs_service.dart';
-import 'core/ai/companion_service.dart';
 import 'core/storage/tier_service.dart';
 import 'core/widgets/main_shell.dart';
 import 'features/checkin/screens/checkin_screen.dart';
@@ -25,10 +24,8 @@ void main() async {
   ));
   final onboardingDone = await PrefsService.isOnboardingDone();
   final savedWot = await PrefsService.loadTodaysWotState();
+  await AppAppearanceController.instance.load();
   await TierService.init();
-  // Initialise companion service — checks if model is already installed.
-  // Fire-and-forget; the UI reacts to CompanionService.stateStream.
-  unawaited(CompanionService.instance.init());
   runApp(ThrivesApp(onboardingDone: onboardingDone, initialWot: savedWot));
 }
 
@@ -70,9 +67,13 @@ class _ThrivesAppState extends State<ThrivesApp> {
     super.dispose();
   }
 
-  void _onOnboardingComplete() {
-    setState(() => _onboardingDone = true);
-    // After onboarding, stay on check-in (wotNotifier is still null)
+  void _onOnboardingComplete([ToleranceState? initialWot]) {
+    setState(() {
+      _onboardingDone = true;
+      if (initialWot != null) {
+        _wotNotifier.value = initialWot;
+      }
+    });
   }
 
   void _onCheckInComplete(ToleranceState state) {
@@ -92,13 +93,24 @@ class _ThrivesAppState extends State<ThrivesApp> {
   Widget build(BuildContext context) {
     return WoTScope(
       notifier: _wotNotifier,
-      child: MaterialApp(
-        title: 'THRIVES',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.dark,
-        home: _buildHome(),
+      child: ValueListenableBuilder<AppearanceSettings>(
+        valueListenable: AppAppearanceController.instance.notifier,
+        builder: (context, appearance, _) {
+          SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            systemNavigationBarColor: appearance.surface,
+            systemNavigationBarIconBrightness: Brightness.light,
+          ));
+          return MaterialApp(
+            title: 'THRIVES',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.dark(appearance),
+            darkTheme: AppTheme.dark(appearance),
+            themeMode: ThemeMode.dark,
+            home: _buildHome(),
+          );
+        },
       ),
     );
   }

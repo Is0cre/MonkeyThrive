@@ -91,6 +91,5 @@ class JournalService {
     await prefs.setString(_key, jsonEncode(list));
   }
 
-  static String newId() =>
-      DateTime.now().millisecondsSinceEpoch.toString();
+  static String newId() => DateTime.now().millisecondsSinceEpoch.toString();
 }

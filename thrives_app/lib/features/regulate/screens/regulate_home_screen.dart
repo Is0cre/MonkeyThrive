@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/app_chrome.dart';
 import 'breathing_screen.dart';
 import 'physiological_sigh_screen.dart';
 import 'grounding_521_screen.dart';
@@ -19,40 +19,31 @@ class RegulateHomeScreen extends StatelessWidget {
     return ValueListenableBuilder<ToleranceState?>(
       valueListenable: WoTScope.of(context),
       builder: (context, wot, _) {
-        return Scaffold(
-          floatingActionButton: const EmergencyButton(),
-          body: SafeArea(
+        return AppBackdrop(
+          child: SafeArea(
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
                   sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Regulate',
-                          style: Theme.of(context).textTheme.displayLarge,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Immediate nervous system tools. Use these now.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        if (wot != null) ...[
-                          const SizedBox(height: 14),
-                          _StateChip(wot: wot),
-                        ],
-                        const SizedBox(height: 32),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 42),
+                      child: AppHeader(
+                        title: 'Regulate',
+                        subtitle:
+                            'Immediate tools for the state you are in now.',
+                        icon: Icons.waves_rounded,
+                        trailing: wot == null ? null : _StateChip(wot: wot),
+                      ),
                     ),
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  padding: const EdgeInsets.fromLTRB(20, 30, 20, 32),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _SectionLabel('Breathing'),
+                      const AppSectionLabel('Breathing',
+                          icon: Icons.air_rounded),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.air_rounded,
@@ -70,7 +61,6 @@ class RegulateHomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.air_rounded,
                         title: 'Physiological sigh',
@@ -80,8 +70,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                const PhysiologicalSighScreen(),
+                            builder: (_) => const PhysiologicalSighScreen(),
                           ),
                         ),
                       ),
@@ -117,7 +106,10 @@ class RegulateHomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _SectionLabel('Grounding'),
+                      const AppSectionLabel(
+                        'Grounding',
+                        icon: Icons.spa_rounded,
+                      ),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.filter_5_rounded,
@@ -162,7 +154,10 @@ class RegulateHomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      _SectionLabel('Vagal Nerve Activation'),
+                      const AppSectionLabel(
+                        'Vagal nerve activation',
+                        icon: Icons.self_improvement_rounded,
+                      ),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.self_improvement_rounded,
@@ -201,49 +196,38 @@ class _StateChip extends StatelessWidget {
       case ToleranceState.hyperaroused:
         chipColor = const Color(0xFFDA3633);
       case ToleranceState.regulated:
-        chipColor = AppColors.teal;
+        chipColor = Theme.of(context).colorScheme.primary;
       case ToleranceState.hypoaroused:
         chipColor = const Color(0xFF6B8EAD);
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 7,
-          height: 7,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: chipColor,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: chipColor.withValues(alpha: 0.26)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: chipColor,
+            ),
           ),
-        ),
-        const SizedBox(width: 7),
-        Text(
-          wot.displayName,
-          style: TextStyle(
-            color: chipColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.3,
+          const SizedBox(width: 7),
+          Text(
+            wot.displayName,
+            style: TextStyle(
+              color: chipColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        color: AppColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.4,
+        ],
       ),
     );
   }
@@ -270,56 +254,23 @@ class _ToolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = locked ? AppColors.textMuted : color;
-    return Opacity(
-      opacity: locked ? 0.45 : 1.0,
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: locked ? null : onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: effectiveColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: effectiveColor, size: 22),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,
-                          style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 2),
-                      Text(
-                        locked && lockedReason != null
-                            ? lockedReason!
-                            : subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-                if (locked)
-                  const Icon(Icons.lock_outline_rounded,
-                      color: AppColors.textMuted, size: 16)
-                else
-                  const Icon(Icons.chevron_right_rounded,
-                      color: AppColors.textMuted, size: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
+    final colors = Theme.of(context).colorScheme;
+    final baseColor = color == AppColors.teal ? colors.primary : color;
+    final effectiveColor = locked ? AppColors.textMuted : baseColor;
+    return AppTile(
+      icon: icon,
+      title: title,
+      subtitle: locked && lockedReason != null ? lockedReason! : subtitle,
+      color: effectiveColor,
+      muted: locked,
+      onTap: locked ? null : onTap,
+      trailing: locked
+          ? const Icon(
+              Icons.lock_outline_rounded,
+              color: AppColors.textMuted,
+              size: 17,
+            )
+          : null,
     );
   }
 }

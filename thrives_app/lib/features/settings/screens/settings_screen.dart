@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/storage/journal_service.dart';
-import '../../../core/storage/session_log.dart';
+import '../../../core/baseline/baseline_models.dart';
+import '../../../core/baseline/baseline_monitor.dart';
 import '../../../core/storage/tier_service.dart';
+import '../../../core/theme/app_appearance.dart';
 import '../../../core/theme/app_theme.dart';
 import 'crisis_screen.dart';
 
@@ -22,8 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Clear all data?',
             style: TextStyle(color: AppColors.textPrimary)),
         content: const Text(
@@ -31,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           '• Journal entries\n'
           '• HRV readings\n'
           '• Check-in history\n'
+          '• Baseline feedback history\n'
           '• Session log\n'
           '• Safe place description\n\n'
           'This cannot be undone.',
@@ -66,25 +67,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _clearAll() async {
-    // Clear session log + tolerance entries
-    await SessionLog.clearAll();
-
-    // Clear all journal entries
-    final entries = await JournalService.load();
-    for (final e in entries) {
-      await JournalService.delete(e.id);
-    }
-
-    // Clear HRV readings, safe place description, tier cache
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('hrv_readings');
-    await prefs.remove('safe_place_description');
-    await prefs.remove('tier2_unlocked');
-    await prefs.remove('tier3_unlocked');
+    await prefs.clear();
+    AppAppearanceController.instance.notifier.value =
+        const AppearanceSettings();
 
     // Reset tier notifier in memory
-    TierService.notifier.value =
-        const TierStatus(tier2: false, tier3: false);
+    TierService.notifier.value = const TierStatus(tier2: false, tier3: false);
+    widget.onResetOnboarding();
+  }
+
+  Future<void> _showBaselinePromptPreview(BuildContext context) async {
+    final now = DateTime.now();
+    final shown = await BaselineMonitor.instance.showManualPrompt(
+      NotificationDecision(
+        sensorSnapshotId: 'manual-settings-${now.microsecondsSinceEpoch}',
+        modelConfidence: 1.0,
+        baselineVersion: 1,
+        shouldNotify: true,
+        decidedAt: now,
+      ),
+    );
+
+    if (!context.mounted) return;
+    if (shown) {
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A check-in is already open.'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   // ── Build ───────────────────────────────────────────────────────────────────
@@ -151,8 +167,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 10),
                   const Text(
                     'Open source · No ads · No data collection · Free forever.',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
+                    style:
+                        TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
                   const _RowDetail(
@@ -170,6 +186,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 24),
 
+            // ── Appearance ──────────────────────────────────────────────────
+            _Section('Appearance'),
+            const _AppearancePanel(),
+
+            const SizedBox(height: 24),
+
             // ── Safety ──────────────────────────────────────────────────────
             _Section('Safety'),
             _TileButton(
@@ -181,6 +203,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const CrisisScreen()),
               ),
+            ),
+            const SizedBox(height: 8),
+            _TileButton(
+              icon: Icons.forum_outlined,
+              iconColor: AppColors.teal,
+              label: 'Show baseline check-in',
+              subtitle: 'Preview the local prompt implementation',
+              onTap: () => _showBaselinePromptPreview(context),
             ),
 
             const SizedBox(height: 24),
@@ -214,9 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'protocols. THRIVES is a wellness support tool, not a '
                     'clinical service.',
                     style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11,
-                        height: 1.5),
+                        color: AppColors.textMuted, fontSize: 11, height: 1.5),
                   ),
                 ],
               ),
@@ -231,7 +259,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Zero data leaves this device.',
+                    'Your entries stay on this device.',
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
@@ -240,8 +268,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'No analytics. No crash reporting. No network requests '
-                    'from the app core. Everything you enter — check-ins, '
+                    'Zero network requests. Zero analytics. Zero crash reporting. '
+                    'Everything you enter — check-ins, '
                     'journal entries, HRV readings, your safe place description '
                     '— is stored only on this device.\n\n'
                     'We cannot provide your data to anyone because we do '
@@ -329,8 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
                         child: const Text('Cancel',
-                            style:
-                                TextStyle(color: AppColors.textSecondary)),
+                            style: TextStyle(color: AppColors.textSecondary)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
@@ -379,14 +406,191 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.surfaceContainerHighest),
       ),
       child: child,
+    );
+  }
+}
+
+class _AppearancePanel extends StatelessWidget {
+  const _AppearancePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<AppearanceSettings>(
+      valueListenable: AppAppearanceController.instance.notifier,
+      builder: (context, appearance, _) {
+        return _InfoCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Accent',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  for (final accent in AppAccent.values) ...[
+                    Expanded(
+                      child: _AccentSwatch(
+                        accent: accent,
+                        selected: appearance.accent == accent,
+                      ),
+                    ),
+                    if (accent != AppAccent.values.last)
+                      const SizedBox(width: 10),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Contrast',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 10),
+              _ContrastSelector(selected: appearance.contrast),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AccentSwatch extends StatelessWidget {
+  final AppAccent accent;
+  final bool selected;
+
+  const _AccentSwatch({
+    required this.accent,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = AppearanceSettings(accent: accent);
+    final color = settings.accentColor;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: accent.name,
+      child: GestureDetector(
+        onTap: () => AppAppearanceController.instance.setAccent(accent),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: selected ? 0.22 : 0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? color : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+              ),
+              child: selected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      color: AppColors.background,
+                      size: 14,
+                    )
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContrastSelector extends StatelessWidget {
+  final AppContrast selected;
+
+  const _ContrastSelector({required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (final contrast in AppContrast.values) ...[
+          Expanded(
+            child: _ContrastChip(
+              contrast: contrast,
+              selected: selected == contrast,
+            ),
+          ),
+          if (contrast != AppContrast.values.last) const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _ContrastChip extends StatelessWidget {
+  final AppContrast contrast;
+  final bool selected;
+
+  const _ContrastChip({
+    required this.contrast,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final label = switch (contrast) {
+      AppContrast.soft => 'Soft',
+      AppContrast.standard => 'Standard',
+      AppContrast.high => 'High',
+    };
+    return GestureDetector(
+      onTap: () => AppAppearanceController.instance.setContrast(contrast),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? primary.withValues(alpha: 0.16)
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? primary : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? primary : AppColors.textSecondary,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -425,13 +629,13 @@ class _AdvisorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: AppColors.teal.withValues(alpha: 0.2), width: 1),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,7 +652,7 @@ class _AdvisorCard extends StatelessWidget {
           Text(
             role,
             style: const TextStyle(
-                color: AppColors.teal,
+                color: AppColors.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w400),
           ),
@@ -481,14 +685,15 @@ class _TileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(14),
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
           child: Row(
             children: [
               Icon(icon, color: iconColor, size: 20),

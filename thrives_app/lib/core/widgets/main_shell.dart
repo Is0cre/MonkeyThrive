@@ -8,6 +8,7 @@ import '../../features/process/screens/process_home_screen.dart';
 import '../../features/reflect/screens/reflect_home_screen.dart';
 import '../../features/regulate/screens/regulate_home_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import 'baseline_checkin_prompt.dart';
 import 'emergency_button.dart';
 
 /// Describes a single tab entry: the widget to show and its nav bar item.
@@ -132,6 +133,7 @@ class _MainShellState extends State<MainShell> {
     return ValueListenableBuilder<TierStatus>(
       valueListenable: TierService.notifier,
       builder: (context, tier, _) {
+        final colors = Theme.of(context).colorScheme;
         final tabs = _visibleTabs(tier);
         // Clamp index so it never goes out of range when tabs count changes
         final safeIndex = _index.clamp(0, tabs.length - 1);
@@ -141,32 +143,51 @@ class _MainShellState extends State<MainShell> {
               .addPostFrameCallback((_) => setState(() => _index = safeIndex));
         }
 
-        return Scaffold(
-          body: Stack(
-            children: [
-              IndexedStack(
-                index: safeIndex,
-                children: tabs.map((t) => t.screen).toList(),
-              ),
-              // Settings button — top right, always accessible
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.settings_rounded),
-                  color: AppColors.textMuted,
-                  iconSize: 22,
-                  tooltip: 'Settings',
-                  onPressed: _openSettings,
+        return BaselineCheckInHost(
+          child: Scaffold(
+            body: Stack(
+              children: [
+                IndexedStack(
+                  index: safeIndex,
+                  children: tabs.map((t) => t.screen).toList(),
                 ),
-              ),
-            ],
-          ),
-          floatingActionButton: const EmergencyButton(),
-          bottomNavigationBar: _ThriveNavBar(
-            currentIndex: safeIndex,
-            tabs: tabs,
-            onTap: (i) => setState(() => _index = i),
+                // Settings button — top right, always accessible
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 16,
+                  child: Material(
+                    color: colors.surface.withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: _openSettings,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: colors.surfaceContainerHighest
+                                .withValues(alpha: 0.82),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.settings_rounded,
+                          color: colors.primary,
+                          size: 21,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            floatingActionButton: const EmergencyButton(),
+            bottomNavigationBar: _ThriveNavBar(
+              currentIndex: safeIndex,
+              tabs: tabs,
+              onTap: (i) => setState(() => _index = i),
+            ),
           ),
         );
       },
@@ -187,53 +208,101 @@ class _ThriveNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.surfaceVariant, width: 1),
+    final colors = Theme.of(context).colorScheme;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+        child: Container(
+          height: 64,
+          decoration: BoxDecoration(
+            color: colors.surface.withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: colors.surfaceContainerHighest.withValues(alpha: 0.88),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Row(
+              children: [
+                for (int i = 0; i < tabs.length; i++)
+                  Expanded(
+                    child: _NavItem(
+                      tab: tabs[i],
+                      selected: currentIndex == i,
+                      onTap: () => onTap(i),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: [
-              for (int i = 0; i < tabs.length; i++)
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => onTap(i),
-                    behavior: HitTestBehavior.opaque,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          tabs[i].icon,
-                          color: currentIndex == i
-                              ? AppColors.teal
-                              : AppColors.textMuted,
-                          size: 22,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          tabs[i].label,
-                          style: TextStyle(
-                            color: currentIndex == i
-                                ? AppColors.teal
-                                : AppColors.textMuted,
-                            fontSize: 9,
-                            fontWeight: currentIndex == i
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final _Tab tab;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: tab.label,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: selected
+                  ? colors.primary.withValues(alpha: 0.18)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: selected
+                    ? colors.primary.withValues(alpha: 0.34)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  tab.icon,
+                  color: selected ? colors.primary : AppColors.textMuted,
+                  size: 21,
+                ),
+                const SizedBox(height: 3),
+                Flexible(
+                  child: Text(
+                    tab.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: selected ? colors.primary : AppColors.textMuted,
+                      fontSize: 9,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

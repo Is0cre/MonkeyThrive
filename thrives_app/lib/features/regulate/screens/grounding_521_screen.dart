@@ -21,8 +21,7 @@ const _steps = [
   _GroundingStep(
     count: 5,
     sense: 'See',
-    instruction:
-        'Look around you. Find 5 things you can see right now.\n\n'
+    instruction: 'Look around you. Find 5 things you can see right now.\n\n'
         'Take your time. Notice each one clearly — colour, shape, texture.',
     icon: Icons.visibility_rounded,
   ),
@@ -168,7 +167,9 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                 opacity: _fadeAnimation,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: _finished ? _buildFinished(context) : _buildStep(context, step!),
+                  child: _finished
+                      ? _buildFinished(context)
+                      : _buildStep(context, step!),
                 ),
               ),
             ),

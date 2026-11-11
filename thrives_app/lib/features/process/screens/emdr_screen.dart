@@ -4,9 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:vibration/vibration.dart';
+import '../../../core/audio/bilateral_cue_source.dart';
+import '../../../core/audio/local_audio_cache.dart';
+import '../../../core/models/tolerance_state.dart';
+import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+
+// CLINICAL SAFETY — Bilateral Stimulation (BLS)
+// What this does: Provides alternating left/right visual, auditory, and tactile
+//   bilateral stimulation with strict Window of Tolerance gating.
+// Why it exists: Bilateral stimulation requires a regulated nervous system as a
+//   container. In hyperaroused or hypoaroused states, processing tools risk
+//   flooding or retraumatisation. Never labelled as EMDR in the UI.
+// What happens if removed or modified: Users in dysregulated states could
+//   trigger uncontained trauma processing.
+// Informed by: Marit Leito, clinical advisor / Francine Shapiro, EMDR
+//   preparation phase guidelines.
 
 enum EmdrMode { visual, audio, tactile, visualAudio, visualTactile, all }
 
@@ -34,23 +49,22 @@ class _EmdrScreenState extends State<EmdrScreen>
   // ── state ─────────────────────────────────────────────────────────────────
   bool _running = false;
   bool _showSettings = true; // start on settings before first run
-  int _sessionSecondsLeft = 0;
+  final ValueNotifier<int> _sessionSecondsLeft = ValueNotifier<int>(0);
   Timer? _sessionTimer;
 
   // ── animation ─────────────────────────────────────────────────────────────
-  late AnimationController _dotController;
-  late Animation<double> _dotAnimation; // 0.0 = left edge, 1.0 = right edge
-  // _goingRight tracks direction for audio cue future use
+  late final AnimationController _dotController;
+  late final Animation<double> _dotAnimation; // 0.0 = left edge, 1.0 = right edge
 
-  // ── audio ─────────────────────────────────────────────────────────────────
+  // ── audio (dual pre-cued stereo players for zero-seek latency) ────────────
   final AudioPlayer _leftPlayer = AudioPlayer();
   final AudioPlayer _rightPlayer = AudioPlayer();
-  // _audioReady: reserved for when audio assets are bundled
+  bool _audioReady = false;
 
-  // ── vibration ────────────────────────────────────────────────────────────
+  // ── vibration ─────────────────────────────────────────────────────────────
   bool _canVibrate = false;
 
-  // ── colour presets ───────────────────────────────────────────────────────
+  // ── colour presets ────────────────────────────────────────────────────────
   final _colorOptions = const [
     AppColors.teal,
     AppColors.amber,
@@ -81,6 +95,11 @@ class _EmdrScreenState extends State<EmdrScreen>
       _mode == EmdrMode.visualTactile ||
       _mode == EmdrMode.all;
 
+  bool get _useAudio =>
+      _mode == EmdrMode.audio ||
+      _mode == EmdrMode.visualAudio ||
+      _mode == EmdrMode.all;
+
   @override
   void initState() {
     super.initState();
@@ -89,20 +108,41 @@ class _EmdrScreenState extends State<EmdrScreen>
       duration: Duration(milliseconds: _durationMs),
     );
     _dotAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _dotController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _dotController, curve: Curves.easeInOutSine),
     );
     _dotController.addStatusListener(_onDotStatus);
-    _initAudio();
-    _checkVibration();
+    unawaited(_initAudio());
+    unawaited(_checkVibration());
   }
 
   Future<void> _initAudio() async {
-    // Audio assets will be bundled in a future session.
-    // just_audio players are initialised and ready.
+    try {
+      final leftSource = await LocalAudioCache.audioSource(
+        'bilateral_left_v2',
+        () => BilateralCueSource(right: false).bytes,
+      );
+      final rightSource = await LocalAudioCache.audioSource(
+        'bilateral_right_v2',
+        () => BilateralCueSource(right: true).bytes,
+      );
+      await _leftPlayer.setAudioSource(leftSource, preload: true);
+      await _rightPlayer.setAudioSource(rightSource, preload: true);
+      await _leftPlayer.setVolume(0.9);
+      await _rightPlayer.setVolume(0.9);
+      await _leftPlayer.seek(Duration.zero);
+      await _rightPlayer.seek(Duration.zero);
+      _audioReady = true;
+    } catch (_) {
+      _audioReady = false;
+    }
   }
 
   Future<void> _checkVibration() async {
-    _canVibrate = (await Vibration.hasVibrator()) == true;
+    try {
+      _canVibrate = (await Vibration.hasVibrator()) == true;
+    } catch (_) {
+      _canVibrate = false;
+    }
   }
 
   @override
@@ -110,6 +150,7 @@ class _EmdrScreenState extends State<EmdrScreen>
     _dotController.removeStatusListener(_onDotStatus);
     _dotController.dispose();
     _sessionTimer?.cancel();
+    _sessionSecondsLeft.dispose();
     _leftPlayer.dispose();
     _rightPlayer.dispose();
     super.dispose();
@@ -118,50 +159,89 @@ class _EmdrScreenState extends State<EmdrScreen>
   void _onDotStatus(AnimationStatus status) {
     if (!_running) return;
     if (status == AnimationStatus.completed) {
-      _triggerSide(right: false);
+      // Dot reached right edge (1.0) -> trigger right stereo cue and reverse
+      _triggerSide(right: true);
       _dotController.reverse();
     } else if (status == AnimationStatus.dismissed) {
-      _triggerSide(right: true);
+      // Dot reached left edge (0.0) -> trigger left stereo cue and move forward
+      _triggerSide(right: false);
       _dotController.forward();
     }
   }
 
   void _triggerSide({required bool right}) {
     if (_useTactile && _canVibrate) {
-      Vibration.vibrate(duration: 40, amplitude: 80);
+      unawaited(Vibration.vibrate(duration: 40, amplitude: 80));
     }
-    // Audio bilateral — left/right channel cue
-    // Actual stereo panning requires just_audio's AudioSource with channel routing.
-    // For now a haptic distinguishes sides until audio assets are ready.
-    if (!_useTactile) {
-      // Light haptic as audio stand-in when no vibration mode selected
+    if (_useAudio) {
+      _firePreCuedAudio(right: right);
+    }
+    if (!_useTactile && !_useAudio) {
       HapticFeedback.selectionClick();
     }
   }
 
+  /// Plays the pre-rewound audio player immediately (zero seek latency at turn
+  /// boundary) and rewinds the opposite channel while the dot travels across.
+  void _firePreCuedAudio({required bool right}) {
+    if (!_audioReady) {
+      HapticFeedback.selectionClick();
+      return;
+    }
+    final activePlayer = right ? _rightPlayer : _leftPlayer;
+    final idlePlayer = right ? _leftPlayer : _rightPlayer;
+
+    unawaited(activePlayer.play().catchError((_) {
+      HapticFeedback.selectionClick();
+    }));
+
+    unawaited(() async {
+      try {
+        await idlePlayer.pause();
+        await idlePlayer.seek(Duration.zero);
+      } catch (_) {}
+    }());
+  }
+
   void _start() {
-    beginTracking('Bilateral Stimulation', 'Process');
+    final wot = WoTScope.stateOf(context);
+    if (wot == null || !wot.canBilateral) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Bilateral stimulation is only available when present.'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    beginTracking(
+      'Bilateral Stimulation',
+      'Process',
+      onEmergencyStop: _stop,
+    );
     _dotController.duration = Duration(milliseconds: _durationMs);
     setState(() {
       _running = true;
       _showSettings = false;
-      if (_sessionMinutes > 0) {
-        _sessionSecondsLeft = _sessionMinutes * 60;
+      if (_sessionMinutes > 0 && _sessionSecondsLeft.value <= 0) {
+        _sessionSecondsLeft.value = _sessionMinutes * 60;
       }
     });
-    _triggerSide(right: true);
+    _triggerSide(right: false);
     _dotController.forward(from: 0);
     if (_sessionMinutes > 0) {
       _sessionTimer?.cancel();
       _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (!mounted) return;
-        setState(() {
-          _sessionSecondsLeft--;
-          if (_sessionSecondsLeft <= 0) {
-            _stop();
-            _showCompletionMessage();
-          }
-        });
+        final next = _sessionSecondsLeft.value - 1;
+        _sessionSecondsLeft.value = next;
+        if (next <= 0) {
+          _stop();
+          _showCompletionMessage();
+        }
       });
     }
   }
@@ -169,7 +249,15 @@ class _EmdrScreenState extends State<EmdrScreen>
   void _stop() {
     _dotController.stop();
     _sessionTimer?.cancel();
-    if (mounted) setState(() => _running = false);
+    try {
+      unawaited(Vibration.cancel());
+    } catch (_) {}
+    unawaited(_leftPlayer.pause());
+    unawaited(_rightPlayer.pause());
+    endTracking();
+    if (mounted && _running) {
+      setState(() => _running = false);
+    }
   }
 
   void _showCompletionMessage() {
@@ -199,14 +287,13 @@ class _EmdrScreenState extends State<EmdrScreen>
     );
   }
 
-  String get _sessionDisplay {
-    final m = _sessionSecondsLeft ~/ 60;
-    final s = _sessionSecondsLeft % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final wot = WoTScope.of(context).value;
+    if (_running && (wot == null || !wot.canBilateral)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _stop());
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bilateral Stimulation'),
@@ -242,28 +329,62 @@ class _EmdrScreenState extends State<EmdrScreen>
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 80),
       children: [
-        _SettingsSection('Mode'),
-        _ModeSelector(selected: _mode, onSelect: (m) => setState(() => _mode = m)),
+        // CLINICAL SAFETY — Required pre-session disclaimer
+        Container(
+          padding: const EdgeInsets.all(14),
+          margin: const EdgeInsets.only(bottom: 24),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFF4A9EDA).withValues(alpha: 0.3),
+            ),
+          ),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  color: Color(0xFF4A9EDA), size: 18),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'This is a support tool. It does not replace therapy.\n'
+                  'Bilateral stimulation — between-session support, not therapy.',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const _SettingsSection('Mode'),
+        _ModeSelector(
+            selected: _mode, onSelect: (m) => setState(() => _mode = m)),
         const SizedBox(height: 24),
-
-        _SettingsSection('Speed'),
-        _SpeedSelector(selected: _speed, onSelect: (s) => setState(() => _speed = s)),
+        const _SettingsSection('Speed'),
+        _SpeedSelector(
+            selected: _speed, onSelect: (s) => setState(() => _speed = s)),
         const SizedBox(height: 24),
-
-        _SettingsSection('Session length'),
+        const _SettingsSection('Session length'),
         _SessionSelector(
-            selected: _sessionMinutes,
-            onSelect: (m) => setState(() => _sessionMinutes = m)),
+          selected: _sessionMinutes,
+          onSelect: (m) => setState(() {
+            _sessionMinutes = m;
+            _sessionSecondsLeft.value = m * 60;
+          }),
+        ),
         const SizedBox(height: 24),
-
         if (_useVisual) ...[
-          _SettingsSection('Dot size'),
+          const _SettingsSection('Dot size'),
           _SizeSlider(
             value: _dotSize,
             onChanged: (v) => setState(() => _dotSize = v),
           ),
           const SizedBox(height: 24),
-          _SettingsSection('Dot colour'),
+          const _SettingsSection('Dot colour'),
           _ColorPicker(
             colors: _colorOptions,
             selected: _dotColor,
@@ -271,7 +392,6 @@ class _EmdrScreenState extends State<EmdrScreen>
           ),
           const SizedBox(height: 24),
         ],
-
         SizedBox(
           width: double.infinity,
           height: 52,
@@ -297,93 +417,59 @@ class _EmdrScreenState extends State<EmdrScreen>
   Widget _buildSession() {
     return Column(
       children: [
-        // Session timer
+        // Session timer (isolated ValueListenableBuilder so ticks never rebuild canvas)
         if (_sessionMinutes > 0)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(
-              _sessionDisplay,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 13,
-                fontFamily: 'monospace',
-              ),
-            ),
-          ),
-
-        // Bilateral dot area
-        if (_useVisual)
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final trackWidth = constraints.maxWidth;
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Track line
-                    Positioned(
-                      left: 24,
-                      right: 24,
-                      child: Container(
-                        height: 1,
-                        color: AppColors.surfaceVariant,
-                      ),
-                    ),
-                    // Moving dot
-                    AnimatedBuilder(
-                      animation: _dotAnimation,
-                      builder: (context, _) {
-                        final usableWidth = trackWidth - 48 - _dotSize;
-                        final left = 24 + (_dotAnimation.value * usableWidth);
-                        return Positioned(
-                          left: left,
-                          child: Container(
-                            width: _dotSize,
-                            height: _dotSize,
-                            decoration: BoxDecoration(
-                              color: _dotColor,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _dotColor.withValues(alpha: 0.4),
-                                  blurRadius: 12,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+            child: ValueListenableBuilder<int>(
+              valueListenable: _sessionSecondsLeft,
+              builder: (_, secs, __) {
+                final m = (secs ~/ 60).toString().padLeft(2, '0');
+                final s = (secs % 60).toString().padLeft(2, '0');
+                return Text(
+                  '$m:$s',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                  ),
                 );
               },
             ),
-          )
-        else
-          const Spacer(),
-
-        // Audio/tactile only — just show the rhythm
-        if (!_useVisual) ...[
-          Expanded(
-            child: Center(
-              child: AnimatedBuilder(
-                animation: _dotAnimation,
-                builder: (context, _) {
-                  final pulse = math.sin(_dotAnimation.value * math.pi);
-                  return Opacity(
-                    opacity: 0.3 + pulse * 0.4,
-                    child: const Icon(
-                      Icons.swap_horiz_rounded,
-                      color: Color(0xFF4A9EDA),
-                      size: 64,
-                    ),
-                  );
-                },
-              ),
-            ),
           ),
-        ],
+
+        // Hardware-accelerated 60/120 fps canvas area
+        Expanded(
+          child: RepaintBoundary(
+            child: _useVisual
+                ? CustomPaint(
+                    painter: _BilateralDotPainter(
+                      animation: _dotAnimation,
+                      dotSize: _dotSize,
+                      dotColor: _dotColor,
+                      trackColor: AppColors.surfaceVariant,
+                    ),
+                    size: Size.infinite,
+                  )
+                : Center(
+                    child: AnimatedBuilder(
+                      animation: _dotAnimation,
+                      builder: (context, child) {
+                        final pulse = math.sin(_dotAnimation.value * math.pi);
+                        return Opacity(
+                          opacity: 0.3 + pulse * 0.4,
+                          child: child,
+                        );
+                      },
+                      child: const Icon(
+                        Icons.swap_horiz_rounded,
+                        color: Color(0xFF4A9EDA),
+                        size: 64,
+                      ),
+                    ),
+                  ),
+          ),
+        ),
 
         // Controls
         Padding(
@@ -412,9 +498,8 @@ class _EmdrScreenState extends State<EmdrScreen>
                     backgroundColor: _running
                         ? AppColors.surfaceVariant
                         : const Color(0xFF4A9EDA),
-                    foregroundColor: _running
-                        ? AppColors.textPrimary
-                        : AppColors.background,
+                    foregroundColor:
+                        _running ? AppColors.textPrimary : AppColors.background,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                     textStyle: const TextStyle(
@@ -457,6 +542,62 @@ class _EmdrScreenState extends State<EmdrScreen>
         return 'Fast';
     }
   }
+}
+
+/// Renders the bilateral track and dot directly on the GPU canvas using
+/// `super(repaint: animation)`, avoiding widget rebuilds and layout passes.
+class _BilateralDotPainter extends CustomPainter {
+  final Animation<double> animation;
+  final double dotSize;
+  final Color dotColor;
+  final Color trackColor;
+
+  late final Paint _trackPaint = Paint()
+    ..color = trackColor
+    ..strokeWidth = 1.0
+    ..style = PaintingStyle.stroke;
+
+  late final Paint _glowPaint = Paint()
+    ..color = dotColor.withValues(alpha: 0.28)
+    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+  late final Paint _dotPaint = Paint()
+    ..color = dotColor
+    ..style = PaintingStyle.fill;
+
+  _BilateralDotPainter({
+    required this.animation,
+    required this.dotSize,
+    required this.dotColor,
+    required this.trackColor,
+  }) : super(repaint: animation);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const horizontalPadding = 24.0;
+    final cy = size.height / 2;
+    final radius = dotSize / 2;
+
+    canvas.drawLine(
+      Offset(horizontalPadding, cy),
+      Offset(size.width - horizontalPadding, cy),
+      _trackPaint,
+    );
+
+    final usableWidth =
+        math.max(0.0, size.width - (horizontalPadding * 2) - dotSize);
+    final cx = horizontalPadding + radius + (animation.value * usableWidth);
+    final center = Offset(cx, cy);
+
+    canvas.drawCircle(center, radius + 3, _glowPaint);
+    canvas.drawCircle(center, radius, _dotPaint);
+  }
+
+  @override
+  bool shouldRepaint(_BilateralDotPainter oldDelegate) =>
+      oldDelegate.dotSize != dotSize ||
+      oldDelegate.dotColor != dotColor ||
+      oldDelegate.trackColor != trackColor;
 }
 
 // ─── Settings widgets ─────────────────────────────────────────────────────────
@@ -506,8 +647,7 @@ class _ModeSelector extends StatelessWidget {
             onTap: () => onSelect(mode.$1),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               decoration: BoxDecoration(
                 color: selected == mode.$1
                     ? const Color(0xFF4A9EDA).withValues(alpha: 0.12)
@@ -614,8 +754,7 @@ class _SessionSelector extends StatelessWidget {
             onTap: () => onSelect(m),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: selected == m
                     ? const Color(0xFF4A9EDA).withValues(alpha: 0.15)
@@ -695,8 +834,7 @@ class _ColorPicker extends StatelessWidget {
                 color: c,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color:
-                      selected == c ? Colors.white : Colors.transparent,
+                  color: selected == c ? Colors.white : Colors.transparent,
                   width: 2,
                 ),
                 boxShadow: selected == c
@@ -731,7 +869,8 @@ class _ModeChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(label,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500)),
+          style: TextStyle(
+              color: color, fontSize: 12, fontWeight: FontWeight.w500)),
     );
   }
 }

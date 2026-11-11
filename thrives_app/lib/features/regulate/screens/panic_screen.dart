@@ -49,7 +49,8 @@ class _PanicScreenState extends State<PanicScreen>
     super.initState();
     beginTracking('Panic / Physiological Sigh', 'Regulate');
     _circleController = AnimationController(vsync: this);
-    _circleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(_circleController);
+    _circleAnim =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_circleController);
     _startPhase(_Phase.inhale1);
   }
 
@@ -138,12 +139,14 @@ class _PanicScreenState extends State<PanicScreen>
           children: [
             // Main content
             Center(
-              child: _done ? _DoneView(onGoRegulate: _goToRegulate) : _BreathView(
-                cycle: _cycle,
-                totalCycles: _totalCycles,
-                phaseLabel: _phaseLabel,
-                circleAnim: _circleAnim,
-              ),
+              child: _done
+                  ? _DoneView(onGoRegulate: _goToRegulate)
+                  : _BreathView(
+                      cycle: _cycle,
+                      totalCycles: _totalCycles,
+                      phaseLabel: _phaseLabel,
+                      circleAnim: _circleAnim,
+                    ),
             ),
 
             // Unobtrusive dismiss — for accidental taps
@@ -204,9 +207,11 @@ class _BreathView extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.teal.withValues(alpha: 0.08 + circleAnim.value * 0.12),
+                color: AppColors.teal
+                    .withValues(alpha: 0.08 + circleAnim.value * 0.12),
                 border: Border.all(
-                  color: AppColors.teal.withValues(alpha: 0.3 + circleAnim.value * 0.4),
+                  color: AppColors.teal
+                      .withValues(alpha: 0.3 + circleAnim.value * 0.4),
                   width: 1.5,
                 ),
               ),

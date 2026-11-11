@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../core/models/tolerance_state.dart';
 import '../../../core/storage/prefs_service.dart';
 import '../../../core/theme/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  final VoidCallback onComplete;
+  final void Function([ToleranceState? initialWot]) onComplete;
   const OnboardingScreen({super.key, required this.onComplete});
 
   @override
@@ -44,7 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  Future<void> _complete() async {
+  Future<void> _complete({ToleranceState? initialWot}) async {
     await PrefsService.saveProfile(
       primaryGoal: _primaryGoal ?? '',
       familiarity: _familiarity ?? '',
@@ -55,8 +56,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       reduceVibration: _reduceVibration,
       hasTherapist: _hasTherapist ?? '',
     );
+    if (initialWot != null) {
+      await PrefsService.saveWotState(initialWot);
+    }
     await PrefsService.setOnboardingDone();
-    widget.onComplete();
+    widget.onComplete(initialWot);
   }
 
   bool get _canAdvance {
@@ -105,7 +109,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       _Choice('sleep', 'Sleep difficulties'),
                       _Choice('anxiety', 'Anxiety and stress'),
                       _Choice('trauma', 'Trauma processing'),
-                      _Choice('regulation', 'General nervous system regulation'),
+                      _Choice(
+                          'regulation', 'General nervous system regulation'),
                       _Choice('growth', 'Curiosity / personal growth'),
                       _Choice('multiple', 'Several of the above'),
                     ],
@@ -116,8 +121,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     question: 'How familiar are you with these tools?',
                     choices: const [
                       _Choice('beginner', 'Complete beginner'),
-                      _Choice('some', 'Some experience with meditation or breathing'),
-                      _Choice('somatic', 'Familiar with somatic or trauma-informed therapy'),
+                      _Choice('some',
+                          'Some experience with meditation or breathing'),
+                      _Choice('somatic',
+                          'Familiar with somatic or trauma-informed therapy'),
                       _Choice('practitioner', 'Experienced practitioner'),
                     ],
                     selected: _familiarity,
@@ -126,7 +133,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   _ChoicePage(
                     question: 'Do you have a smartwatch or fitness tracker?',
                     choices: const [
-                      _Choice('yes', 'Yes — WearOS, Garmin, Fitbit, Polar, or similar'),
+                      _Choice('yes',
+                          'Yes — WearOS, Garmin, Fitbit, Polar, or similar'),
                       _Choice('camera', 'No — I\'ll use the phone camera'),
                       _Choice('none', 'No biofeedback for now'),
                     ],
@@ -158,11 +166,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onCrisis: (v) {
                       setState(() => _acuteCrisis = v);
                       if (v) {
-                        // Route to Regulate immediately
-                        _complete();
+                        // Route directly to Regulate with only all-state tools
+                        // available. Hyperaroused is the safest conservative
+                        // state for acute distress.
+                        _complete(initialWot: ToleranceState.hyperaroused);
                       }
                     },
-                    onComplete: _canAdvance ? _complete : null,
+                    onComplete: _canAdvance ? () => _complete() : null,
                   ),
                 ],
               ),
@@ -207,8 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         foregroundColor: AppColors.background,
         minimumSize: const Size(140, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle:
-            const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       );
 }
 
@@ -368,8 +377,7 @@ class _ChoiceTile extends StatelessWidget {
               ),
             ),
             if (selected)
-              const Icon(Icons.check_rounded,
-                  color: AppColors.teal, size: 18),
+              const Icon(Icons.check_rounded, color: AppColors.teal, size: 18),
           ],
         ),
       ),
@@ -404,7 +412,8 @@ class _SensitivityPage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text(
           'These help us show you what\'s right for you. All off by default.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+          style: TextStyle(
+              color: AppColors.textSecondary, fontSize: 14, height: 1.5),
         ),
         const SizedBox(height: 24),
         _SensitivityTile(
@@ -484,7 +493,7 @@ class _SensitivityTile extends StatelessWidget {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.teal,
+              activeThumbColor: AppColors.teal,
               inactiveThumbColor: AppColors.textMuted,
               inactiveTrackColor: AppColors.surfaceVariant,
             ),
@@ -520,11 +529,10 @@ class _SafetyPage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text(
           'These help us point you in the right direction.',
-          style:
-              TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+          style: TextStyle(
+              color: AppColors.textSecondary, fontSize: 14, height: 1.5),
         ),
         const SizedBox(height: 28),
-
         const Text('Are you currently working with a therapist?',
             style: TextStyle(
                 color: AppColors.textPrimary,
@@ -543,7 +551,6 @@ class _SafetyPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-
         const SizedBox(height: 28),
         const Text('Are you in acute distress right now?',
             style: TextStyle(
@@ -567,7 +574,6 @@ class _SafetyPage extends StatelessWidget {
           selected: !acuteCrisis,
           onTap: () => onCrisis(false),
         ),
-
         const SizedBox(height: 32),
         if (onComplete != null && !acuteCrisis)
           SizedBox(
@@ -580,8 +586,8 @@ class _SafetyPage extends StatelessWidget {
                 foregroundColor: AppColors.background,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
-                textStyle: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w500),
+                textStyle:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
               child: const Text('Take me in'),
             ),

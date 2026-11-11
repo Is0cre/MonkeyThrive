@@ -25,9 +25,6 @@ class WoTScope extends InheritedNotifier<ValueNotifier<ToleranceState?>> {
 
   /// Returns the current state value without subscribing to changes.
   static ToleranceState? stateOf(BuildContext context) {
-    return context
-        .getInheritedWidgetOfExactType<WoTScope>()
-        ?.notifier
-        ?.value;
+    return context.getInheritedWidgetOfExactType<WoTScope>()?.notifier?.value;
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/models/tolerance_state.dart';
+import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
@@ -81,10 +83,16 @@ class _BreathingScreenState extends State<BreathingScreen>
   }
 
   void _start() {
-    final toolName = widget.mode == BreathingMode.box
-        ? 'Box Breathing'
-        : '4-7-8 Breathing';
-    beginTracking(toolName, 'Regulate');
+    final wot = WoTScope.stateOf(context);
+    if (widget.mode == BreathingMode.fourSevenEight &&
+        (wot == null || !wot.can4_7_8)) {
+      _showLockedMessage(wot);
+      return;
+    }
+
+    final toolName =
+        widget.mode == BreathingMode.box ? 'Box Breathing' : '4-7-8 Breathing';
+    beginTracking(toolName, 'Regulate', onEmergencyStop: _pause);
     setState(() {
       _running = true;
       _phaseIndex = 0;
@@ -94,10 +102,25 @@ class _BreathingScreenState extends State<BreathingScreen>
     _startTimer();
   }
 
+  void _showLockedMessage(ToleranceState? wot) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          wot == null
+              ? 'Check in before using 4-7-8 breathing.'
+              : '4-7-8 breathing is ${wot.lockedReason}.',
+        ),
+        backgroundColor: AppColors.surface,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void _pause() {
     _timer?.cancel();
     _circleController.stop();
-    setState(() => _running = false);
+    endTracking();
+    if (mounted) setState(() => _running = false);
   }
 
   void _startTimer() {
@@ -131,11 +154,11 @@ class _BreathingScreenState extends State<BreathingScreen>
     final duration = Duration(seconds: _currentPhase.durationSeconds);
 
     if (phaseName == 'Inhale') {
-      _circleController.animateTo(1.0, duration: duration,
-          curve: Curves.easeInOut);
+      _circleController.animateTo(1.0,
+          duration: duration, curve: Curves.easeInOut);
     } else if (phaseName == 'Exhale') {
-      _circleController.animateTo(0.4, duration: duration,
-          curve: Curves.easeInOut);
+      _circleController.animateTo(0.4,
+          duration: duration, curve: Curves.easeInOut);
     }
     // Hold phases — circle stays still
   }
@@ -273,7 +296,9 @@ class _BreathingScreenState extends State<BreathingScreen>
                         ),
                       ),
                       child: Text(
-                        _running ? 'Pause' : (_cycleCount > 0 ? 'Resume' : 'Begin'),
+                        _running
+                            ? 'Pause'
+                            : (_cycleCount > 0 ? 'Resume' : 'Begin'),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -380,7 +405,9 @@ class _CountSelector extends StatelessWidget {
                 style: TextStyle(
                   color: current == count
                       ? AppColors.teal
-                      : (enabled ? AppColors.textSecondary : AppColors.textMuted),
+                      : (enabled
+                          ? AppColors.textSecondary
+                          : AppColors.textMuted),
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../core/ai/companion_service.dart';
 import '../../../core/storage/journal_service.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
-import 'companion_screen.dart';
 
 // Gentle, open-ended prompts — trauma-informed, body-based, no leading questions.
 // Not shown unless the user asks. Never prescriptive.
@@ -232,55 +230,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                     ),
                   ),
                   const Spacer(),
-                  // Companion button — only shown when entry has content
-                  if (_entry.copyWith(body: _controller.text).wordCount >= 10)
-                    GestureDetector(
-                      onTap: () async {
-                        await _flush();
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CompanionScreen(
-                                entry: _entry.copyWith(
-                                    body: _controller.text),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.teal.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: AppColors.teal.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              CompanionService.instance.state == CompanionState.ready
-                                  ? Icons.chat_bubble_outline_rounded
-                                  : Icons.download_rounded,
-                              color: AppColors.teal,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'companion',
-                              style: TextStyle(
-                                  color: AppColors.teal,
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 12),
                   // Word count
                   Text(
                     _wordCountLabel,
@@ -299,8 +248,18 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
 
 String _formatDate(DateTime dt) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
   final h = dt.hour.toString().padLeft(2, '0');
   final m = dt.minute.toString().padLeft(2, '0');

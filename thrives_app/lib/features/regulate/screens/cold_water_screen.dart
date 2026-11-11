@@ -188,14 +188,15 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                   style: FilledButton.styleFrom(
                     backgroundColor:
                         _done ? AppColors.surfaceVariant : AppColors.teal,
-                    foregroundColor: _done
-                        ? AppColors.textPrimary
-                        : AppColors.background,
+                    foregroundColor:
+                        _done ? AppColors.textPrimary : AppColors.background,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                   ),
                   child: Text(
-                    _done ? 'Again' : (_running ? 'Running…' : 'Start 30s timer'),
+                    _done
+                        ? 'Again'
+                        : (_running ? 'Running…' : 'Start 30s timer'),
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                   ),

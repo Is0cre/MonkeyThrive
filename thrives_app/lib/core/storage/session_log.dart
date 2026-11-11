@@ -58,7 +58,9 @@ class SessionLog {
     final raw = prefs.getString(_keySession);
     final List<dynamic> list = raw != null ? jsonDecode(raw) : [];
     list.add(entry.toJson());
-    if (list.length > _maxEntries) list.removeRange(0, list.length - _maxEntries);
+    if (list.length > _maxEntries) {
+      list.removeRange(0, list.length - _maxEntries);
+    }
     await prefs.setString(_keySession, jsonEncode(list));
   }
 
@@ -79,7 +81,9 @@ class SessionLog {
     final raw = prefs.getString(_keyTolerance);
     final List<dynamic> list = raw != null ? jsonDecode(raw) : [];
     list.add(entry.toJson());
-    if (list.length > _maxEntries) list.removeRange(0, list.length - _maxEntries);
+    if (list.length > _maxEntries) {
+      list.removeRange(0, list.length - _maxEntries);
+    }
     await prefs.setString(_keyTolerance, jsonEncode(list));
   }
 

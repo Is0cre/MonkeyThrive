@@ -63,8 +63,7 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Delete this entry?',
             style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
         content: const Text(
@@ -79,8 +78,8 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete',
-                style: TextStyle(color: AppColors.danger)),
+            child:
+                const Text('Delete', style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -220,8 +219,18 @@ class _DateHeader extends StatelessWidget {
       label = '$diff days ago';
     } else {
       const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ];
       label = '${dt.day} ${months[dt.month - 1]} ${dt.year}';
     }
@@ -303,8 +312,8 @@ class _EntryCard extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 '$h:$m',
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 12),
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 12),
               ),
             ],
           ),

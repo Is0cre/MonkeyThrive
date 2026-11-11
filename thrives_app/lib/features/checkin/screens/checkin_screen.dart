@@ -56,7 +56,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 64),
+              const SizedBox(height: 40),
               Text(
                 'how are you\nright now?',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
@@ -73,10 +73,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 30),
               _StateOption(
                 label: 'overwhelmed',
-                description: 'anxious, scattered, can\'t settle, racing thoughts',
+                description:
+                    'anxious, scattered, can\'t settle, racing thoughts',
                 color: const Color(0xFFDA3633),
                 state: ToleranceState.hyperaroused,
                 selected: _selected == ToleranceState.hyperaroused,
@@ -108,7 +109,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   onTap: _confirm,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
@@ -140,7 +141,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
             ],
           ),
         ),

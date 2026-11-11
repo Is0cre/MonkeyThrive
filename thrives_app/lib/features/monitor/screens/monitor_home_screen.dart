@@ -57,7 +57,8 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
     await PrefsService.saveWotState(state);
     final entry = ToleranceEntry(state: state.name, timestamp: DateTime.now());
     await SessionLog.logTolerance(entry);
-    TierService.recheck(); // fire-and-forget — WoT check-ins count toward tier unlock
+    TierService
+        .recheck(); // fire-and-forget — WoT check-ins count toward tier unlock
     if (mounted) {
       setState(() {
         _toleranceHistory = [entry, ..._toleranceHistory];
@@ -138,8 +139,7 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                               const SizedBox(height: 32),
                               const _SectionLabel('Tools used recently'),
                               const SizedBox(height: 12),
-                              for (final entry
-                                  in _sessionHistory.take(15)) ...[
+                              for (final entry in _sessionHistory.take(15)) ...[
                                 _SessionTile(entry: entry),
                                 const SizedBox(height: 8),
                               ],
@@ -360,12 +360,24 @@ class _CheckInRow extends StatelessWidget {
     return Row(
       children: [
         for (final opt in [
-          (ToleranceState.hyperaroused, 'Overwhelmed', const Color(0xFFDA6433),
-              Icons.keyboard_double_arrow_up_rounded),
-          (ToleranceState.regulated, 'Present', AppColors.teal,
-              Icons.check_circle_outline_rounded),
-          (ToleranceState.hypoaroused, 'Flat', const Color(0xFF6B7ADA),
-              Icons.keyboard_double_arrow_down_rounded),
+          (
+            ToleranceState.hyperaroused,
+            'Overwhelmed',
+            const Color(0xFFDA6433),
+            Icons.keyboard_double_arrow_up_rounded
+          ),
+          (
+            ToleranceState.regulated,
+            'Present',
+            AppColors.teal,
+            Icons.check_circle_outline_rounded
+          ),
+          (
+            ToleranceState.hypoaroused,
+            'Flat',
+            const Color(0xFF6B7ADA),
+            Icons.keyboard_double_arrow_down_rounded
+          ),
         ]) ...[
           Expanded(
             child: GestureDetector(
@@ -385,9 +397,7 @@ class _CheckInRow extends StatelessWidget {
                 child: Column(
                   children: [
                     Icon(opt.$4,
-                        color: current == opt.$1
-                            ? opt.$3
-                            : AppColors.textMuted,
+                        color: current == opt.$1 ? opt.$3 : AppColors.textMuted,
                         size: 22),
                     const SizedBox(height: 4),
                     Text(
@@ -444,9 +454,7 @@ class _ToleranceTile extends StatelessWidget {
           const SizedBox(width: 12),
           Text(label,
               style: TextStyle(
-                  color: color,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500)),
+                  color: color, fontSize: 14, fontWeight: FontWeight.w500)),
           const Spacer(),
           Text(
             _formatTime(entry.timestamp),
@@ -497,8 +505,8 @@ class _SessionTile extends StatelessWidget {
               ),
               Text(
                 _formatTime(entry.timestamp),
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 11),
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
             ],
           ),

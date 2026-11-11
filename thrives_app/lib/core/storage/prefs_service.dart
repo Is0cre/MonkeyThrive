@@ -8,7 +8,8 @@ class PrefsService {
 
   static const _keyOnboardingDone = 'onboarding_done';
   static const _keyWotState = 'wot_state';
-  static const _keyWotDate = 'wot_date'; // yyyy-MM-dd — resets check-in each day
+  static const _keyWotDate =
+      'wot_date'; // yyyy-MM-dd — resets check-in each day
   static const _keyPrimaryGoal = 'profile_primary_goal';
   static const _keyFamiliarity = 'profile_familiarity';
   static const _keyHasWearable = 'profile_has_wearable';

@@ -332,8 +332,8 @@ class _CategoryBars extends StatelessWidget {
                 child: Text(
                   _fmtDuration(e.value),
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11),
+                  style:
+                      const TextStyle(color: AppColors.textMuted, fontSize: 11),
                 ),
               ),
             ],
@@ -360,8 +360,7 @@ class _ToolList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
@@ -385,8 +384,8 @@ class _ToolList extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   _fmtDuration(e.value.totalSeconds),
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12),
+                  style:
+                      const TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
             ),

@@ -23,46 +23,38 @@ class _VagalTool {
 const _tools = [
   _VagalTool(
     title: 'Humming',
-    why:
-        'Humming creates vibrations that directly stimulate the vagus nerve '
+    why: 'Humming creates vibrations that directly stimulate the vagus nerve '
         'through the larynx. Even 2 minutes can measurably shift your state.',
-    instructions:
-        'Find a comfortable note and hum steadily. '
+    instructions: 'Find a comfortable note and hum steadily. '
         'Feel the vibration in your chest and throat. '
         'Let the exhale extend naturally as you hum.',
     icon: Icons.music_note_rounded,
   ),
   _VagalTool(
     title: 'Gargling',
-    why:
-        'Gargling activates muscles at the back of the throat that are '
+    why: 'Gargling activates muscles at the back of the throat that are '
         'connected to the vagus nerve. 30 seconds is enough to notice a shift.',
-    instructions:
-        'Take a mouthful of water and gargle vigorously '
+    instructions: 'Take a mouthful of water and gargle vigorously '
         'for as long as comfortable. Repeat 2-3 times.',
     icon: Icons.water_drop_rounded,
     timerSeconds: 30,
   ),
   _VagalTool(
     title: 'Extended Exhale',
-    why:
-        'The exhale activates the parasympathetic nervous system. '
+    why: 'The exhale activates the parasympathetic nervous system. '
         'Making your exhale twice as long as your inhale slows the heart rate '
         'and signals safety to your body.',
-    instructions:
-        'Breathe in for 4 counts. Breathe out slowly for 8 counts. '
+    instructions: 'Breathe in for 4 counts. Breathe out slowly for 8 counts. '
         'There is no hold — just a long, steady out-breath. '
         'Repeat as many times as you need.',
     icon: Icons.air_rounded,
   ),
   _VagalTool(
     title: 'Diving Reflex',
-    why:
-        'Submerging your face in cold water (or splashing it) triggers the '
+    why: 'Submerging your face in cold water (or splashing it) triggers the '
         'mammalian diving reflex — your heart rate slows within seconds. '
         'It is one of the fastest calming signals your body responds to.',
-    instructions:
-        'Fill a bowl or sink with cold water. '
+    instructions: 'Fill a bowl or sink with cold water. '
         'Hold your breath and submerge your face for 15-30 seconds, '
         'or splash cold water repeatedly over your face and forehead.',
     icon: Icons.face_rounded,
@@ -365,9 +357,8 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
                 onPressed: _done ? _reset : (_running ? null : _startTimer),
                 style: FilledButton.styleFrom(
                   backgroundColor: _done ? AppColors.surfaceVariant : color,
-                  foregroundColor: _done
-                      ? AppColors.textPrimary
-                      : AppColors.background,
+                  foregroundColor:
+                      _done ? AppColors.textPrimary : AppColors.background,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),

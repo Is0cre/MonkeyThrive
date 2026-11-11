@@ -1,6 +1,6 @@
 # THRIVES
 
-**Tapping · HRV · Respiration · Isochronic · Vagal · EMDR · Solfeggio**
+**Tapping · HRV · Respiration · Isochronic · Vagal · Bilateral Stimulation · Solfeggio**
 
 A privacy-first, open source nervous system regulation platform for trauma survivors and anyone who needs it.
 
@@ -31,6 +31,8 @@ It is not a wellness startup. It is not a data business. It does not track engag
 **Works without Google.** No dependency on Google Play Services. APK available directly and via F-Droid.
 
 **No guilt mechanics.** No streaks. No daily goals. No "you've been away for X days." The app has no memory of absence. A person who hasn't opened it in three weeks is welcomed back the same as someone who opened it this morning.
+
+**Adaptive baseline feedback.** Future local sensor decisions can trigger a quiet check-in asking whether the user feels okay. Feedback is stored locally and encrypted for personal baseline modelling only; it is not a mood tracker or diagnostic feature.
 
 ---
 

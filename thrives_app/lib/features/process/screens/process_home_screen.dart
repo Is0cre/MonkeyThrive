@@ -78,8 +78,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         enabled: !bilateralLocked,
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const EmdrScreen()),
+                          MaterialPageRoute(builder: (_) => const EmdrScreen()),
                         ),
                       ),
                       const SizedBox(height: 10),

@@ -116,7 +116,8 @@ class TierService {
     return TierStatus(tier2: t2, tier3: t3);
   }
 
-  static Future<void> _persist(TierStatus status, SharedPreferences prefs) async {
+  static Future<void> _persist(
+      TierStatus status, SharedPreferences prefs) async {
     await prefs.setBool(_keyTier2, status.tier2);
     await prefs.setBool(_keyTier3, status.tier3);
   }

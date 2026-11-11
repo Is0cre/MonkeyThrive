@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/models/tolerance_state.dart';
+import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
@@ -52,8 +54,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..value = 1.0;
-    _fadeAnim =
-        CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _loadSafePlace();
   }
 
@@ -86,7 +87,23 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
   }
 
   void _startGuide() {
-    beginTracking('Safe Place', 'Regulate');
+    final wot = WoTScope.stateOf(context);
+    if (wot == null || !wot.canSafePlace) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            wot == null
+                ? 'Check in before using safe place.'
+                : 'Safe place is ${wot.lockedReason}.',
+          ),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    beginTracking('Safe Place', 'Regulate', onEmergencyStop: _stopGuide);
     setState(() {
       _guiding = true;
       _promptIndex = 0;
@@ -122,6 +139,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
   void _stopGuide() {
     _promptTimer?.cancel();
     _sessionTimer?.cancel();
+    endTracking();
     if (mounted) setState(() => _guiding = false);
   }
 
@@ -149,9 +167,10 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               icon: const Icon(Icons.edit_rounded),
               tooltip: 'Customise your safe place',
               onPressed: () {
-                _editController.text = _safePlaceDescription == _defaultSafePlace
-                    ? ''
-                    : _safePlaceDescription;
+                _editController.text =
+                    _safePlaceDescription == _defaultSafePlace
+                        ? ''
+                        : _safePlaceDescription;
                 setState(() => _editing = true);
               },
             ),
@@ -271,8 +290,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               alignment: Alignment.centerRight,
               child: Text(
                 _sessionDisplay,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 13),
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 13),
               ),
             ),
             const SizedBox(height: 16),
@@ -301,8 +320,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 onPressed: _stopGuide,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
-                  side:
-                      const BorderSide(color: AppColors.surfaceVariant),
+                  side: const BorderSide(color: AppColors.surfaceVariant),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
@@ -380,8 +398,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 child: FilledButton(
                   onPressed: () {
                     final text = _editController.text.trim();
-                    _saveSafePlace(
-                        text.isEmpty ? _defaultSafePlace : text);
+                    _saveSafePlace(text.isEmpty ? _defaultSafePlace : text);
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.amber,

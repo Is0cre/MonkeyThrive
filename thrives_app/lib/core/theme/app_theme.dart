@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_appearance.dart';
 
 // THRIVES colour palette — deep navy, soft teal, warm amber
 class AppColors {
@@ -21,15 +22,23 @@ class AppColors {
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get dark {
+  static ThemeData dark(
+      [AppearanceSettings appearance = const AppearanceSettings()]) {
+    final accent = appearance.accentColor;
+    final background = appearance.background;
+    final surface = appearance.surface;
+    final surfaceVariant = appearance.surfaceVariant;
+
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.teal,
+      scaffoldBackgroundColor: background,
+      colorScheme: ColorScheme.dark(
+        primary: accent,
         secondary: AppColors.amber,
-        surface: AppColors.surface,
-        onPrimary: AppColors.background,
+        surface: surface,
+        surfaceContainer: surface,
+        surfaceContainerHighest: surfaceVariant,
+        onPrimary: background,
         onSecondary: AppColors.background,
         onSurface: AppColors.textPrimary,
         error: AppColors.danger,
@@ -39,7 +48,7 @@ class AppTheme {
           color: AppColors.textPrimary,
           fontSize: 32,
           fontWeight: FontWeight.w300,
-          letterSpacing: -0.5,
+          letterSpacing: 0,
         ),
         titleLarge: TextStyle(
           color: AppColors.textPrimary,
@@ -65,24 +74,32 @@ class AppTheme {
           color: AppColors.textPrimary,
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
+          letterSpacing: 0,
         ),
       ),
-      cardTheme: const CardThemeData(
-        color: AppColors.surface,
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(44, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
       ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.surfaceVariant,
+      dividerTheme: DividerThemeData(
+        color: surfaceVariant,
         thickness: 1,
       ),
       useMaterial3: true,

@@ -23,7 +23,7 @@ Immediate tools for when you are overwhelmed, anxious, or activated.
 
 - Box Breathing (3/4/5 count, animated circle, haptic)
 - 4-7-8 Breathing
-- Wim Hof guided rounds with safety warning
+- Wim Hof guided rounds with Window of Tolerance lock and per-session safety confirmations
 - 5-4-3-2-1 Sensory Grounding
 - Cold Water / Diving Reflex (30s timer)
 - Safe Place Visualisation (locally stored, 5/10 min guided)
@@ -32,7 +32,7 @@ Immediate tools for when you are overwhelmed, anxious, or activated.
 ### 🔄 Process
 Deeper work — use when regulated and ready.
 
-- EMDR Bilateral Stimulation
+- Bilateral Stimulation
   - Visual (smooth animated dot with easing)
   - Tactile (alternating vibration)
   - Audio (bilateral — wired, audio assets TBD)
@@ -66,6 +66,10 @@ This is verifiable — the source is here.
 
 Works without Google Play Services (GrapheneOS, CalyxOS, SailfishOS compatible).
 
+Baseline check-ins are local prompts driven by future local sensor decisions.
+They ask only whether you feel okay and store encrypted feedback for personal
+baseline modelling. They do not diagnose, warn, score, or remind.
+
 ---
 
 ## Tech stack
@@ -73,6 +77,7 @@ Works without Google Play Services (GrapheneOS, CalyxOS, SailfishOS compatible).
 - **Flutter 3.27** — Android + PWA from a single codebase
 - **just_audio** — audio playback and tone generation
 - **shared_preferences** — local storage for preferences and history
+- **crypto** — authenticated local encryption for baseline feedback records
 - **vibration** — tactile bilateral stimulation
 
 ---
