@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:thrives_app/core/theme/app_appearance.dart';
+import 'package:monkeythrive/core/theme/app_appearance.dart';
 
 void main() {
   test('appearance settings persist accent and contrast', () async {

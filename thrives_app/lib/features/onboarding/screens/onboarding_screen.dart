@@ -232,7 +232,7 @@ class _WelcomePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'THRIVES',
+            'MONKEYTHRIVE',
             style: TextStyle(
               color: AppColors.teal,
               fontSize: 13,
@@ -286,7 +286,7 @@ class _DisclaimerBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Text(
-        'THRIVES is a wellness tool, not a replacement for therapy or medical care. '
+        'MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. '
         'If you are in immediate danger, please contact emergency services.',
         style: TextStyle(
           color: AppColors.textMuted,

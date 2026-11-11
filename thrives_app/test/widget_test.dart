@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thrives_app/core/models/tolerance_state.dart';
-import 'package:thrives_app/core/state/wot_scope.dart';
-import 'package:thrives_app/core/storage/session_tracker.dart';
-import 'package:thrives_app/features/regulate/screens/wim_hof_screen.dart';
-import 'package:thrives_app/main.dart';
+import 'package:monkeythrive/core/models/tolerance_state.dart';
+import 'package:monkeythrive/core/state/wot_scope.dart';
+import 'package:monkeythrive/core/storage/session_tracker.dart';
+import 'package:monkeythrive/features/regulate/screens/wim_hof_screen.dart';
+import 'package:monkeythrive/main.dart';
 
 void main() {
   testWidgets('App asks for check-in when onboarding is done without WoT',

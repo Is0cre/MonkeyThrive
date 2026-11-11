@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:thrives_app/core/audio/bilateral_cue_source.dart';
-import 'package:thrives_app/core/audio/noise_generator.dart';
-import 'package:thrives_app/core/audio/tone_generator.dart';
+import 'package:monkeythrive/core/audio/bilateral_cue_source.dart';
+import 'package:monkeythrive/core/audio/noise_generator.dart';
+import 'package:monkeythrive/core/audio/tone_generator.dart';
 
 void main() {
   test('generated tone sources produce non-empty WAV audio', () {

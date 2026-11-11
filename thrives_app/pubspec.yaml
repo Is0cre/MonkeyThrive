@@ -1,5 +1,5 @@
-name: thrives_app
-description: "THRIVES — Privacy-first trauma regulation platform."
+name: monkeythrive
+description: "MonkeyThrive - Privacy-first, deterministic, offline trauma regulation toolkit."
 publish_to: 'none'
 version: 0.1.0+1
 

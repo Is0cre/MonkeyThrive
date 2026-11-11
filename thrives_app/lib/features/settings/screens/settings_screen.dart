@@ -130,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     children: [
                       const Text(
-                        'THRIVES',
+                        'MONKEYTHRIVE',
                         style: TextStyle(
                           color: AppColors.teal,
                           fontSize: 13,
@@ -223,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   const Text(
                     'The safety architecture, tool routing, and trauma-informed '
-                    'design of THRIVES is shaped by clinical input from:',
+                    'design of MonkeyThrive is shaped by clinical input from:',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -241,8 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 12),
                   const Text(
                     'Advisory credits reflect input on design and safety '
-                    'protocols. THRIVES is a wellness support tool, not a '
-                    'clinical service.',
+                    'protocols. MonkeyThrive is a supportive self-regulation tool. '
+                    'It does not replace professional therapy.',
                     style: TextStyle(
                         color: AppColors.textMuted, fontSize: 11, height: 1.5),
                   ),
@@ -306,9 +306,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _Section('Disclaimer'),
             _InfoCard(
               child: const Text(
-                'THRIVES is a wellness support tool. It does not diagnose, '
-                'assess, or treat any condition, and is not a replacement for '
-                'therapy or medical care.\n\n'
+                'MonkeyThrive is a supportive self-regulation tool. It does not '
+                'replace professional therapy, and does not diagnose, assess, '
+                'or treat any condition.\n\n'
                 'If you are in crisis, please reach out to a professional or '
                 'use the crisis resources listed above.',
                 style: TextStyle(

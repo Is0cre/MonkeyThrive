@@ -1,0 +1,46 @@
+name: Deploy MonkeyThrive PWA to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'thrives_app/**'
+      - '.github/workflows/deploy_pwa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          cd thrives_app
+          flutter pub get
+
+      - name: Build Web PWA (Offline & Local Bundled Assets)
+        run: |
+          cd thrives_app
+          flutter build web --release --no-web-resources-cdn --base-href "/"
+
+      - name: Write CNAME
+        run: |
+          echo "monkeythrive.app" > thrives_app/build/web/CNAME
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: thrives_app/build/web
+          branch: gh-pages

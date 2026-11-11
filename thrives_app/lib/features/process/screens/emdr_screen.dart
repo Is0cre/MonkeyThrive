@@ -348,7 +348,7 @@ class _EmdrScreenState extends State<EmdrScreen>
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'This is a support tool. It does not replace therapy.\n'
+                  'MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy.\n'
                   'Bilateral stimulation — between-session support, not therapy.',
                   style: TextStyle(
                     color: AppColors.textSecondary,

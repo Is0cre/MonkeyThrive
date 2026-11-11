@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:thrives_app/core/storage/local_encrypted_store.dart';
+import 'package:monkeythrive/core/storage/local_encrypted_store.dart';
 
 void main() {
   test('LocalEncryptedStore does not persist plaintext JSON', () async {

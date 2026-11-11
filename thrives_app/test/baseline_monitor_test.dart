@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:thrives_app/core/baseline/baseline_models.dart';
-import 'package:thrives_app/core/baseline/baseline_monitor.dart';
-import 'package:thrives_app/core/storage/session_tracker.dart';
+import 'package:monkeythrive/core/baseline/baseline_models.dart';
+import 'package:monkeythrive/core/baseline/baseline_monitor.dart';
+import 'package:monkeythrive/core/storage/session_tracker.dart';
 
 class _Source implements BaselineDecisionSource {
   final NotificationDecision? decision;

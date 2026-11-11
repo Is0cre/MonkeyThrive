@@ -103,7 +103,7 @@ class _ThrivesAppState extends State<ThrivesApp> {
             systemNavigationBarIconBrightness: Brightness.light,
           ));
           return MaterialApp(
-            title: 'THRIVES',
+            title: 'MonkeyThrive',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.dark(appearance),
             darkTheme: AppTheme.dark(appearance),

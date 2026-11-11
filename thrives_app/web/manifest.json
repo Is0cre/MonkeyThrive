@@ -1,7 +1,7 @@
 {
-    "name": "THRIVES",
-    "short_name": "THRIVES",
-    "description": "Privacy-first nervous system regulation. Built from lived experience.",
+    "name": "MonkeyThrive",
+    "short_name": "MonkeyThrive",
+    "description": "Offline nervous system regulation and grounding tools.",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0D1117",
