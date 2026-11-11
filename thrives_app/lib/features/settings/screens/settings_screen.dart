@@ -5,7 +5,7 @@ import '../../../core/baseline/baseline_monitor.dart';
 import '../../../core/storage/tier_service.dart';
 import '../../../core/theme/app_appearance.dart';
 import '../../../core/theme/app_theme.dart';
-import 'crisis_screen.dart';
+import 'crisis_directory_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback onResetOnboarding;
@@ -197,11 +197,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _TileButton(
               icon: Icons.emergency_rounded,
               iconColor: AppColors.danger,
-              label: 'Crisis resources',
-              subtitle: 'Crisis lines for Malta and internationally',
+              label: 'Crisis support directory',
+              subtitle: 'Offline helplines by country. Stays on this device.',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CrisisScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const CrisisDirectoryScreen(),
+                ),
               ),
             ),
             const SizedBox(height: 8),

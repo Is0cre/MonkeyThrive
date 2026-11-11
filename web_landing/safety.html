@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clinical safety — MonkeyThrive</title>
+  <meta name="description" content="What MonkeyThrive is, what it refuses to do, and where to find a person.">
+  <meta name="theme-color" content="#0D1117">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'">
+  <link rel="icon" href="emblem.png" type="image/png">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --line: #1c2430;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --amber: #e8a645;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .wrap {
+      width: min(680px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 64px;
+    }
+
+    a { color: var(--amber); text-underline-offset: 3px; }
+
+    a:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 3px;
+    }
+
+    .mark {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      margin-bottom: 20px;
+      box-shadow: 0 0 0 1px rgba(232, 166, 69, 0.35);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 560;
+      letter-spacing: -0.03em;
+    }
+
+    .lead {
+      margin: 0 0 28px;
+      color: var(--muted);
+    }
+
+    h2 {
+      margin: 28px 0 8px;
+      font-size: 18px;
+      font-weight: 640;
+    }
+
+    p { margin: 0 0 12px; }
+
+    .note {
+      margin-top: 28px;
+      padding: 16px;
+      background: #1a140c;
+      border: 1px solid rgba(232, 166, 69, 0.55);
+      border-radius: 14px;
+    }
+
+    footer {
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <img class="mark" src="emblem.png" width="72" height="72" alt="">
+    <h1>Clinical safety</h1>
+    <p class="lead">Plain limits for a tool that stays on your device.</p>
+
+    <h2>What this is</h2>
+    <p>MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. It does not diagnose, assess, or treat any condition.</p>
+
+    <h2>Window of Tolerance</h2>
+    <p>A check-in asks how you are right now. Higher-intensity tools stay closed when that check-in is outside a regulated state. The gates are fixed rules in the app. They are not a score, and they are not a diagnosis.</p>
+    <p>Bilateral cueing is for grounding and attention. It is not EMDR and it is not trauma reprocessing. Wim Hof-style breathing asks for safety confirmations at the start of each session.</p>
+
+    <h2>What the app will not do</h2>
+    <p>There is no account, no streak, and no engagement ranking. The app does not send journal entries, check-ins, or sensor readings anywhere. The country you pick in the crisis directory stays in local storage.</p>
+
+    <div class="note">
+      <p>Need immediate human support? MonkeyThrive includes an offline crisis directory, or reach out to local emergency services directly.</p>
+    </div>
+
+    <footer>
+      <nav aria-label="Project">
+        <a href="index.html">MonkeyThrive</a>
+        <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">GitHub</a>
+        <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">License (GPL-3.0)</a>
+      </nav>
+    </footer>
+  </div>
+</body>
+</html>

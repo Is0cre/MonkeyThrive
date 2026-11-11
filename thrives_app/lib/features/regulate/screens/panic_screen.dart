@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/main_shell.dart';
+import '../../settings/screens/crisis_directory_screen.dart';
 
 // CLINICAL SAFETY — Panic sequence / physiological sigh
 // What this does: On emergency button press, auto-plays 3 cycles of the
@@ -130,6 +131,14 @@ class _PanicScreenState extends State<PanicScreen>
     Navigator.of(context, rootNavigator: true).pop();
   }
 
+  void _openDirectory() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const CrisisDirectoryScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,7 +149,10 @@ class _PanicScreenState extends State<PanicScreen>
             // Main content
             Center(
               child: _done
-                  ? _DoneView(onGoRegulate: _goToRegulate)
+                  ? _DoneView(
+                      onGoRegulate: _goToRegulate,
+                      onOpenDirectory: _openDirectory,
+                    )
                   : _BreathView(
                       cycle: _cycle,
                       totalCycles: _totalCycles,
@@ -239,8 +251,12 @@ class _BreathView extends StatelessWidget {
 
 class _DoneView extends StatelessWidget {
   final VoidCallback onGoRegulate;
+  final VoidCallback onOpenDirectory;
 
-  const _DoneView({required this.onGoRegulate});
+  const _DoneView({
+    required this.onGoRegulate,
+    required this.onOpenDirectory,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -281,6 +297,18 @@ class _DoneView extends StatelessWidget {
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: onOpenDirectory,
+          child: const Text(
+            'call a crisis line',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),

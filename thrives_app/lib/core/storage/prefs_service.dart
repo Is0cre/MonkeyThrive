@@ -19,6 +19,10 @@ class PrefsService {
   static const _keyReduceVibration = 'profile_reduce_vibration';
   static const _keyHasTherapist = 'profile_has_therapist';
 
+  /// Country id chosen in the crisis directory.
+  /// A display preference only. Never a phone number, and never transmitted.
+  static const _keyCrisisCountry = 'crisis_directory_country';
+
   static Future<bool> isOnboardingDone() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyOnboardingDone) ?? false;
@@ -91,5 +95,15 @@ class PrefsService {
       'reduceVibration': prefs.getBool(_keyReduceVibration) ?? false,
       'hasTherapist': prefs.getString(_keyHasTherapist) ?? '',
     };
+  }
+
+  static Future<String?> loadCrisisCountry() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyCrisisCountry);
+  }
+
+  static Future<void> saveCrisisCountry(String countryId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyCrisisCountry, countryId);
   }
 }

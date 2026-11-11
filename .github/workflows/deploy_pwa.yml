@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'thrives_app/**'
+      - 'web_landing/**'
       - '.github/workflows/deploy_pwa.yml'
   workflow_dispatch:
 
@@ -33,14 +34,21 @@ jobs:
       - name: Build Web PWA (Offline & Local Bundled Assets)
         run: |
           cd thrives_app
-          flutter build web --release --no-web-resources-cdn --base-href "/"
+          flutter build web --release --no-web-resources-cdn --base-href "/app/"
 
-      - name: Write CNAME
+      - name: Assemble landing page at / and PWA at /app
         run: |
-          echo "monkeythrive.app" > thrives_app/build/web/CNAME
+          rm -rf publish
+          mkdir -p publish/app
+          cp -a thrives_app/build/web/. publish/app/
+          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png publish/
+          cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
+          echo "monkeythrive.app" > publish/CNAME
+          touch publish/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: thrives_app/build/web
+          folder: publish
           branch: gh-pages
+          clean: true
