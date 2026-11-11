@@ -110,7 +110,18 @@
 
     .button:hover { filter: brightness(1.06); }
 
+    .repo {
+      margin: 18px 0 0;
+      font-size: 14px;
+    }
+
+    .repo a {
+      color: var(--amber);
+      text-underline-offset: 3px;
+    }
+
     .button:focus-visible,
+    .repo a:focus-visible,
     .footer a:focus-visible {
       outline: 2px solid var(--amber);
       outline-offset: 3px;
@@ -216,6 +227,7 @@
         <a class="button primary" href="/app/">Launch Web App</a>
         <a class="button secondary" href="https://github.com/Is0cre/MonkeyThrive/releases/latest/download/app-release.apk" rel="noreferrer">Download Android APK</a>
       </div>
+      <p class="repo"><a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">github.com/Is0cre/MonkeyThrive</a></p>
     </header>
 
     <main>
