@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/app/">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MonkeyThrive — Offline nervous system regulation and grounding tools.">
+  <meta name="theme-color" content="#0D1117">
+
+  <!-- No external fonts, no CDN, no tracking pixels. Everything self-hosted. -->
+
+  <!-- iOS PWA -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MonkeyThrive">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>MonkeyThrive</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Prevent flash of white background before Flutter renders */
+    html, body {
+      background-color: #0D1117;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

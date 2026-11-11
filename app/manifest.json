@@ -1,0 +1,36 @@
+{
+    "name": "MonkeyThrive",
+    "short_name": "MonkeyThrive",
+    "description": "Offline nervous system regulation and grounding tools.",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0D1117",
+    "theme_color": "#0D1117",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "categories": ["health", "lifestyle"],
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
