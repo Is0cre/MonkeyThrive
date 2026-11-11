@@ -86071,7 +86071,7 @@ else a.a8(t.Pu).f.kL(B.U9)
 case 1:return A.E(q,r)}})
 return A.F($async$xP,r)},
 B(a){var s=null,r=t.p
-return A.dU(A.i0(s,s,B.a_y),s,A.cQ(!0,A.kL(A.b([new A.jQ("About",s),new A.jK(A.aA(A.b([A.bi(A.b([B.a_H,B.bk,A.b3(s,B.a0v,B.l,s,new A.an(B.az,s,s,A.a6(6),s,s,B.r),s,s,s,s,B.oA,s,s,s)],r),B.o,B.j,B.k),B.aB,B.a_V,B.aB,B.a0w,B.a0,B.a4u,B.dr,B.a4w],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Appearance",s),B.a2L,B.a9,new A.jQ("Safety",s),new A.qX(B.JG,B.by,"Crisis support directory","Offline helplines by country. Stays on this device.",new A.aqm(a),s),B.aq,new A.qX(B.Jc,B.z,"Show baseline check-in","Preview the local prompt implementation",new A.aqn(this,a),s),B.a9,new A.jQ("Clinical advisory",s),new A.jK(A.aA(A.b([B.a0t,B.aI,B.a2H,B.a0,B.a0j],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Privacy",s),new A.jK(A.aA(A.b([B.a02,B.aB,B.a0C,B.fP,B.a4t,B.iM,B.a4y,B.iM,B.a4x,B.iM,B.a4v],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Disclaimer",s),new A.jK(B.a_e,s),B.a9,new A.jQ("Your data",s),new A.qX(B.Jm,B.by,"Clear all data","Journal, HRV, check-ins, session log, safe place",new A.aqo(this,a),s),B.aq,new A.qX(B.Jv,B.D,"Redo onboarding","Reset your profile questionnaire",new A.aqp(this,a),s)],r),B.Ik,s,!1),B.V,!0),s,s)}}
+return A.dU(A.i0(s,s,B.a_y),s,A.cQ(!0,A.kL(A.b([new A.jQ("About",s),new A.jK(A.aA(A.b([A.bi(A.b([B.a_H,B.bk,A.b3(s,B.a0v,B.l,s,new A.an(B.az,s,s,A.a6(6),s,s,B.r),s,s,s,s,B.oA,s,s,s)],r),B.o,B.j,B.k),B.aB,B.a_V,B.aB,B.a0w,B.a0,B.a4w,B.dr,B.a4v],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Appearance",s),B.a2L,B.a9,new A.jQ("Safety",s),new A.qX(B.JG,B.by,"Crisis support directory","Offline helplines by country. Stays on this device.",new A.aqm(a),s),B.aq,new A.qX(B.Jc,B.z,"Show baseline check-in","Preview the local prompt implementation",new A.aqn(this,a),s),B.a9,new A.jQ("Clinical advisory",s),new A.jK(A.aA(A.b([B.a0t,B.aI,B.a2H,B.a0,B.a0j],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Privacy",s),new A.jK(A.aA(A.b([B.a02,B.aB,B.a0C,B.fP,B.a4t,B.iM,B.a4y,B.iM,B.a4x,B.iM,B.a4u],r),B.H,s,B.j,B.k),s),B.a9,new A.jQ("Disclaimer",s),new A.jK(B.a_e,s),B.a9,new A.jQ("Your data",s),new A.qX(B.Jm,B.by,"Clear all data","Journal, HRV, check-ins, session log, safe place",new A.aqo(this,a),s),B.aq,new A.qX(B.Jv,B.D,"Redo onboarding","Reset your profile questionnaire",new A.aqp(this,a),s)],r),B.Ik,s,!1),B.V,!0),s,s)}}
 A.aqh.prototype={
 $1(a){var s=A.a6(20),r=this.a
 return A.wD(A.b([A.h8(B.j_,new A.aqf(r),null),A.h8(B.a0H,new A.aqg(r),null)],t.p),B.E,B.a0O,!1,new A.b7(s,B.p),B.a_M)},
@@ -93186,11 +93186,11 @@ B.h2=new A.eN(7,"idle")
 B.a4s=new A.eN(8,"pop")
 B.hV=new A.aJ(983518,!1)
 B.a4t=new A.lx(B.hV,"Journal entries \u2014 device only",null)
-B.Jj=new A.aJ(63059,!1)
-B.a4u=new A.lx(B.Jj,"github.com/Is0cre/THRIVE",null)
-B.a4v=new A.lx(B.hV,"Session log \u2014 device only",null)
+B.a4u=new A.lx(B.hV,"Session log \u2014 device only",null)
 B.JE=new A.aJ(983776,!1)
-B.a4w=new A.lx(B.JE,"GPL-3.0 \xb7 non-military, non-intelligence use only",null)
+B.a4v=new A.lx(B.JE,"GPL-3.0 \xb7 non-military, non-intelligence use only",null)
+B.Jj=new A.aJ(63059,!1)
+B.a4w=new A.lx(B.Jj,"github.com/Is0cre/MonkeyThrive",null)
 B.a4x=new A.lx(B.hV,"Check-in history \u2014 device only",null)
 B.a4y=new A.lx(B.hV,"HRV readings \u2014 device only",null)
 B.jh=new A.fz(0,"body")
