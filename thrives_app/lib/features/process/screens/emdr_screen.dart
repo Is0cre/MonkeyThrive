@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:vibration/vibration.dart';
+import '../../../core/audio/acoustic_synthesis_gate.dart';
 import '../../../core/audio/bilateral_cue_source.dart';
 import '../../../core/audio/local_audio_cache.dart';
+import '../../../core/widgets/acoustic_coming_soon.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
@@ -24,6 +26,13 @@ import '../../../core/widgets/emergency_button.dart';
 //   preparation phase guidelines.
 
 enum EmdrMode { visual, audio, tactile, visualAudio, visualTactile, all }
+
+extension EmdrModeAudio on EmdrMode {
+  bool get usesAcousticSynthesis =>
+      this == EmdrMode.audio ||
+      this == EmdrMode.visualAudio ||
+      this == EmdrMode.all;
+}
 
 enum EmdrSpeed { slow, medium, fast }
 
@@ -54,11 +63,12 @@ class _EmdrScreenState extends State<EmdrScreen>
 
   // ── animation ─────────────────────────────────────────────────────────────
   late final AnimationController _dotController;
-  late final Animation<double> _dotAnimation; // 0.0 = left edge, 1.0 = right edge
+  late final Animation<double>
+      _dotAnimation; // 0.0 = left edge, 1.0 = right edge
 
-  // ── audio (dual pre-cued stereo players for zero-seek latency) ────────────
-  final AudioPlayer _leftPlayer = AudioPlayer();
-  final AudioPlayer _rightPlayer = AudioPlayer();
+  // Players stay null while synthesis is gated, including during initState.
+  AudioPlayer? _leftPlayer;
+  AudioPlayer? _rightPlayer;
   bool _audioReady = false;
 
   // ── vibration ─────────────────────────────────────────────────────────────
@@ -96,9 +106,7 @@ class _EmdrScreenState extends State<EmdrScreen>
       _mode == EmdrMode.all;
 
   bool get _useAudio =>
-      _mode == EmdrMode.audio ||
-      _mode == EmdrMode.visualAudio ||
-      _mode == EmdrMode.all;
+      AcousticSynthesisGate.enabled && _mode.usesAcousticSynthesis;
 
   @override
   void initState() {
@@ -111,11 +119,14 @@ class _EmdrScreenState extends State<EmdrScreen>
       CurvedAnimation(parent: _dotController, curve: Curves.easeInOutSine),
     );
     _dotController.addStatusListener(_onDotStatus);
-    unawaited(_initAudio());
+    if (AcousticSynthesisGate.enabled) {
+      unawaited(_initAudio());
+    }
     unawaited(_checkVibration());
   }
 
   Future<void> _initAudio() async {
+    if (!AcousticSynthesisGate.enabled) return;
     try {
       final leftSource = await LocalAudioCache.audioSource(
         'bilateral_left_v2',
@@ -125,12 +136,17 @@ class _EmdrScreenState extends State<EmdrScreen>
         'bilateral_right_v2',
         () => BilateralCueSource(right: true).bytes,
       );
-      await _leftPlayer.setAudioSource(leftSource, preload: true);
-      await _rightPlayer.setAudioSource(rightSource, preload: true);
-      await _leftPlayer.setVolume(0.9);
-      await _rightPlayer.setVolume(0.9);
-      await _leftPlayer.seek(Duration.zero);
-      await _rightPlayer.seek(Duration.zero);
+      if (!mounted || !AcousticSynthesisGate.enabled) return;
+      final leftPlayer = AudioPlayer();
+      final rightPlayer = AudioPlayer();
+      _leftPlayer = leftPlayer;
+      _rightPlayer = rightPlayer;
+      await leftPlayer.setAudioSource(leftSource, preload: true);
+      await rightPlayer.setAudioSource(rightSource, preload: true);
+      await leftPlayer.setVolume(0.9);
+      await rightPlayer.setVolume(0.9);
+      await leftPlayer.seek(Duration.zero);
+      await rightPlayer.seek(Duration.zero);
       _audioReady = true;
     } catch (_) {
       _audioReady = false;
@@ -151,8 +167,8 @@ class _EmdrScreenState extends State<EmdrScreen>
     _dotController.dispose();
     _sessionTimer?.cancel();
     _sessionSecondsLeft.dispose();
-    _leftPlayer.dispose();
-    _rightPlayer.dispose();
+    _leftPlayer?.dispose();
+    _rightPlayer?.dispose();
     super.dispose();
   }
 
@@ -184,12 +200,15 @@ class _EmdrScreenState extends State<EmdrScreen>
   /// Plays the pre-rewound audio player immediately (zero seek latency at turn
   /// boundary) and rewinds the opposite channel while the dot travels across.
   void _firePreCuedAudio({required bool right}) {
-    if (!_audioReady) {
+    final activePlayer = right ? _rightPlayer : _leftPlayer;
+    final idlePlayer = right ? _leftPlayer : _rightPlayer;
+    if (!AcousticSynthesisGate.enabled ||
+        !_audioReady ||
+        activePlayer == null ||
+        idlePlayer == null) {
       HapticFeedback.selectionClick();
       return;
     }
-    final activePlayer = right ? _rightPlayer : _leftPlayer;
-    final idlePlayer = right ? _leftPlayer : _rightPlayer;
 
     unawaited(activePlayer.play().catchError((_) {
       HapticFeedback.selectionClick();
@@ -204,6 +223,10 @@ class _EmdrScreenState extends State<EmdrScreen>
   }
 
   void _start() {
+    if (_mode.usesAcousticSynthesis && !AcousticSynthesisGate.enabled) {
+      AcousticComingSoon.show(context);
+      return;
+    }
     final wot = WoTScope.stateOf(context);
     if (wot == null || !wot.canBilateral) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -252,8 +275,10 @@ class _EmdrScreenState extends State<EmdrScreen>
     try {
       unawaited(Vibration.cancel());
     } catch (_) {}
-    unawaited(_leftPlayer.pause());
-    unawaited(_rightPlayer.pause());
+    final leftPlayer = _leftPlayer;
+    final rightPlayer = _rightPlayer;
+    if (leftPlayer != null) unawaited(leftPlayer.pause());
+    if (rightPlayer != null) unawaited(rightPlayer.pause());
     endTracking();
     if (mounted && _running) {
       setState(() => _running = false);
@@ -643,47 +668,103 @@ class _ModeSelector extends StatelessWidget {
     return Column(
       children: [
         for (final mode in _modes) ...[
-          GestureDetector(
-            onTap: () => onSelect(mode.$1),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: BoxDecoration(
-                color: selected == mode.$1
-                    ? const Color(0xFF4A9EDA).withValues(alpha: 0.12)
-                    : AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected == mode.$1
-                      ? const Color(0xFF4A9EDA)
-                      : Colors.transparent,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(mode.$3,
-                      color: selected == mode.$1
-                          ? const Color(0xFF4A9EDA)
-                          : AppColors.textMuted,
-                      size: 18),
-                  const SizedBox(width: 12),
-                  Text(mode.$2,
-                      style: TextStyle(
-                          color: selected == mode.$1
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
-                          fontSize: 14)),
-                  const Spacer(),
-                  if (selected == mode.$1)
-                    const Icon(Icons.check_rounded,
-                        color: Color(0xFF4A9EDA), size: 16),
-                ],
-              ),
-            ),
+          _ModeTile(
+            label: mode.$2,
+            icon: mode.$3,
+            selected: selected == mode.$1,
+            unavailable:
+                mode.$1.usesAcousticSynthesis && !AcousticSynthesisGate.enabled,
+            onTap: () {
+              if (mode.$1.usesAcousticSynthesis &&
+                  !AcousticSynthesisGate.enabled) {
+                AcousticComingSoon.show(context);
+                return;
+              }
+              onSelect(mode.$1);
+            },
           ),
           const SizedBox(height: 8),
         ],
       ],
+    );
+  }
+}
+
+class _ModeTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final bool unavailable;
+  final VoidCallback onTap;
+
+  const _ModeTile({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.unavailable,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final highlighted = selected && !unavailable;
+    return Opacity(
+      opacity: unavailable ? 0.5 : 1,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: highlighted
+                ? const Color(0xFF4A9EDA).withValues(alpha: 0.12)
+                : AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: highlighted ? const Color(0xFF4A9EDA) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon,
+                  color: highlighted
+                      ? const Color(0xFF4A9EDA)
+                      : AppColors.textMuted,
+                  size: 18),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: TextStyle(
+                            color: highlighted
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
+                            fontSize: 14)),
+                    if (unavailable) ...[
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Coming soon',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (unavailable)
+                const Icon(Icons.lock_outline_rounded,
+                    color: AppColors.textMuted, size: 16)
+              else if (highlighted)
+                const Icon(Icons.check_rounded,
+                    color: Color(0xFF4A9EDA), size: 16),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

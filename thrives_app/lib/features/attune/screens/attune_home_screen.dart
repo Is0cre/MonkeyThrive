@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../../core/audio/acoustic_synthesis_gate.dart';
 import '../../../core/audio/local_audio_cache.dart';
 import '../../../core/audio/noise_generator.dart';
 import '../../../core/audio/tone_generator.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/acoustic_coming_soon.dart';
 import '../../../core/widgets/app_chrome.dart';
 
 enum AttuneMode { none, binaural, isochronic }
@@ -20,14 +22,72 @@ const _noiseIcons = {
   NatureNoiseType.wind: Icons.air_rounded,
 };
 
-class AttuneHomeScreen extends StatefulWidget {
+class AttuneHomeScreen extends StatelessWidget {
   const AttuneHomeScreen({super.key});
 
   @override
-  State<AttuneHomeScreen> createState() => _AttuneHomeScreenState();
+  Widget build(BuildContext context) {
+    if (!AcousticSynthesisGate.enabled) {
+      return const _AttuneUnavailableScreen();
+    }
+    return const _AttunePlayerScreen();
+  }
 }
 
-class _AttuneHomeScreenState extends State<AttuneHomeScreen>
+/// Shown while synthesis is gated. Builds no player and starts no buffer.
+class _AttuneUnavailableScreen extends StatelessWidget {
+  const _AttuneUnavailableScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBackdrop(
+      child: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(20, 28, 20, 100),
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 42),
+              child: AppHeader(
+                title: 'Attune',
+                subtitle: 'Generated sound tools for steady attention.',
+                icon: Icons.graphic_eq_rounded,
+              ),
+            ),
+            SizedBox(height: 28),
+            AcousticSynthesisNotice(),
+            SizedBox(height: 20),
+            AcousticUnavailableCard(
+              icon: Icons.headphones_rounded,
+              title: 'Binaural beats',
+              subtitle: 'Coming soon',
+            ),
+            SizedBox(height: 10),
+            AcousticUnavailableCard(
+              icon: Icons.graphic_eq_rounded,
+              title: 'Isochronic tones',
+              subtitle: 'Coming soon',
+            ),
+            SizedBox(height: 10),
+            AcousticUnavailableCard(
+              icon: Icons.forest_rounded,
+              title: 'Nature soundscapes',
+              subtitle: 'Coming soon',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AttunePlayerScreen extends StatefulWidget {
+  const _AttunePlayerScreen();
+
+  @override
+  State<_AttunePlayerScreen> createState() => _AttunePlayerScreenState();
+}
+
+class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     with SessionTracking {
   // ── tone state ────────────────────────────────────────────────────────────
   AttuneMode _mode = AttuneMode.none;
@@ -41,17 +101,14 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
   final Set<NatureNoiseType> _activeSounds = {};
   final Map<NatureNoiseType, AudioPlayer> _naturePlayers = {};
 
-  // ── audio players ─────────────────────────────────────────────────────────
-  final AudioPlayer _tonePlayer = AudioPlayer();
+  /// Created only after the gate check inside a playback method.
+  AudioPlayer? _tonePlayer;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  AudioPlayer _ensureTonePlayer() => _tonePlayer ??= AudioPlayer();
 
   @override
   void dispose() {
-    _tonePlayer.dispose();
+    _tonePlayer?.dispose();
     for (final p in _naturePlayers.values) {
       p.dispose();
     }
@@ -61,7 +118,7 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
   // ── tone playback ──────────────────────────────────────────────────────────
 
   Future<void> _startTone() async {
-    if (_mode == AttuneMode.none) return;
+    if (!AcousticSynthesisGate.enabled || _mode == AttuneMode.none) return;
     setState(() {
       _toneLoading = true;
       _toneError = null;
@@ -87,9 +144,10 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
         );
       }
 
-      await _tonePlayer.setAudioSource(source, preload: true);
-      await _tonePlayer.setLoopMode(LoopMode.one);
-      await _tonePlayer.play();
+      final tonePlayer = _ensureTonePlayer();
+      await tonePlayer.setAudioSource(source, preload: true);
+      await tonePlayer.setLoopMode(LoopMode.one);
+      await tonePlayer.play();
 
       if (mounted) {
         final label = _mode == AttuneMode.binaural
@@ -115,7 +173,8 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
   }
 
   void _stopAllAudio() {
-    unawaited(_tonePlayer.stop());
+    final tonePlayer = _tonePlayer;
+    if (tonePlayer != null) unawaited(tonePlayer.stop());
     for (final p in _naturePlayers.values) {
       unawaited(p.stop());
       p.dispose();
@@ -130,7 +189,7 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
   }
 
   Future<void> _stopTone() async {
-    await _tonePlayer.stop();
+    await _tonePlayer?.stop();
     if (_activeSounds.isEmpty) endTracking();
     if (mounted) setState(() => _tonePlaying = false);
   }
@@ -143,6 +202,7 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
   // ── nature playback ────────────────────────────────────────────────────────
 
   Future<void> _toggleNature(NatureNoiseType type) async {
+    if (!AcousticSynthesisGate.enabled) return;
     if (_activeSounds.contains(type)) {
       await _naturePlayers[type]?.stop();
       _naturePlayers[type]?.dispose();
@@ -150,16 +210,19 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
       if (mounted) setState(() => _activeSounds.remove(type));
       if (!_tonePlaying && _activeSounds.isEmpty) endTracking();
     } else {
-      final player = AudioPlayer();
+      AudioPlayer? player;
       try {
         final source = await LocalAudioCache.audioSource(
           'nature_${type.name}',
           () => NatureNoiseSource(type).bytes,
         );
+        if (!mounted || !AcousticSynthesisGate.enabled) return;
+        player = AudioPlayer();
         await player.setAudioSource(source, preload: true);
         await player.setLoopMode(LoopMode.one);
         await player.play();
         _naturePlayers[type] = player;
+        player = null;
         beginTracking(
           'Nature Sound — ${type.label}',
           'Attune',
@@ -170,7 +233,7 @@ class _AttuneHomeScreenState extends State<AttuneHomeScreen>
         if (kDebugMode) {
           debugPrint('THRIVES nature audio failed: $e');
         }
-        player.dispose();
+        player?.dispose();
       }
     }
   }

@@ -1,4 +1,4 @@
-package dev.thrives.thrives_app
+package app.monkeythrive
 
 import io.flutter.embedding.android.FlutterActivity
 

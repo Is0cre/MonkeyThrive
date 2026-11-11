@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.thrives.thrives_app"
+    namespace = "app.monkeythrive"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

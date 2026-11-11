@@ -5,6 +5,8 @@ import 'dart:typed_data';
 
 import 'package:just_audio/just_audio.dart';
 
+import 'acoustic_synthesis_gate.dart';
+
 abstract class CachedWavSource extends StreamAudioSource {
   Uint8List? _cache;
 
@@ -14,6 +16,9 @@ abstract class CachedWavSource extends StreamAudioSource {
 
   @override
   Future<StreamAudioResponse> request([int? start, int? end]) async {
+    if (!AcousticSynthesisGate.enabled) {
+      throw StateError(AcousticSynthesisGate.message);
+    }
     final data = bytes;
     final safeStart = (start ?? 0).clamp(0, data.length).toInt();
     final safeEnd = (end ?? data.length).clamp(safeStart, data.length).toInt();
