@@ -493,8 +493,12 @@ class _SensitivityTile extends StatelessWidget {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: AppColors.teal,
-              inactiveThumbColor: AppColors.textMuted,
+              // thumbColor is the Flutter 3.27 name. activeThumbColor arrived in 3.31.
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                return states.contains(WidgetState.selected)
+                    ? AppColors.teal
+                    : AppColors.textMuted;
+              }),
               inactiveTrackColor: AppColors.surfaceVariant,
             ),
           ],
