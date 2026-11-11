@@ -18,6 +18,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Tame the Storm'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
     expect(find.text('Anchor your baseline'), findsNothing);
 
     await tester.fling(find.byType(PageView), const Offset(-500, 0), 1200);
@@ -29,6 +30,24 @@ void main() {
 
     expect(find.text('how are you\nright now?'), findsOneWidget);
     expect(find.bySemanticsLabel('Chest, unmarked'), findsOneWidget);
+  });
+
+  testWidgets('intro continue reaches the body map without a swipe',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      const ThrivesApp(onboardingDone: false, initialWot: null),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Zero Tracking. Zero Guilt.'), findsOneWidget);
+    await tester.tap(find.text('Anchor your baseline'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('how are you\nright now?'), findsOneWidget);
   });
 
   testWidgets('App asks for check-in when onboarding is done without WoT',

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/storage/prefs_service.dart';
@@ -31,6 +32,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     widget.onComplete();
   }
 
+  void _showPage(int page) {
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +50,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             children: [
               Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) => setState(() => _page = index),
-                  children: const [
+                child: ScrollConfiguration(
+                  // A mouse on the web build does not drag a PageView.
+                  // Touch, trackpad, and mouse can all move between the pages.
+                  behavior: const MaterialScrollBehavior().copyWith(
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse,
+                      PointerDeviceKind.trackpad,
+                      PointerDeviceKind.stylus,
+                    },
+                  ),
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (index) => setState(() => _page = index),
+                    children: const [
                     _IntroPage(
                       kicker: 'Taming the storm',
                       title: 'Tame the Storm',
@@ -66,34 +86,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           'MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. '
                           'If you are in immediate danger, contact emergency services.',
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              _PageDots(index: _page, count: 2),
+              _PageDots(
+                index: _page,
+                count: 2,
+                onSelect: _showPage,
+              ),
               const SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                child: _page == 1
-                    ? FilledButton(
-                        onPressed: _finishing ? null : _anchorBaseline,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.amber,
-                          foregroundColor: AppColors.background,
-                          disabledBackgroundColor:
-                              AppColors.amber.withValues(alpha: 0.4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        child: const Text('Anchor your baseline'),
-                      )
-                    : const SizedBox.shrink(),
+                child: FilledButton(
+                  onPressed: _finishing
+                      ? null
+                      : _page == 1
+                          ? _anchorBaseline
+                          : () => _showPage(1),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.amber,
+                    foregroundColor: AppColors.background,
+                    disabledBackgroundColor:
+                        AppColors.amber.withValues(alpha: 0.4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  child: Text(
+                    _page == 1 ? 'Anchor your baseline' : 'Continue',
+                  ),
+                ),
               ),
             ],
           ),
@@ -165,8 +194,13 @@ class _IntroPage extends StatelessWidget {
 class _PageDots extends StatelessWidget {
   final int index;
   final int count;
+  final ValueChanged<int> onSelect;
 
-  const _PageDots({required this.index, required this.count});
+  const _PageDots({
+    required this.index,
+    required this.count,
+    required this.onSelect,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -175,13 +209,26 @@ class _PageDots extends StatelessWidget {
       children: [
         for (var i = 0; i < count; i++) ...[
           if (i > 0) const SizedBox(width: 8),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: i == index ? 18 : 7,
-            height: 7,
-            decoration: BoxDecoration(
-              color: i == index ? AppColors.amber : AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
+          Semantics(
+            button: true,
+            label: 'Page ${i + 1}',
+            selected: i == index,
+            child: GestureDetector(
+              onTap: () => onSelect(i),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: i == index ? 18 : 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color:
+                        i == index ? AppColors.amber : AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
