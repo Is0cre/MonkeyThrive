@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="420" viewBox="0 0 200 420" fill="none">
+  <!-- Original silhouette. Narrower shoulders, broader hips. Same viewBox and head. -->
+  <path fill="#243044" stroke="#8B98A6" stroke-width="1.35" stroke-linejoin="round" stroke-linecap="round"
+    d="M86 84
+       C90 98 110 98 114 84
+       C118 98 140 116 152 132
+       C168 152 170 184 160 214
+       C152 238 144 256 136 264
+       C128 272 116 268 114 256
+       C116 230 114 198 116 174
+       C126 182 130 206 132 236
+       C134 276 136 328 130 376
+       C126 404 120 416 112 416
+       L102 330
+       L98 330
+       L88 416
+       C80 416 74 404 70 376
+       C64 328 66 276 68 236
+       C70 206 74 182 84 174
+       C86 198 84 230 86 256
+       C84 268 72 272 64 264
+       C56 256 48 238 40 214
+       C30 184 32 152 48 132
+       C60 116 82 98 86 84Z"/>
+  <ellipse cx="100" cy="52" rx="34" ry="38" fill="#243044"/>
+  <path d="M66 58 A34 38 0 1 1 134 58" fill="none" stroke="#8B98A6" stroke-width="1.35" stroke-linecap="round"/>
+</svg>

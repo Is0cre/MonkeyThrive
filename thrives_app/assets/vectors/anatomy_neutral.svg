@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 420" fill="none">
-  <!-- Original silhouette for MonkeyThrive. viewBox matches the hitboxes. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="420" viewBox="0 0 200 420" fill="none">
+  <!-- Original silhouette. viewBox is shared with the check-in hitboxes. -->
   <path fill="#243044" stroke="#8B98A6" stroke-width="1.35" stroke-linejoin="round" stroke-linecap="round"
     d="M86 84
        C90 98 110 98 114 84
