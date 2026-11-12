@@ -218,43 +218,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 24),
 
-            // ── Clinical advisory ────────────────────────────────────────────
-            _Section('Clinical advisory'),
-            _InfoCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'The safety architecture, tool routing, and trauma-informed '
-                    'design of MonkeyThrive is shaped by clinical input from:',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      height: 1.6,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const _AdvisorCard(
-                    name: 'Marit Leito',
-                    role: 'Psychologist · Clinical Advisor',
-                    detail:
-                        'Window of Tolerance architecture · trauma-informed '
-                        'tool routing · somatic regulation protocols',
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Advisory credits reflect input on design and safety '
-                    'protocols. MonkeyThrive is a supportive self-regulation tool. '
-                    'It does not replace professional therapy.',
-                    style: TextStyle(
-                        color: AppColors.textMuted, fontSize: 11, height: 1.5),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
             // ── Privacy ─────────────────────────────────────────────────────
             _Section('Privacy'),
             _InfoCard(
@@ -632,57 +595,6 @@ class _RowDetail extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AdvisorCard extends StatelessWidget {
-  final String name;
-  final String role;
-  final String detail;
-  const _AdvisorCard({
-    required this.name,
-    required this.role,
-    required this.detail,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            role,
-            style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w400),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            detail,
-            style: const TextStyle(
-                color: AppColors.textMuted, fontSize: 12, height: 1.4),
-          ),
-        ],
-      ),
     );
   }
 }
