@@ -49,7 +49,8 @@ void main() {
     );
   });
 
-  testWidgets('tapping the chest shows the overwhelmed reading', (tester) async {
+  testWidgets('tapping the chest shows the overwhelmed reading',
+      (tester) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(
       MaterialApp(
@@ -123,14 +124,25 @@ void main() {
       ),
     );
 
-    for (final label in ['Neutral', 'Masculine', 'Feminine']) {
-      if (label != 'Neutral') {
-        await tester.tap(find.text(label));
+    const labels = {
+      'Neutral': SilhouetteType.neutral,
+      'Masculine': SilhouetteType.masculine,
+      'Feminine': SilhouetteType.feminine,
+    };
+    for (final entry in labels.entries) {
+      if (entry.key != 'Neutral') {
+        await tester.tap(find.text(entry.key));
         await tester.pump();
       }
-      final sample = await _sampleHead(tester);
-      expect(sample.insideRed, greaterThan(80), reason: '$label head glow');
-      expect(sample.outsideAlpha, 0, reason: '$label glow leaked');
+      final head = SomaticBodyMap.regions[entry.value]![SomaticZone.head]!;
+      final sample = await _sampleHead(
+        tester,
+        head.center,
+        Offset(head.left - 16, head.center.dy),
+      );
+      expect(sample.insideRed, greaterThan(80),
+          reason: '${entry.key} head glow');
+      expect(sample.outsideAlpha, 0, reason: '${entry.key} glow leaked');
     }
   });
 }
@@ -144,11 +156,13 @@ class _HeadSample {
   const _HeadSample(this.insideRed, this.outsideAlpha);
 }
 
-/// Head center is viewBox (100, 52). (62, 52) is outside the skull and inside
-/// the unclipped radial gradient, so a leaked glow would color it.
-Future<_HeadSample> _sampleHead(WidgetTester tester) async {
-  const inside = Offset(100, 52);
-  const outside = Offset(62, 52);
+/// [inside] and [outside] are PNG pixel positions. [outside] sits just left of
+/// the skull and inside the unclipped radial gradient, so a leaked glow colors it.
+Future<_HeadSample> _sampleHead(
+  WidgetTester tester,
+  Offset inside,
+  Offset outside,
+) async {
   for (var attempt = 0; attempt < 40; attempt++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 40)),
@@ -162,11 +176,16 @@ Future<_HeadSample> _sampleHead(WidgetTester tester) async {
 
 Future<_HeadSample> _readHead(
   WidgetTester tester,
-  Offset inside,
-  Offset outside,
+  Offset imageInside,
+  Offset imageOutside,
 ) async {
   final shot = find.byKey(const Key('shot'));
   final paint = find.descendant(of: shot, matching: find.byType(CustomPaint));
+  final paintSize = tester.getSize(paint);
+  final scaleX = paintSize.width / SomaticBodyMap.canvas.width;
+  final scaleY = paintSize.height / SomaticBodyMap.canvas.height;
+  final inside = Offset(imageInside.dx * scaleX, imageInside.dy * scaleY);
+  final outside = Offset(imageOutside.dx * scaleX, imageOutside.dy * scaleY);
   final delta = tester.getTopLeft(paint) - tester.getTopLeft(shot);
   final boundary = tester.renderObject<RenderRepaintBoundary>(shot);
   final image = await tester.runAsync(() => boundary.toImage());

@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'somatic_map.dart';
@@ -10,11 +10,11 @@ enum SilhouetteType { masculine, feminine, neutral }
 
 /// Anatomical silhouette with a glow that stays inside the body.
 ///
-/// [canvas] is the shared SVG viewBox (200 by 420). A region is a rectangle
-/// in that same pixel space. At layout time each edge is multiplied by the
-/// drawn width or height, so the target stays on the same part of the figure
-/// when the widget changes size. Keep the widget's aspect ratio equal to
-/// [canvas] and load every silhouette with [BoxFit.fill].
+/// [canvas] is the shared PNG pixel size (784 by 1168). A region is a
+/// rectangle in that same pixel space, and each silhouette has its own
+/// regions because the figures are not the same height. At layout time each
+/// edge is multiplied by the drawn width or height. Keep the widget's aspect
+/// ratio equal to [canvas] and load every silhouette with [BoxFit.contain].
 ///
 /// The silhouette choice is display only. Marks stay with the check-in.
 class SomaticBodyMap extends StatefulWidget {
@@ -27,25 +27,39 @@ class SomaticBodyMap extends StatefulWidget {
     required this.onTap,
   });
 
-  static const canvas = Size(200, 420);
+  static const canvas = Size(784, 1168);
 
-  /// ViewBox rectangles. Head sits on the skull, throat on the neck,
-  /// chest on the upper torso, stomach below the ribs.
-  static const regions = <SomaticZone, Rect>{
-    SomaticZone.head: Rect.fromLTWH(66, 14, 68, 76),
-    SomaticZone.throat: Rect.fromLTWH(82, 82, 36, 42),
-    SomaticZone.chest: Rect.fromLTWH(72, 136, 56, 92),
-    SomaticZone.stomach: Rect.fromLTWH(70, 232, 60, 84),
+  /// Pixel rectangles on [canvas]. Head sits on the skull, throat on the neck,
+  /// chest on the upper torso, stomach on the abdomen.
+  static const regions = <SilhouetteType, Map<SomaticZone, Rect>>{
+    SilhouetteType.feminine: {
+      SomaticZone.head: Rect.fromLTWH(338, 90, 108, 90),
+      SomaticZone.throat: Rect.fromLTWH(352, 180, 80, 52),
+      SomaticZone.chest: Rect.fromLTWH(314, 255, 156, 265),
+      SomaticZone.stomach: Rect.fromLTWH(300, 525, 184, 110),
+    },
+    SilhouetteType.masculine: {
+      SomaticZone.head: Rect.fromLTWH(336, 64, 112, 102),
+      SomaticZone.throat: Rect.fromLTWH(344, 166, 96, 52),
+      SomaticZone.chest: Rect.fromLTWH(305, 240, 174, 290),
+      SomaticZone.stomach: Rect.fromLTWH(284, 545, 216, 120),
+    },
+    SilhouetteType.neutral: {
+      SomaticZone.head: Rect.fromLTWH(344, 118, 96, 86),
+      SomaticZone.throat: Rect.fromLTWH(356, 204, 72, 52),
+      SomaticZone.chest: Rect.fromLTWH(318, 275, 148, 230),
+      SomaticZone.stomach: Rect.fromLTWH(302, 515, 180, 115),
+    },
   };
 
   static String assetFor(SilhouetteType type) {
     switch (type) {
       case SilhouetteType.masculine:
-        return 'assets/vectors/anatomy_masculine.svg';
+        return 'assets/vectors/anatomy_masculine.png';
       case SilhouetteType.feminine:
-        return 'assets/vectors/anatomy_feminine.svg';
+        return 'assets/vectors/anatomy_feminine.png';
       case SilhouetteType.neutral:
-        return 'assets/vectors/anatomy_neutral.svg';
+        return 'assets/vectors/anatomy_neutral.png';
     }
   }
 
@@ -56,8 +70,8 @@ class SomaticBodyMap extends StatefulWidget {
 class _SomaticBodyMapState extends State<SomaticBodyMap>
     with TickerProviderStateMixin {
   SilhouetteType _silhouette = SilhouetteType.neutral;
-  final Map<SilhouetteType, PictureInfo> _pictures = {};
-  PictureInfo? _mask;
+  final Map<SilhouetteType, ui.Image> _pictures = {};
+  ui.Image? _mask;
   SilhouetteType? _maskType;
   int _loadGeneration = 0;
   var _loadStarted = false;
@@ -107,8 +121,8 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
   void dispose() {
     _alive = false;
     _loadGeneration++;
-    for (final info in _pictures.values) {
-      info.picture.dispose();
+    for (final image in _pictures.values) {
+      image.dispose();
     }
     _pictures.clear();
     _mask = null;
@@ -164,14 +178,20 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
 
     final asset = SomaticBodyMap.assetFor(type);
     try {
-      final info = await vg.loadPicture(SvgAssetLoader(asset), context);
+      final data = await rootBundle.load(asset);
+      if (!mounted || generation != _loadGeneration) return;
+      final codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
       if (!mounted || generation != _loadGeneration) {
-        info.picture.dispose();
+        frame.image.dispose();
         return;
       }
-      _pictures[type] = info;
+      _pictures[type] = frame.image;
       setState(() {
-        _mask = info;
+        _mask = frame.image;
         _maskType = type;
       });
     } catch (error, stack) {
@@ -196,6 +216,7 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
 
   @override
   Widget build(BuildContext context) {
+    final zoneRegions = SomaticBodyMap.regions[_silhouette]!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -203,12 +224,12 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
         const SizedBox(height: 8),
         LayoutBuilder(
           builder: (context, constraints) {
-            final width = constraints.maxWidth.clamp(180.0, 280.0);
-            final height =
-                width * SomaticBodyMap.canvas.height / SomaticBodyMap.canvas.width;
-            final showMood = _mask != null &&
-                _maskType == _silhouette &&
-                !_fade.isAnimating;
+            final width = constraints.maxWidth.clamp(180.0, 340.0);
+            final height = width *
+                SomaticBodyMap.canvas.height /
+                SomaticBodyMap.canvas.width;
+            final showMood =
+                _mask != null && _maskType == _silhouette && !_fade.isAnimating;
             return Center(
               child: SizedBox(
                 width: width,
@@ -219,12 +240,13 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
                       duration: const Duration(milliseconds: 420),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.easeInCubic,
-                      child: SvgPicture.asset(
+                      child: Image.asset(
                         SomaticBodyMap.assetFor(_silhouette),
                         key: ValueKey(_silhouette),
                         width: width,
                         height: height,
-                        fit: BoxFit.fill,
+                        fit: BoxFit.contain,
+                        gaplessPlayback: true,
                         excludeFromSemantics: true,
                       ),
                     ),
@@ -237,16 +259,16 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
                                 for (final zone in SomaticZone.values)
                                   zone: _quality(zone),
                               },
+                              regions: zoneRegions,
                               pulses: _pulse,
-                              picture: showMood ? _mask!.picture : null,
-                              pictureSize: _mask?.size ?? SomaticBodyMap.canvas,
+                              image: showMood ? _mask : null,
                             ),
                           ),
                         ),
                       ),
                     ),
                     for (final zone in SomaticZone.values)
-                      _zoneTarget(zone, width, height),
+                      _zoneTarget(zone, zoneRegions[zone]!, width, height),
                   ],
                 ),
               ),
@@ -283,7 +305,8 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
             color: selected ? AppColors.surfaceVariant : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected ? AppColors.textSecondary : AppColors.surfaceVariant,
+              color:
+                  selected ? AppColors.textSecondary : AppColors.surfaceVariant,
             ),
           ),
           child: Text(
@@ -298,8 +321,9 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
     );
   }
 
-  Widget _zoneTarget(SomaticZone zone, double width, double height) {
-    final rect = _placed(SomaticBodyMap.regions[zone]!, width, height);
+  Widget _zoneTarget(
+      SomaticZone zone, Rect region, double width, double height) {
+    final rect = _placed(region, width, height);
     final quality = _quality(zone);
     return Positioned(
       left: rect.left,
@@ -322,19 +346,20 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
 class _MoodPainter extends CustomPainter {
   _MoodPainter({
     required this.marks,
+    required this.regions,
     required this.pulses,
-    required this.picture,
-    required this.pictureSize,
+    required this.image,
   }) : super(repaint: Listenable.merge(pulses.values.toList()));
 
   final Map<SomaticZone, SomaticQuality> marks;
+  final Map<SomaticZone, Rect> regions;
   final Map<SomaticZone, AnimationController> pulses;
-  final ui.Picture? picture;
-  final Size pictureSize;
+  final ui.Image? image;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (picture == null || pictureSize.isEmpty) return;
+    final mask = image;
+    if (mask == null) return;
     var any = false;
     for (final zone in SomaticZone.values) {
       if (_glowColor(marks[zone] ?? SomaticQuality.unmarked) != null) {
@@ -345,21 +370,15 @@ class _MoodPainter extends CustomPainter {
     if (!any) return;
 
     final bounds = Offset.zero & size;
-    // The silhouette is drawn first as coverage. The glow is then drawn with
-    // srcIn, which keeps the glow color only where that coverage is opaque.
-    // drawPicture ignores Paint.blendMode, so the mask has to be its own layer.
+    // Glows are drawn first. The PNG is then composited with dstIn, which
+    // keeps color only where the figure is opaque. A ColorFilter on the image
+    // alone does not see the glows, so it cannot clip them.
     canvas.saveLayer(bounds, Paint());
-    canvas.save();
-    canvas.scale(size.width / pictureSize.width, size.height / pictureSize.height);
-    canvas.drawPicture(picture!);
-    canvas.restore();
-
-    canvas.saveLayer(bounds, Paint()..blendMode = BlendMode.srcIn);
     for (final zone in SomaticZone.values) {
       final color = _glowColor(marks[zone] ?? SomaticQuality.unmarked);
       if (color == null) continue;
       final breath = 0.86 + 0.14 * pulses[zone]!.value;
-      final rect = _placed(SomaticBodyMap.regions[zone]!, size.width, size.height);
+      final rect = _placed(regions[zone]!, size.width, size.height);
       final radius = rect.longestSide * 0.9 * breath;
       final paint = Paint()
         ..shader = RadialGradient(
@@ -372,14 +391,21 @@ class _MoodPainter extends CustomPainter {
         ).createShader(Rect.fromCircle(center: rect.center, radius: radius));
       canvas.drawCircle(rect.center, radius, paint);
     }
-    canvas.restore();
+    canvas.drawImageRect(
+      mask,
+      Rect.fromLTWH(0, 0, mask.width.toDouble(), mask.height.toDouble()),
+      bounds,
+      Paint()
+        ..blendMode = BlendMode.dstIn
+        ..filterQuality = FilterQuality.medium,
+    );
     canvas.restore();
   }
 
   @override
   bool shouldRepaint(covariant _MoodPainter oldDelegate) {
-    return oldDelegate.picture != picture ||
-        oldDelegate.pictureSize != pictureSize ||
+    return oldDelegate.image != image ||
+        oldDelegate.regions != regions ||
         !_sameMarks(oldDelegate.marks, marks);
   }
 }
