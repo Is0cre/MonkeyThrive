@@ -3,22 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MonkeyThrive</title>
-  <meta name="description" content="Autonomous, offline-first somatic regulation and natural calm.">
-  <meta name="theme-color" content="#0D1117">
+  <title>MonkeyThrive — offline nervous system regulation</title>
+  <meta name="description" content="An open-source, offline toolkit for breathing, grounding, vagal cues, and bilateral stimulation. No account, no telemetry, no network permission.">
+  <meta name="theme-color" content="#12100e">
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; connect-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'">
   <link rel="icon" href="emblem.png" type="image/png">
   <style>
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --line: #1c2430;
-      --text: #e6edf3;
-      --muted: #8b949e;
+      --bg: #12100e;
+      --surface: #1e1a16;
+      --line: #3d342c;
+      --text: #f6f1e8;
+      --soft: #ddd2c3;
       --amber: #e8a645;
-      --ink: #0d1117;
+      --ink: #1a140c;
+      --crisis: #2a2118;
+      --measure: 66ch;
     }
 
     * { box-sizing: border-box; }
@@ -27,58 +29,127 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 1.0625rem;
+      line-height: 1.6;
     }
 
-    a { color: inherit; }
+    img { max-width: 100%; height: auto; }
+
+    a { color: var(--amber); text-underline-offset: 0.18em; }
+
+    a:hover { color: #f2c98a; }
+
+    :focus { outline: none; }
+
+    :focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 3px;
+    }
+
+    .skip {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      z-index: 2;
+      padding: 10px 14px;
+      background: var(--amber);
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+      transform: translateY(-160%);
+    }
+
+    .skip:focus { transform: none; }
 
     .wrap {
-      width: min(960px, calc(100% - 40px));
+      width: min(1040px, calc(100% - 40px));
       margin: 0 auto;
     }
 
-    header {
-      padding: 56px 0 8px;
-      text-align: center;
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px 22px;
+      padding: 22px 0 8px;
     }
 
-    .mark {
-      width: 168px;
-      height: 168px;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      object-fit: cover;
-      display: block;
-      margin: 0 auto 28px;
-      box-shadow: 0 0 0 1px rgba(232, 166, 69, 0.35);
+      box-shadow: 0 0 0 1px rgba(232, 166, 69, 0.45);
+    }
+
+    .bar nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+    }
+
+    .bar nav a {
+      color: var(--soft);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 6px 0;
+    }
+
+    .bar nav a:hover { color: var(--text); }
+
+    .bar .open {
+      margin-left: auto;
+    }
+
+    .hero {
+      display: grid;
+      gap: 36px;
+      align-items: end;
+      padding: 48px 0 28px;
+    }
+
+    .kicker {
+      margin: 0 0 12px;
+      color: var(--amber);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(40px, 6vw, 56px);
-      font-weight: 520;
-      letter-spacing: -0.03em;
+      max-width: 16ch;
+      font-size: clamp(2.4rem, 5.4vw, 4.1rem);
+      font-weight: 560;
+      letter-spacing: -0.035em;
       line-height: 1.05;
       text-wrap: balance;
     }
 
-    .subtitle {
-      max-width: 34em;
-      margin: 14px auto 0;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.45;
-      text-wrap: balance;
+    .lede {
+      max-width: var(--measure);
+      margin: 18px 0 0;
+      color: var(--soft);
+      font-size: 1.15rem;
+      line-height: 1.55;
     }
 
     .actions {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: 12px;
       margin-top: 28px;
     }
@@ -88,13 +159,13 @@
       align-items: center;
       justify-content: center;
       min-height: 48px;
-      min-width: 200px;
+      min-width: 11.5rem;
       padding: 12px 18px;
       border-radius: 10px;
-      text-decoration: none;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       letter-spacing: 0.01em;
+      text-decoration: none;
     }
 
     .button.primary {
@@ -102,102 +173,168 @@
       color: var(--ink);
     }
 
+    .button.primary:hover { background: #f0b456; color: var(--ink); }
+
     .button.secondary {
       background: transparent;
       color: var(--text);
-      box-shadow: inset 0 0 0 1px rgba(232, 166, 69, 0.7);
+      box-shadow: inset 0 0 0 1px rgba(232, 166, 69, 0.75);
     }
 
-    .button:hover { filter: brightness(1.06); }
+    .button.secondary:hover { color: var(--text); box-shadow: inset 0 0 0 1px var(--amber); }
 
-    .repo {
-      margin: 18px 0 0;
-      font-size: 14px;
+    .trust,
+    .apk {
+      max-width: var(--measure);
+      margin: 16px 0 0;
+      color: var(--soft);
+      font-size: 0.98rem;
     }
 
-    .repo a {
-      color: var(--amber);
-      text-underline-offset: 3px;
+    .apk { margin-top: 8px; }
+
+    .mark {
+      justify-self: center;
+      width: min(280px, 78%);
     }
 
-    .button:focus-visible,
-    .repo a:focus-visible,
-    .footer a:focus-visible {
-      outline: 2px solid var(--amber);
-      outline-offset: 3px;
+    .mark svg { display: block; width: 100%; height: auto; }
+
+    main section { padding: 56px 0; }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(1.7rem, 3vw, 2.15rem);
+      font-weight: 560;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      text-wrap: balance;
     }
 
-    main { padding: 48px 0 24px; }
-
-    .kicker {
+    .prose {
+      max-width: var(--measure);
       margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 650;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      color: var(--soft);
     }
 
-    .pillars {
+    .prose:last-child { margin-bottom: 0; }
+
+    .grid {
       display: grid;
-      gap: 12px;
+      gap: 14px;
+      margin-top: 28px;
     }
 
-    @media (min-width: 800px) {
-      .pillars { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    .pillar {
+    .card,
+    .split article {
       margin: 0;
-      padding: 18px 16px 16px;
+      padding: 20px 18px 18px;
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 14px;
     }
 
-    .pillar h3 {
+    .card h3,
+    .split h3 {
       margin: 0 0 8px;
-      font-size: 16px;
-      font-weight: 640;
-      letter-spacing: -0.01em;
+      font-size: 1.05rem;
+      font-weight: 680;
+      letter-spacing: -0.015em;
     }
 
-    .pillar p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
+    .card p,
+    .split p,
+    .split li {
+      color: var(--soft);
     }
 
-    .crisis {
+    .card p { margin: 0; }
+
+    .who-list,
+    .tool-list {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .who-list {
+      display: grid;
+      margin-top: 8px;
+    }
+
+    .who-list li {
+      position: relative;
+      padding: 14px 0 14px 18px;
+      border-top: 1px solid var(--line);
+      color: var(--soft);
+    }
+
+    .who-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 1.45em;
+      width: 8px;
+      height: 1px;
+      background: var(--amber);
+    }
+
+    .split {
+      display: grid;
+      gap: 14px;
       margin-top: 28px;
-      padding: 18px 18px 16px;
-      background: #1a140c;
-      border: 1px solid rgba(232, 166, 69, 0.55);
+      align-items: stretch;
+    }
+
+    .tool-list li {
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      line-height: 1.5;
+    }
+
+    .tool-list strong {
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .safety-note {
+      max-width: 70ch;
+      margin-top: 8px;
+      padding: 22px 20px;
+      background: var(--crisis);
+      border: 1px solid rgba(232, 166, 69, 0.72);
       border-radius: 14px;
     }
 
-    .crisis p {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.55;
+    .safety-note h3 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
     }
 
+    .safety-note p { margin: 0; }
+
+    .disclaimer { margin-top: 22px; }
+
+    .more { margin: 18px 0 0; }
+
     footer {
-      padding: 28px 0 48px;
-      color: var(--muted);
-      font-size: 14px;
+      padding: 8px 0 48px;
+      color: var(--soft);
+      font-size: 0.98rem;
     }
 
     .footer {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 18px;
+      gap: 12px 22px;
       align-items: center;
       justify-content: space-between;
-      padding-top: 18px;
+      padding-top: 20px;
       border-top: 1px solid var(--line);
     }
+
+    .footer p { margin: 0; max-width: 36ch; }
 
     .footer nav {
       display: flex;
@@ -205,64 +342,182 @@
       gap: 8px 16px;
     }
 
-    .footer a {
-      color: var(--text);
-      text-underline-offset: 3px;
+    .footer a { color: var(--text); }
+
+    ::selection { background: var(--amber); color: var(--ink); }
+
+    @media (min-width: 720px) {
+      .bar nav { margin-left: auto; }
+      .bar .open { margin-left: 0; }
     }
 
-    .quiet { margin: 0; }
-
-    @media (prefers-reduced-motion: reduce) {
-      .button { transition: none; }
+    @media (min-width: 800px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .who-list { grid-template-columns: 1fr 1fr; column-gap: 36px; }
+      .split { grid-template-columns: 1fr 1fr; align-items: start; }
     }
+
+    @media (min-width: 960px) {
+      .hero {
+        grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.7fr);
+        gap: 48px;
+        padding-top: 64px;
+      }
+
+      .mark { justify-self: end; width: min(300px, 100%); }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { width: min(1040px, calc(100% - 32px)); }
+      .bar .open { margin-left: 0; }
+      .actions { flex-direction: column; align-items: stretch; }
+      .button { width: 100%; }
+    }
+
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <img class="mark" src="emblem.png" width="168" height="168" alt="Golden MonkeyThrive emblem">
-      <h1>MonkeyThrive</h1>
-      <p class="subtitle">Autonomous, offline-first somatic regulation and natural calm.</p>
-      <div class="actions">
-        <a class="button primary" href="/app/">Launch Web App</a>
-        <a class="button secondary" href="https://github.com/Is0cre/MonkeyThrive/releases/latest/download/app-release.apk" rel="noreferrer">Download Android APK</a>
-      </div>
-      <p class="repo"><a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">github.com/Is0cre/MonkeyThrive</a></p>
-    </header>
+  <a class="skip" href="#content">Skip to content</a>
 
-    <main>
-      <h2 class="kicker">Core philosophy</h2>
-      <div class="pillars">
-        <article class="pillar">
-          <h3>Strictly Offline</h3>
-          <p>Zero network permissions, no trackers, no telemetry.</p>
-        </article>
-        <article class="pillar">
-          <h3>Clinically Gated</h3>
-          <p>Window of Tolerance safeguards preventing sensory dysregulation.</p>
-        </article>
-        <article class="pillar">
-          <h3>No Guilt Architecture</h3>
-          <p>No streaks, no accounts, no engagement algorithms.</p>
-        </article>
-      </div>
+  <header class="wrap">
+    <div class="bar">
+      <a class="brand" href="#content">
+        <img src="emblem.png" width="40" height="40" alt="">
+        MonkeyThrive
+      </a>
+      <nav aria-label="On this page">
+        <a href="#what">What it is</a>
+        <a href="#why">Why</a>
+        <a href="#who">Who</a>
+        <a href="#tools">Tools</a>
+        <a href="#safety">Safety</a>
+      </nav>
+      <a class="button primary open" href="/app/">Open the app</a>
+    </div>
+  </header>
 
-      <section class="crisis" aria-labelledby="support-heading">
-        <h2 id="support-heading" class="kicker">Support</h2>
-        <p>Need immediate human support? MonkeyThrive includes an offline crisis directory, or reach out to local emergency services directly.</p>
+  <main id="content">
+    <div class="wrap">
+      <section class="hero" aria-labelledby="hero-heading">
+        <div>
+          <p class="kicker">monkeythrive.app</p>
+          <h1 id="hero-heading">Offline regulation, in your own hands.</h1>
+          <p class="lede">MonkeyThrive is a privacy-first toolkit for breathing, grounding, vagal cues, and bilateral stimulation. The name is a nod to Sun Wukong, the Monkey King: a restless mind can be trained, and strength becomes protective once it learns discipline.</p>
+          <div class="actions">
+            <a class="button primary" href="/app/">Open the app</a>
+            <a class="button secondary" href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">Source on GitHub</a>
+          </div>
+          <p class="trust">Zero network. No account. No telemetry. Nothing you enter leaves the device.</p>
+          <p class="apk"><a href="https://github.com/Is0cre/MonkeyThrive/releases/latest/download/app-release.apk" rel="noreferrer">Download the Android APK</a> for a phone without an app store.</p>
+        </div>
+        <div class="mark">
+          <svg viewBox="0 0 320 420" role="img" aria-label="A simple staff planted on a quiet ridge, under one cloud.">
+            <path d="M46 104c10-28 46-34 66-14 14-26 58-26 70 4 24-14 54 2 46 26 8 22-18 40-70 38-48 2-120-10-112-54z" fill="none" stroke="#e8a645" stroke-width="1.4" opacity="0.55"/>
+            <path d="M8 286c42-28 74-16 108-48 34-32 58-12 90-36 34-26 62-8 106-40" fill="none" stroke="#e8a645" stroke-width="1.4" opacity="0.8"/>
+            <path d="M0 338c72-32 124-12 184-36 52-20 90 0 136-24" fill="none" stroke="#ddd2c3" stroke-width="1.2" opacity="0.4"/>
+            <line x1="168" y1="118" x2="168" y2="312" stroke="#e8a645" stroke-width="1.6"/>
+            <circle cx="168" cy="150" r="12" fill="none" stroke="#e8a645" stroke-width="1.4"/>
+            <circle cx="168" cy="150" r="3" fill="#e8a645"/>
+            <line x1="154" y1="312" x2="182" y2="312" stroke="#e8a645" stroke-width="1.6"/>
+            <line x1="160" y1="118" x2="176" y2="118" stroke="#e8a645" stroke-width="1.6"/>
+          </svg>
+        </div>
       </section>
-    </main>
 
-    <footer>
-      <div class="footer">
-        <p class="quiet">Built from lived experience. For everyone who is still here.</p>
-        <nav aria-label="Project">
-          <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">GitHub</a>
-          <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">License (GPL-3.0)</a>
-          <a href="safety.html">Clinical safety</a>
-        </nav>
-      </div>
-    </footer>
-  </div>
+      <section id="what" aria-labelledby="what-heading">
+        <p class="kicker">What it is</p>
+        <h2 id="what-heading">Practices for the nervous system, kept on this device.</h2>
+        <p class="prose">MonkeyThrive is a small set of tools: paced breathing, a physiological sigh, cold water, sensory grounding, vagal cues, and bilateral stimulation. It runs in the browser and as a standalone Android app. The release build is made to work with no network permission.</p>
+        <p class="prose">You start with a body map. Head, throat, chest, and stomach can be marked tight or heavy. The app shows that reading as overwhelmed, present, or flat or numb, and you see it before you continue. An empty map does not count as present. You are the authority on your own experience. The reading is not a diagnosis.</p>
+        <p class="prose">The Monkey King stays in the name: self-made strength that learns a limit. In the app, that limit is practical. A tool that needs more capacity than the moment can hold stays closed.</p>
+      </section>
+
+      <section id="why" aria-labelledby="why-heading">
+        <p class="kicker">Why it is different</p>
+        <h2 id="why-heading">Built to be left alone, and easy to leave.</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Strictly offline</h3>
+            <p>The release app has no network permission. Check-ins, journal entries, and readings stay on the device. There is no telemetry, no crash reporting, and no analytics.</p>
+          </article>
+          <article class="card">
+            <h3>Clinically gated</h3>
+            <p>Window of Tolerance rules decide which tools open. The lock is the same for overwhelmed and for flat or numb. The rules are fixed. They are not a score, and they are not a diagnosis.</p>
+          </article>
+          <article class="card">
+            <h3>No guilt architecture</h3>
+            <p>No streaks, no accounts, and no engagement algorithms. There is no score for the days you were away. The app is built to be easy to put down.</p>
+          </article>
+          <article class="card">
+            <h3>Open source and verifiable</h3>
+            <p>The source is public under GPL-3.0. The offline claim, the gates, and the crisis directory can be read in the repository.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="who" aria-labelledby="who-heading">
+        <p class="kicker">Who it is for</p>
+        <h2 id="who-heading">For people who want the tool, and nothing around it.</h2>
+        <ul class="who-list">
+          <li>Trauma survivors who want regulation practice that stays on the device.</li>
+          <li>People who want no account, no telemetry, and no profile.</li>
+          <li>People on de-Googled Android, including GrapheneOS, CalyxOS, and Sailfish OS.</li>
+          <li>Anyone who wants a small set of practices without a wellness platform around them.</li>
+        </ul>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-heading">
+        <p class="kicker">Features</p>
+        <h2 id="tools-heading">Some tools wait until the reading is present.</h2>
+        <p class="prose">A check-in comes first. The same higher-intensity tools stay closed when the reading is overwhelmed and when it is flat or numb. Present is the only reading that opens them.</p>
+        <div class="split">
+          <article aria-labelledby="always-heading">
+            <h3 id="always-heading">Always available</h3>
+            <ul class="tool-list">
+              <li><strong>Box breathing.</strong> A steady count you can follow.</li>
+              <li><strong>Physiological sigh.</strong> Two inhales and a long exhale.</li>
+              <li><strong>Cold water.</strong> A short timer for the diving reflex.</li>
+              <li><strong>5-4-3-2-1 grounding.</strong> Name what you can sense around you.</li>
+              <li><strong>Vagal prompts.</strong> Humming, gargling, or a longer exhale.</li>
+              <li><strong>Anchor.</strong> The simplest screen, on the bar. On Android, the volume keys open it. Words stay off for the first few breaths.</li>
+            </ul>
+          </article>
+          <article aria-labelledby="gated-heading">
+            <h3 id="gated-heading">Gated, regulated state only</h3>
+            <ul class="tool-list">
+              <li><strong>4-7-8 breathing.</strong> A longer pattern. Open when the reading is present.</li>
+              <li><strong>Wim Hof breathing.</strong> Open when the reading is present, after the safety confirmations for that session.</li>
+              <li><strong>Safe place.</strong> A visualisation stored on this device. Open when the reading is present.</li>
+              <li><strong>Bilateral stimulation.</strong> For grounding and attention. It is not EMDR. It also waits until earlier parts of the app have been used, and it still requires a present reading.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="safety" aria-labelledby="safety-heading">
+        <p class="kicker">Safety and support</p>
+        <h2 id="safety-heading">A tool can sit with you. A person can help.</h2>
+        <div class="safety-note">
+          <h3>If you need support now</h3>
+          <p>The app includes an offline crisis directory, kept on the device and listed by country. You can also contact local emergency services directly. A call or text from that directory uses your phone’s own dialer or messages app.</p>
+        </div>
+        <div class="disclaimer">
+          <p class="prose">MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy, and it does not diagnose, assess, or treat any condition.</p>
+          <p class="more"><a href="safety.html">Read the clinical safety notes</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <div class="footer">
+      <p>Built from lived experience. For everyone who is still here.</p>
+      <nav aria-label="Project">
+        <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">GitHub</a>
+        <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">License (GPL-3.0)</a>
+        <a href="safety.html">Clinical safety</a>
+      </nav>
+    </div>
+  </footer>
 </body>
 </html>
