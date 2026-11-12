@@ -41,7 +41,7 @@ jobs:
           rm -rf publish
           mkdir -p publish/app
           cp -a thrives_app/build/web/. publish/app/
-          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png publish/
+          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png web_landing/robots.txt web_landing/sitemap.xml publish/
           cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
           echo "monkeythrive.app" > publish/CNAME
           touch publish/.nojekyll
