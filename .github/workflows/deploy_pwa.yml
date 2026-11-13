@@ -58,7 +58,7 @@ jobs:
           rm -rf publish
           mkdir -p publish/app
           cp -a thrives_app/build/web/. publish/app/
-          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png web_landing/robots.txt web_landing/sitemap.xml publish/
+          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png web_landing/favicon.ico web_landing/favicon-192.png web_landing/apple-touch-icon.png web_landing/robots.txt web_landing/sitemap.xml publish/
           cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
           python3 - "$VERSION" publish/index.html << 'PY'
           import re
