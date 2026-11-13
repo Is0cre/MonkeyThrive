@@ -1,0 +1,28 @@
+<p>MonkeyThrive is an offline toolkit for nervous system regulation. Check-ins, journal entries, and session notes stay on this device. The release build ships with no network permission, no account, and no Google Play Services or Firebase.</p>
+
+<p>The check-in is a body map. Head, throat, chest, and stomach can be marked tight or heavy. Tightness reads as overwhelmed. Heaviness in more zones than tightness reads as flat or numb. The explicit choice "nothing stands out" is the path to present. An empty map stays without a reading. The reading decides which tools open. It is not a diagnosis.</p>
+
+<p>Available on every reading:</p>
+<ul>
+<li>Box breathing</li>
+<li>Physiological sigh</li>
+<li>Cold water</li>
+<li>5-4-3-2-1 grounding</li>
+<li>Vagal prompts: humming, gargling, extended exhale, and the diving reflex</li>
+<li>Anchor, the panic path, also opened by the volume keys</li>
+</ul>
+
+<p>Open when the reading is present:</p>
+<ul>
+<li>4-7-8 breathing</li>
+<li>Wim Hof breathing, after the confirmations for that session</li>
+<li>Safe place</li>
+</ul>
+
+<p>Bilateral stimulation is a left-right sensory cue in Process. Process unlocks after later practice, and the cue itself opens when the reading is present.</p>
+
+<p>When an exercise ends, the app asks "Are you feeling better?" Yes records today's reading as present. Not yet keeps the current reading.</p>
+
+<p>The camera permission is used for an optional fingertip pulse check in Monitor. The rear camera and flash light the finger. Each frame is reduced to a brightness number on this device, and the picture is not saved. No photo or video from the camera leaves the device.</p>
+
+<p>An offline crisis directory lists helplines by country. A call or a text opens the phone's dialer or messages app. A trusted person can be saved while the reading is present. A passphrase-sealed export stays on this device. Nothing is uploaded.</p>

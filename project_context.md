@@ -37,7 +37,7 @@ Tagline: *Built from lived experience. For everyone who is still here.*
 5. Open source — always
 6. Privacy by architecture, not policy
 7. Big tech, intelligence agencies, advertisers get nothing
-8. Military and intelligence use prohibited in licence — all nations
+8. Built for personal nervous system care. Licensed GPL-3.0-only
 
 ---
 

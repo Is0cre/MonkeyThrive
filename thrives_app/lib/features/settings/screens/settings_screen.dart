@@ -160,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
-                          'v0.1.1',
+                          'v0.1.2',
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 11),
                         ),
@@ -191,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 6),
                   const _RowDetail(
                     icon: Icons.balance_rounded,
-                    text: 'GPL-3.0 · non-military, non-intelligence use only',
+                    text: 'GPL-3.0-only',
                   ),
                 ],
               ),

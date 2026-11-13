@@ -82,6 +82,14 @@ Read this before making any new decisions to avoid relitigating old ones.
 **Decision:** Explicit licence clause prohibiting use by military, intelligence agencies, and government surveillance programmes of any nation
 **Date:** Project start
 **Reason:** Trauma data must not become a tool of surveillance or warfare. Applies equally to all nations.
+**Status:** Superseded on 2026-11-13. LICENSE is the unmodified GNU GPL version 3 only.
+
+---
+
+## GPL-3.0-only
+**Decision:** The repository license is the official GNU General Public License version 3, with no added use restrictions.
+**Date:** 2026-11-13
+**Reason:** F-Droid accepts GPL-3.0-only. A field-of-use ban is a further restriction and is not part of the license. The project is still built for personal nervous system care and healing.
 **Status:** Final
 
 ---

@@ -27,6 +27,13 @@ android {
         versionName = flutter.versionName
     }
 
+    // Omit the Maven dependency stamp. F-Droid treats that stamp as a
+    // reproducibility and scanner problem.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

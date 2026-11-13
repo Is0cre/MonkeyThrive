@@ -150,10 +150,9 @@ The PWA installs on iPhone via Safari → Share → Add to Home Screen.
 
 ## Licence
 
-GPL-3.0 for individuals and open source projects.  
-Commercial licence required for institutional or corporate use — contact via GitHub.
+[GPL-3.0-only](../LICENSE).
 
-**Military and intelligence use prohibited — all nations, without exception.**
+MonkeyThrive is built for personal nervous system care and healing.
 
 ---
 

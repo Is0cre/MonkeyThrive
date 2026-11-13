@@ -1,0 +1,1 @@
+0.1.2 is ready for F-Droid. The license is GPL-3.0-only. The camera is used only for an optional fingertip pulse check, and no photo or video leaves the device.

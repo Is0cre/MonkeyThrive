@@ -71,12 +71,8 @@ THRIVES must make collection architecturally impossible — not just against pol
 
 ---
 
-## Licence Prohibition
-The app licence explicitly prohibits use by:
-- Military organisations of any nation
-- Intelligence agencies of any nation
-- Government surveillance programmes of any nation
-- Any organisation using the app to profile, monitor, or exploit users
+## Licence
+GPL-3.0-only. See [LICENSE](LICENSE). MonkeyThrive is built for personal nervous system care and healing.
 
 ---
 

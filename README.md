@@ -191,7 +191,7 @@ Safety-critical code carries a block in this shape. Leave it in place when you c
 
 ## Tech stack
 
-- Flutter 3.27 or newer. One codebase for Android and web.
+- Flutter 3.44.4. One codebase for Android and web.
 - `vibration` for haptics on the sigh, breath pacing, and bilateral tactile mode.
 - `shared_preferences` for on-device settings and logs.
 - `encrypt` for the passphrase seal only. It does not add a network client.
@@ -252,12 +252,14 @@ There is no separate contributing guide yet. Before a pull request:
 
 - Dependencies stay offline and free of telemetry.
 - `// CLINICAL SAFETY` blocks stay, and a change to a gate needs a clinical reason. Start at [docs/clinical_governance.md](docs/clinical_governance.md).
-- New code should build on Flutter 3.27.
+- New code should build on Flutter 3.44.4.
 
 ---
 
 ## License
 
-[GPL-3.0](LICENSE), plus additional terms in that file. Military use is prohibited. Intelligence and surveillance use is prohibited. The prohibition applies to every nation and to non-state actors.
+[GPL-3.0-only](LICENSE).
+
+MonkeyThrive is built for personal nervous system care and healing.
 
 Built from lived experience. For everyone who is still here.
