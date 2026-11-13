@@ -85,6 +85,7 @@ const unitedKingdomCountry = 'United Kingdom';
 const philippinesCountry = 'Philippines';
 const germanyCountry = 'Germany';
 const maltaCountry = 'Malta';
+const indiaCountry = 'India';
 const internationalCountry = 'International';
 
 const regionSweden = CrisisRegion(id: 'se', label: swedenCountry);
@@ -93,6 +94,7 @@ const regionUnitedKingdom = CrisisRegion(id: 'gb', label: unitedKingdomCountry);
 const regionPhilippines = CrisisRegion(id: 'ph', label: philippinesCountry);
 const regionGermany = CrisisRegion(id: 'de', label: germanyCountry);
 const regionMalta = CrisisRegion(id: 'mt', label: maltaCountry);
+const regionIndia = CrisisRegion(id: 'in', label: indiaCountry);
 const regionInternational =
     CrisisRegion(id: 'intl', label: internationalCountry);
 
@@ -103,6 +105,7 @@ const crisisRegions = <CrisisRegion>[
   regionPhilippines,
   regionGermany,
   regionMalta,
+  regionIndia,
   regionInternational,
 ];
 
@@ -264,6 +267,38 @@ const crisisContacts = <CrisisContact>[
     category: CrisisCategory.helpline,
     description:
         'National helpline in Malta for people in distress. Open around the clock.',
+  ),
+  CrisisContact(
+    country: indiaCountry,
+    name: 'Emergency',
+    number: '112',
+    category: CrisisCategory.emergency,
+    description:
+        'Integrated Helpline (Emergency Response Support System (ERSS) Police, Fire & Rescue, Health services etc).',
+  ),
+    CrisisContact(
+    country: indiaCountry,
+    name: 'Emergency',
+    number: '102',
+    category: CrisisCategory.emergency,
+    description:
+        'National Ambulance Service (NAS).',
+  ),
+    CrisisContact(
+    country: indiaCountry,
+    name: 'Emergency',
+    number: '101',
+    category: CrisisCategory.emergency,
+    description:
+        'Fire Helpline.',
+  ),
+    CrisisContact(
+    country: indiaCountry,
+    name: 'Helpline',
+    number: '100',
+    category: CrisisCategory.emergency,
+    description:
+        'Police Helpline.',
   ),
   CrisisContact(
     country: internationalCountry,
