@@ -44,7 +44,7 @@ Core principle: The app is free. The builder gets paid. These are not in conflic
 - Never affects individual user access
 
 ### 5. Open Collective / GitHub Sponsors
-- Transparent donation platform
+- Transparent tipping platform
 - Full financial visibility — builds trust
 - Named supporter credits in app (optional, privacy-respecting)
 - Framing: "This app is free because X people believe in it"

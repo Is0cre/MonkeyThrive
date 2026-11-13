@@ -360,7 +360,7 @@ Profile is editable any time in settings.
 - No ads, ever
 - No paywalled crisis tools
 - Optional future: premium presets pack, one-time purchase, no subscription
-- Donations via GitHub Sponsors or Open Collective
+- Tips via GitHub Sponsors or Open Collective
 - No VC funding — independence is the point
 
 ---
