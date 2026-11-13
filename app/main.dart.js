@@ -25730,6 +25730,7 @@ case"GB":case"UK":return"gb"
 case"PH":return"ph"
 case"DE":return"de"
 case"MT":return"mt"
+case"IN":return"in"
 case null:case void 0:case"":break
 default:return"intl"}switch(b.toLowerCase()){case"sv":return"se"
 case"de":return"de"
