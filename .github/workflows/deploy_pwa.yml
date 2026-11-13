@@ -7,6 +7,8 @@ on:
       - 'thrives_app/**'
       - 'web_landing/**'
       - '.github/workflows/deploy_pwa.yml'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -18,11 +20,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.x'
+          flutter-version: '3.44.4'
           channel: 'stable'
           cache: true
 
@@ -37,12 +41,47 @@ jobs:
           flutter build web --release --no-web-resources-cdn --base-href "/app/"
 
       - name: Assemble landing page at / and PWA at /app
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="$(gh release view --repo "${{ github.repository }}" --json tagName --jq .tagName)"
+          fi
+          case "$VERSION" in
+            v[0-9]*) ;;
+            *) echo "unexpected release tag: $VERSION" >&2; exit 1 ;;
+          esac
+          gh release view "$VERSION" --repo "${{ github.repository }}" --json assets --jq '.assets[].name' | grep -qx 'app-release.apk'
           rm -rf publish
           mkdir -p publish/app
           cp -a thrives_app/build/web/. publish/app/
           cp web_landing/index.html web_landing/safety.html web_landing/emblem.png web_landing/robots.txt web_landing/sitemap.xml publish/
           cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
+          python3 - "$VERSION" publish/index.html << 'PY'
+          import re
+          import sys
+          version, path = sys.argv[1], sys.argv[2]
+          url = f"https://github.com/Is0cre/MonkeyThrive/releases/download/{version}/app-release.apk"
+          text = open(path, encoding="utf-8").read()
+
+          def repl(match):
+              tag = re.sub(r'href="[^"]*"', f'href="{url}"', match.group(1), count=1)
+              return f"{tag}>Download the Android APK {version}</a>"
+
+          updated, count = re.subn(
+              r'(<a\b[^>]*\bdata-apk="release"[^>]*)>.*?</a>',
+              repl,
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit('landing page is missing data-apk="release"')
+          open(path, "w", encoding="utf-8").write(updated)
+          PY
           echo "monkeythrive.app" > publish/CNAME
           touch publish/.nojekyll
 
