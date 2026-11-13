@@ -6,6 +6,7 @@ import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 const _defaultSafePlace =
     'Think of a place — real or imagined — where you feel completely safe. '
@@ -35,6 +36,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
     with SingleTickerProviderStateMixin, SessionTracking {
   bool _editing = false;
   bool _guiding = false;
+  bool _askFeeling = false;
   int _promptIndex = 0;
   String _safePlaceDescription = _defaultSafePlace;
   int _sessionMinutes = 5;
@@ -103,9 +105,11 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
       return;
     }
 
-    beginTracking('Safe Place', 'Regulate', onEmergencyStop: _stopGuide);
+    beginTracking('Safe Place', 'Regulate',
+        onEmergencyStop: () => _stopGuide());
     setState(() {
       _guiding = true;
+      _askFeeling = false;
       _promptIndex = 0;
       _sessionSecondsLeft = _sessionMinutes * 60;
     });
@@ -127,20 +131,24 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
     // Session countdown
     _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() {
-        _sessionSecondsLeft--;
-        if (_sessionSecondsLeft <= 0) {
-          _stopGuide();
-        }
-      });
+      if (_sessionSecondsLeft <= 1) {
+        _stopGuide(finished: true);
+        return;
+      }
+      setState(() => _sessionSecondsLeft--);
     });
   }
 
-  void _stopGuide() {
+  void _stopGuide({bool finished = false}) {
     _promptTimer?.cancel();
     _sessionTimer?.cancel();
     endTracking();
-    if (mounted) setState(() => _guiding = false);
+    if (mounted) {
+      setState(() {
+        _guiding = false;
+        if (finished) _askFeeling = true;
+      });
+    }
   }
 
   String get _sessionDisplay {
@@ -268,6 +276,10 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               ],
             ),
             const Spacer(),
+            if (_askFeeling) ...[
+              const FeelingBetterPrompt(),
+              const SizedBox(height: 16),
+            ],
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -317,7 +329,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: _stopGuide,
+                onPressed: () => _stopGuide(finished: true),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
                   side: const BorderSide(color: AppColors.surfaceVariant),

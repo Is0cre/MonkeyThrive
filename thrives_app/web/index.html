@@ -32,9 +32,37 @@
       padding: 0;
       height: 100%;
     }
+
+    /* Full figure, including the tail, until Flutter draws. */
+    #opening {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0D1117;
+      pointer-events: none;
+    }
+
+    #opening img {
+      width: auto;
+      height: auto;
+      max-width: min(440px, 88vw);
+      max-height: 82vh;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
+  <div id="opening">
+    <img src="monkey_king.png" alt="Sun Wukong in red and gold, holding a phone.">
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var opening = document.getElementById('opening');
+      if (opening) opening.remove();
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

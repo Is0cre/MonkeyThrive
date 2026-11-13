@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 class ColdWaterScreen extends StatefulWidget {
   const ColdWaterScreen({super.key});
@@ -67,10 +68,9 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
       ),
       bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
-        child: Padding(
+        child: ListView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
+          children: [
               const SizedBox(height: 24),
 
               // Explanation card
@@ -132,7 +132,7 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                 text: 'Cold cloth on the back of your neck',
               ),
 
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // Timer display
               if (_running || _done) ...[
@@ -152,8 +152,10 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                             const SizedBox(height: 8),
                             const Text(
                               'Your nervous system is already responding.',
-                              style: TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: AppColors.textPrimary),
                             ),
+                            const SizedBox(height: 24),
+                            const FeelingBetterPrompt(),
                           ],
                         )
                       : Column(
@@ -204,7 +206,6 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
               ),
               const SizedBox(height: 16),
             ],
-          ),
         ),
       ),
     );

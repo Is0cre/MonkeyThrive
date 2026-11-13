@@ -6,6 +6,7 @@ import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 enum _WimHofPhase { idle, breathing, exhaleHold, recovery, retentionHold, done }
 
@@ -355,6 +356,8 @@ class _WimHofScreenState extends State<WimHofScreen>
       case _WimHofPhase.done:
         return Column(
           children: [
+            const FeelingBetterPrompt(),
+            const SizedBox(height: 16),
             _BigButton(
               label: 'Next round',
               color: AppColors.teal,

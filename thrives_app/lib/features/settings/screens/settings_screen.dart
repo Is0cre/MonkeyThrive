@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/baseline/baseline_models.dart';
 import '../../../core/baseline/baseline_monitor.dart';
+import '../../../core/models/tolerance_state.dart';
+import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/tier_service.dart';
 import '../../../core/theme/app_appearance.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../support/trusted_people_screen.dart';
 import '../data_portability.dart';
 import 'crisis_directory_screen.dart';
 
@@ -17,6 +20,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _readingIsPresent(BuildContext context) {
+    return context
+            .dependOnInheritedWidgetOfExactType<WoTScope>()
+            ?.notifier
+            ?.value ==
+        ToleranceState.regulated;
+  }
+
   // ── Data management ─────────────────────────────────────────────────────────
 
   Future<void> _confirmClearData(BuildContext context) async {
@@ -34,7 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           '• Check-in history\n'
           '• Baseline feedback history\n'
           '• Session log\n'
-          '• Safe place description\n\n'
+          '• Safe place description\n'
+          '• Trusted people\n\n'
           'This cannot be undone.',
           style: TextStyle(
               color: AppColors.textSecondary, fontSize: 14, height: 1.7),
@@ -148,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
-                          'v0.1.0',
+                          'v0.1.1',
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 11),
                         ),
@@ -209,6 +221,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             _TileButton(
+              icon: Icons.person_outline,
+              iconColor: AppColors.amber,
+              label: 'Trusted person',
+              subtitle: _readingIsPresent(context)
+                  ? 'A saved text, kept on this device.'
+                  : 'Available when the reading is present.',
+              onTap: () {
+                if (!_readingIsPresent(context)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'This can be saved when the reading is present.',
+                      ),
+                      backgroundColor: AppColors.surface,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TrustedPeopleScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _TileButton(
               icon: Icons.forum_outlined,
               iconColor: AppColors.teal,
               label: 'Show baseline check-in',
@@ -236,8 +277,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Text(
                     'Zero network requests. Zero analytics. Zero crash reporting. '
                     'Everything you enter — check-ins, '
-                    'journal entries, HRV readings, your safe place description '
-                    '— is stored only on this device.\n\n'
+                    'journal entries, HRV readings, your safe place description, '
+                    'and trusted people — is stored only on this device.\n\n'
                     'We cannot provide your data to anyone because we do '
                     'not have it.',
                     style: TextStyle(
@@ -638,7 +679,9 @@ class _TileButton extends StatelessWidget {
                             color: AppColors.textPrimary, fontSize: 14)),
                     Text(subtitle,
                         style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 12)),
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                            height: 1.35)),
                   ],
                 ),
               ),

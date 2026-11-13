@@ -18,6 +18,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Tame the Storm'), findsOneWidget);
+    expect(find.byKey(const Key('opening-figure')), findsOneWidget);
     expect(find.text('Continue'), findsOneWidget);
     expect(find.text('Anchor your baseline'), findsNothing);
 
@@ -30,6 +31,22 @@ void main() {
 
     expect(find.text('how are you\nright now?'), findsOneWidget);
     expect(find.bySemanticsLabel('Chest, unmarked'), findsOneWidget);
+  });
+
+  testWidgets('opening figure fits a phone width', (tester) async {
+    tester.view.physicalSize = const Size(390, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      const ThrivesApp(onboardingDone: false, initialWot: null),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('opening-figure')), findsOneWidget);
+    expect(find.text('Tame the Storm'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('intro continue reaches the body map without a swipe',

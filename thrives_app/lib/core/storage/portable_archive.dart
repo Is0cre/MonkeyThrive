@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'local_encrypted_store.dart';
 import 'passphrase_seal.dart';
+import 'prefs_service.dart';
 
 /// A local copy of history and preferences, sealed with a passphrase.
 ///
@@ -33,6 +34,7 @@ class PortableArchive {
     'profile_reduce_vibration',
     'profile_has_therapist',
     'crisis_directory_country',
+    PrefsService.trustedPeopleKey,
     'appearance_accent',
     'appearance_contrast',
     'tier2_unlocked',
@@ -119,7 +121,8 @@ class PortableArchive {
     if (value is int) return {'t': 'int', 'v': value};
     if (value is double) return {'t': 'double', 'v': value};
     if (value is String) return {'t': 'string', 'v': value};
-    throw FormatException('Cannot copy a preference of type ${value.runtimeType}.');
+    throw FormatException(
+        'Cannot copy a preference of type ${value.runtimeType}.');
   }
 
   static Future<void> _writeValue(

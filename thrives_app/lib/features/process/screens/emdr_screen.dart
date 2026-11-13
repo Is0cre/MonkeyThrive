@@ -13,6 +13,7 @@ import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 // CLINICAL SAFETY — Bilateral Stimulation (BLS)
 // What this does: Provides alternating left/right visual, auditory, and tactile
@@ -296,16 +297,25 @@ class _EmdrScreenState extends State<EmdrScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Session complete',
             style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
-          'Take a moment. Notice what came up, if anything.\n\n'
-          'There is no right way to feel.',
-          style: TextStyle(
-              color: AppColors.textSecondary, fontSize: 14, height: 1.6),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Take a moment. Notice what came up, if anything.\n\n'
+              'There is no right way to feel.',
+              style: TextStyle(
+                  color: AppColors.textPrimary, fontSize: 15, height: 1.6),
+            ),
+            SizedBox(height: 16),
+            FeelingBetterPrompt(),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Done', style: TextStyle(color: AppColors.teal)),
+            child:
+                const Text('Close', style: TextStyle(color: AppColors.teal)),
           ),
         ],
       ),

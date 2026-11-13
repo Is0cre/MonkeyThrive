@@ -5,6 +5,7 @@ import '../../../core/data/crisis_dialer.dart';
 import '../../../core/data/crisis_helplines.dart';
 import '../../../core/storage/prefs_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../support/trusted_person_banner.dart';
 
 // CLINICAL SAFETY — Offline crisis directory
 // What this does: Shows crisis and emergency numbers stored in the app,
@@ -155,6 +156,10 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                       height: 1.45,
                       fontWeight: FontWeight.w400,
                     ),
+                  ),
+                  TrustedPersonBanner(
+                    dialer: _dialer,
+                    offerSetup: true,
                   ),
                   const SizedBox(height: 18),
                   const _FieldLabel('Country'),

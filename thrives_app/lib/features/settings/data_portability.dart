@@ -107,9 +107,11 @@ class _ExportDialogState extends State<_ExportDialog> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  _PassphraseField(controller: _passphrase, label: 'Passphrase'),
+                  _PassphraseField(
+                      controller: _passphrase, label: 'Passphrase'),
                   const SizedBox(height: 8),
-                  _PassphraseField(controller: _repeat, label: 'Repeat passphrase'),
+                  _PassphraseField(
+                      controller: _repeat, label: 'Repeat passphrase'),
                   if (_error != null) _ErrorText(_error!),
                 ],
               )
@@ -245,8 +247,9 @@ class _ImportDialogState extends State<_ImportDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'This replaces the journal, check-ins, session log, and '
-              'preferences on this device. It does not contact a server.',
+              'This replaces the journal, check-ins, session log, '
+              'trusted people, and preferences on this device. '
+              'It does not contact a server.',
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
@@ -260,7 +263,8 @@ class _ImportDialogState extends State<_ImportDialog> {
               controller: _token,
               minLines: 3,
               maxLines: 6,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+              style:
+                  const TextStyle(color: AppColors.textPrimary, fontSize: 13),
               decoration: _fieldDecoration('Paste the copy'),
             ),
             if (_error != null) _ErrorText(_error!),
@@ -316,7 +320,8 @@ class _ErrorText extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10),
       child: Text(
         message,
-        style: const TextStyle(color: AppColors.danger, fontSize: 13, height: 1.4),
+        style:
+            const TextStyle(color: AppColors.danger, fontSize: 13, height: 1.4),
       ),
     );
   }

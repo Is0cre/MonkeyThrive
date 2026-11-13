@@ -6,6 +6,7 @@ import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 enum BreathingMode { box, fourSevenEight }
 
@@ -29,7 +30,10 @@ class _BreathingScreenState extends State<BreathingScreen>
   late AnimationController _circleController;
   late Animation<double> _circleAnimation;
 
+  static const int _sessionCycles = 4;
+
   bool _running = false;
+  bool _sessionDone = false;
   int _phaseIndex = 0;
   int _secondsLeft = 0;
   int _cycleCount = 0;
@@ -77,12 +81,12 @@ class _BreathingScreenState extends State<BreathingScreen>
   void _startStop() {
     if (_running) {
       _pause();
-    } else {
-      _start();
+    } else if (!_sessionDone) {
+      _start(fresh: _cycleCount == 0);
     }
   }
 
-  void _start() {
+  void _start({required bool fresh}) {
     final wot = WoTScope.stateOf(context);
     if (widget.mode == BreathingMode.fourSevenEight &&
         (wot == null || !wot.can4_7_8)) {
@@ -95,8 +99,12 @@ class _BreathingScreenState extends State<BreathingScreen>
     beginTracking(toolName, 'Regulate', onEmergencyStop: _pause);
     setState(() {
       _running = true;
-      _phaseIndex = 0;
-      _secondsLeft = _currentPhase.durationSeconds;
+      _sessionDone = false;
+      if (fresh) {
+        _phaseIndex = 0;
+        _cycleCount = 1;
+        _secondsLeft = _phases.first.durationSeconds;
+      }
     });
     _animatePhase();
     _startTimer();
@@ -137,15 +145,31 @@ class _BreathingScreenState extends State<BreathingScreen>
   }
 
   void _nextPhase() {
-    _phaseIndex = (_phaseIndex + 1) % _phases.length;
-    if (_phaseIndex == 0) {
-      _cycleCount++;
+    final wrapping = _phaseIndex + 1 >= _phases.length;
+    if (wrapping) {
       HapticFeedback.lightImpact();
+      if (_cycleCount >= _sessionCycles) {
+        _finishSession();
+        return;
+      }
+      _cycleCount++;
+      _phaseIndex = 0;
     } else {
+      _phaseIndex++;
       HapticFeedback.selectionClick();
     }
     _secondsLeft = _currentPhase.durationSeconds;
     _animatePhase();
+  }
+
+  void _finishSession() {
+    _timer?.cancel();
+    _circleController.stop();
+    endTracking();
+    _running = false;
+    _sessionDone = true;
+    _secondsLeft = 0;
+    HapticFeedback.mediumImpact();
   }
 
   void _animatePhase() {
@@ -169,8 +193,13 @@ class _BreathingScreenState extends State<BreathingScreen>
       _phaseIndex = 0;
       _secondsLeft = 0;
       _cycleCount = 0;
+      _sessionDone = false;
       _circleController.value = 0.4;
     });
+  }
+
+  void _anotherRound() {
+    _start(fresh: true);
   }
 
   String get _title {
@@ -207,62 +236,79 @@ class _BreathingScreenState extends State<BreathingScreen>
                 'If you feel dizzy, stop and breathe normally.',
               ),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Animated circle
-                  AnimatedBuilder(
-                    animation: _circleAnimation,
-                    builder: (context, _) {
-                      final size = MediaQuery.of(context).size.width * 0.55;
-                      return SizedBox(
-                        width: size,
-                        height: size,
-                        child: CustomPaint(
-                          painter: _BreathCirclePainter(
-                            progress: _circleAnimation.value,
-                            color: AppColors.teal,
-                            isRunning: _running,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (!_sessionDone)
+                            AnimatedBuilder(
+                              animation: _circleAnimation,
+                              builder: (context, _) {
+                                final size =
+                                    MediaQuery.of(context).size.width * 0.55;
+                                return SizedBox(
+                                  width: size,
+                                  height: size,
+                                  child: CustomPaint(
+                                    painter: _BreathCirclePainter(
+                                      progress: _circleAnimation.value,
+                                      color: AppColors.teal,
+                                      isRunning: _running,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          if (!_sessionDone) const SizedBox(height: 40),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            child: Text(
+                              _running ? _currentPhase.label : '',
+                              key: ValueKey(
+                                  _running ? _currentPhase.label : 'idle'),
+                              style: const TextStyle(
+                                color: AppColors.teal,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w300,
+                                letterSpacing: 2,
+                              ),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Phase label
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 400),
-                    child: Text(
-                      _running ? _currentPhase.label : '',
-                      key: ValueKey(_running ? _currentPhase.label : 'idle'),
-                      style: const TextStyle(
-                        color: AppColors.teal,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 2,
+                          const SizedBox(height: 12),
+                          Text(
+                            _running ? '$_secondsLeft' : '',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            !_sessionDone && _cycleCount > 0
+                                ? 'Cycle $_cycleCount of $_sessionCycles'
+                                : '',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 15,
+                            ),
+                          ),
+                          if (_sessionDone) ...[
+                            const SizedBox(height: 28),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              child: FeelingBetterPrompt(),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Seconds countdown — gentle, not aggressive
-                  Text(
-                    _running ? '$_secondsLeft' : '',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _cycleCount > 0 ? 'Cycle $_cycleCount' : '',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
 
@@ -271,7 +317,7 @@ class _BreathingScreenState extends State<BreathingScreen>
               padding: const EdgeInsets.fromLTRB(32, 0, 32, 32),
               child: Column(
                 children: [
-                  if (isBox) ...[
+                  if (isBox && !_sessionDone) ...[
                     _CountSelector(
                       current: _boxCount,
                       enabled: !_running,
@@ -279,33 +325,57 @@ class _BreathingScreenState extends State<BreathingScreen>
                     ),
                     const SizedBox(height: 20),
                   ],
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: FilledButton(
-                      onPressed: _startStop,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _running
-                            ? AppColors.surfaceVariant
-                            : AppColors.teal,
-                        foregroundColor: _running
-                            ? AppColors.textPrimary
-                            : AppColors.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                  if (_sessionDone)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        key: const Key('breathing-again'),
+                        onPressed: _anotherRound,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textPrimary,
+                          side: const BorderSide(color: AppColors.teal),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Another round',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        _running
-                            ? 'Pause'
-                            : (_cycleCount > 0 ? 'Resume' : 'Begin'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: _startStop,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _running
+                              ? AppColors.surfaceVariant
+                              : AppColors.teal,
+                          foregroundColor: _running
+                              ? AppColors.textPrimary
+                              : AppColors.background,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          _running
+                              ? 'Pause'
+                              : (_cycleCount > 0 ? 'Resume' : 'Begin'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

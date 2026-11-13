@@ -74,6 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           'when to stay, and when a tool stays closed. '
                           'Like Sun Wukong learning to hold his own chaos, '
                           'this is practice in self-regulation.',
+                      figureAsset: 'assets/brand/monkey_king.png',
                     ),
                     _IntroPage(
                       kicker: 'On this device',
@@ -137,12 +138,14 @@ class _IntroPage extends StatelessWidget {
   final String title;
   final String body;
   final String? footnote;
+  final String? figureAsset;
 
   const _IntroPage({
     required this.kicker,
     required this.title,
     required this.body,
     this.footnote,
+    this.figureAsset,
   });
 
   @override
@@ -150,6 +153,25 @@ class _IntroPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (figureAsset != null)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Semantics(
+                image: true,
+                label: 'Sun Wukong in red and gold, holding a phone.',
+                child: SizedBox.expand(
+                  key: const Key('opening-figure'),
+                  child: Image.asset(
+                    figureAsset!,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.bottomCenter,
+                    excludeFromSemantics: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
         Text(
           kicker.toUpperCase(),
           style: const TextStyle(
@@ -176,7 +198,7 @@ class _IntroPage extends StatelessWidget {
             height: 1.6,
           ),
         ),
-        const Spacer(),
+        if (figureAsset == null) const Spacer(),
         if (footnote != null)
           Text(
             footnote!,

@@ -6,6 +6,8 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/main_shell.dart';
 import '../../settings/screens/crisis_directory_screen.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../support/trusted_person_banner.dart';
 
 // CLINICAL SAFETY — Panic sequence / physiological sigh
 // What this does: On emergency button press, auto-plays 3 cycles of the
@@ -81,7 +83,8 @@ class _PanicScreenState extends State<PanicScreen>
     HapticFeedback.lightImpact();
     if (!_canVibrate) return;
     unawaited(
-      Vibration.vibrate(duration: milliseconds, amplitude: 48).catchError((_) {}),
+      Vibration.vibrate(duration: milliseconds, amplitude: 48)
+          .catchError((_) {}),
     );
   }
 
@@ -164,14 +167,21 @@ class _PanicScreenState extends State<PanicScreen>
       body: SafeArea(
         child: Stack(
           children: [
-            Center(
-              child: _done
-                  ? _DoneView(
-                      onGoRegulate: _goToRegulate,
-                      onOpenDirectory: _openDirectory,
-                    )
-                  : _BreathView(circleAnim: _circleAnim),
-            ),
+            _done
+                ? SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: _DoneView(
+                          onGoRegulate: _goToRegulate,
+                          onOpenDirectory: _openDirectory,
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(child: _BreathView(circleAnim: _circleAnim)),
             if (!_done)
               Positioned(
                 left: 8,
@@ -214,7 +224,8 @@ class _BreathView extends StatelessWidget {
               shape: BoxShape.circle,
               color: const Color(0xFF8A6228).withValues(alpha: 0.16 + t * 0.20),
               border: Border.all(
-                color: const Color(0xFFE8A645).withValues(alpha: 0.22 + t * 0.18),
+                color:
+                    const Color(0xFFE8A645).withValues(alpha: 0.22 + t * 0.18),
                 width: 1.5,
               ),
             ),
@@ -256,7 +267,11 @@ class _DoneView extends StatelessWidget {
             fontWeight: FontWeight.w300,
           ),
         ),
-        const SizedBox(height: 56),
+        const SizedBox(height: 28),
+        const FeelingBetterPrompt(),
+        const SizedBox(height: 24),
+        const TrustedPersonBanner(onBlack: true, offerSetup: true),
+        const SizedBox(height: 20),
         TextButton(
           onPressed: onGoRegulate,
           child: const Text(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 class _VagalTool {
   final String title;
@@ -246,11 +247,9 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
   Widget build(BuildContext context) {
     const color = Color(0xFF8B6FD4);
 
-    return Padding(
+    return ListView(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      children: [
           GestureDetector(
             onTap: () {
               _reset();
@@ -331,7 +330,7 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
             ),
           ),
 
-          const Spacer(),
+          const SizedBox(height: 28),
 
           if (_hasTimer) ...[
             if (_running || _done) ...[
@@ -349,6 +348,10 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
                       ),
               ),
               const SizedBox(height: 20),
+            ],
+            if (_done) ...[
+              const FeelingBetterPrompt(),
+              const SizedBox(height: 16),
             ],
             SizedBox(
               width: double.infinity,
@@ -374,27 +377,34 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
               ),
             ),
           ] else ...[
+            if (_done) ...[
+              const FeelingBetterPrompt(),
+              const SizedBox(height: 16),
+            ],
             SizedBox(
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
                 onPressed: () {
+                  if (!_done) {
+                    setState(() => _done = true);
+                    return;
+                  }
                   _reset();
                   widget.onBack();
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.surfaceVariant),
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: AppColors.amber),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Done'),
+                child: Text(_done ? 'Back' : 'Done'),
               ),
             ),
           ],
           const SizedBox(height: 16),
         ],
-      ),
     );
   }
 }

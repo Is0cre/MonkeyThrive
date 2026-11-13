@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 // CLINICAL SAFETY — Physiological sigh
 // What this does: Guides the user through the physiological sigh — a double
@@ -188,7 +189,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
 
   @override
   Widget build(BuildContext context) {
-    final circleSize = 180.0;
+    final circleSize = _done ? 88.0 : 180.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -303,73 +304,63 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: Column(
                 children: [
-                  // Round count picker (only when not running)
-                  AnimatedOpacity(
-                    opacity: !_running && _round == 0 ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: IgnorePointer(
-                      ignoring: _running || _round > 0,
-                      child: Column(
-                        children: [
-                          const Text(
-                            'ROUNDS',
-                            style: TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              for (final n in [3, 5, 10])
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 6),
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        setState(() => _targetRounds = n),
-                                    child: AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 150),
-                                      width: 56,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: _targetRounds == n
-                                            ? AppColors.teal
-                                                .withValues(alpha: 0.15)
-                                            : AppColors.surface,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: _targetRounds == n
-                                              ? AppColors.teal
-                                              : Colors.transparent,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '$n',
-                                          style: TextStyle(
-                                            color: _targetRounds == n
-                                                ? AppColors.teal
-                                                : AppColors.textSecondary,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
+                  if (!_running && _round == 0 && !_done) ...[
+                    const Text(
+                      'ROUNDS',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (final n in [3, 5, 10])
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: GestureDetector(
+                              onTap: () => setState(() => _targetRounds = n),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 56,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: _targetRounds == n
+                                      ? AppColors.teal.withValues(alpha: 0.15)
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: _targetRounds == n
+                                        ? AppColors.teal
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '$n',
+                                    style: TextStyle(
+                                      color: _targetRounds == n
+                                          ? AppColors.teal
+                                          : AppColors.textSecondary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
-                            ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
+                  if (_done) ...[
+                    const FeelingBetterPrompt(),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Begin / pause / resume / again
                   SizedBox(

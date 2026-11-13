@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tolerance_state.dart';
+import '../models/trusted_person.dart';
 
 /// Central access point for all SharedPreferences keys.
 /// Nothing stored here leaves the device.
@@ -22,6 +25,9 @@ class PrefsService {
   /// Country id chosen in the crisis directory.
   /// A display preference only. Never a phone number, and never transmitted.
   static const _keyCrisisCountry = 'crisis_directory_country';
+
+  /// One or two trusted people, as JSON. Stays on this device.
+  static const trustedPeopleKey = 'trusted_persons';
 
   static Future<bool> isOnboardingDone() async {
     final prefs = await SharedPreferences.getInstance();
@@ -105,5 +111,37 @@ class PrefsService {
   static Future<void> saveCrisisCountry(String countryId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyCrisisCountry, countryId);
+  }
+
+  static Future<List<TrustedPerson>> loadTrustedPeople() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(trustedPeopleKey);
+    if (raw == null || raw.isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return const [];
+      final people = <TrustedPerson>[];
+      for (final item in decoded) {
+        if (people.length == TrustedPerson.limit) break;
+        if (item is! Map) continue;
+        final person = TrustedPerson.tryParse(Map<String, dynamic>.from(item));
+        if (person != null) people.add(person);
+      }
+      return people;
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static Future<void> saveTrustedPeople(List<TrustedPerson> people) async {
+    final prefs = await SharedPreferences.getInstance();
+    final kept = people.take(TrustedPerson.limit).toList(growable: false);
+    if (kept.isEmpty) {
+      await prefs.remove(trustedPeopleKey);
+    } else {
+      final encoded = jsonEncode([for (final person in kept) person.toJson()]);
+      await prefs.setString(trustedPeopleKey, encoded);
+    }
+    trustedPeopleRevision.value++;
   }
 }

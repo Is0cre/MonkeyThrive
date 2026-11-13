@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/feeling_better_prompt.dart';
 
 class _GroundingStep {
   final int count;
@@ -165,12 +166,19 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                  child: _finished
-                      ? _buildFinished(context)
-                      : _buildStep(context, step!),
-                ),
+                child: _finished
+                    ? ListView(
+                        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+                        children: [
+                          _buildFinished(context),
+                          const SizedBox(height: 28),
+                          const FeelingBetterPrompt(),
+                        ],
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+                        child: _buildStep(context, step!),
+                      ),
               ),
             ),
 
@@ -184,7 +192,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                         onPressed: () => Navigator.pop(context),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.amber,
-                          foregroundColor: AppColors.background,
+                          foregroundColor: const Color(0xFF1A140C),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
                         ),
@@ -277,7 +285,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
 
   Widget _buildFinished(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         const Icon(Icons.check_circle_outline_rounded,
             color: AppColors.amber, size: 64),
