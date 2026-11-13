@@ -98932,8 +98932,8 @@ break}if(o)A.bw(a,!1).dl(null)
 else a.ab(t.J).f.iW(B.Yu)
 case 1:return A.A(q,r)}})
 return A.B($async$Bd,r)},
-D(a){var s=this,r=null,q=A.iN(r,r,B.a3T),p=t.p,o=A.aY(A.a([A.bO(A.a([B.a5f,B.cv,A.bC(r,B.a5y,B.p,r,new A.aN(B.aW,r,r,A.al(6),r,r,B.x),r,r,r,r,B.qC,r,r,r)],p),B.q,B.k,B.l,0),B.aO,B.a4u,B.aO,B.a3Q,B.ac,B.a9F,B.ec,B.a9G],p),B.J,r,B.k,B.l),n=s.VL(a)?"A saved text, kept on this device.":"Available when the reading is present."
-return A.eK(q,r,A.d9(!0,A.jQ(A.a([new A.nt("About",r),new A.nm(o,r),B.aq,new A.nt("Appearance",r),B.a7V,B.aq,new A.nt("Safety",r),new A.lA(B.Mu,B.bw,"Crisis support directory","Offline helplines by country. Stays on this device.",new A.aFn(a),r),B.ah,new A.lA(B.LX,B.a1,"Trusted person",n,new A.aFo(s,a),r),B.ah,new A.lA(B.M0,B.C,"Show baseline check-in","Preview the local prompt implementation",new A.aFp(s,a),r),B.aq,new A.nt("Privacy",r),new A.nm(A.aY(A.a([B.a5e,B.aO,B.a4o,B.hL,B.a9H,B.jZ,B.a9E,B.jZ,B.a9I,B.jZ,B.a9J],p),B.J,r,B.k,B.l),r),B.aq,new A.nt("Disclaimer",r),new A.nm(B.a50,r),B.aq,new A.nt("Your data",r),new A.lA(B.LZ,B.C,"Export","Passphrase-sealed file on this device",new A.aFq(a),r),B.ah,new A.lA(B.M_,B.C,"Import","Restore a sealed copy onto this device",new A.aFr(a),r),B.ah,new A.lA(B.Ma,B.bw,"Clear all data","Journal, HRV, check-ins, session log, safe place",new A.aFs(s,a),r),B.ah,new A.lA(B.Mj,B.D,"Redo onboarding","Reset your profile questionnaire",new A.aFt(s,a),r)],p),B.La,r,!1),B.W,!0),r,r)}}
+D(a){var s=this,r=null,q=A.iN(r,r,B.a3T),p=t.p,o=A.aY(A.a([A.bO(A.a([B.a5f,B.cv,A.bC(r,B.a5y,B.p,r,new A.aN(B.aW,r,r,A.al(6),r,r,B.x),r,r,r,r,B.qC,r,r,r)],p),B.q,B.k,B.l,0),B.aO,B.a4u,B.aO,B.a3Q,B.ac,B.a9F,B.ec,B.a9J],p),B.J,r,B.k,B.l),n=s.VL(a)?"A saved text, kept on this device.":"Available when the reading is present."
+return A.eK(q,r,A.d9(!0,A.jQ(A.a([new A.nt("About",r),new A.nm(o,r),B.aq,new A.nt("Appearance",r),B.a7V,B.aq,new A.nt("Safety",r),new A.lA(B.Mu,B.bw,"Crisis support directory","Offline helplines by country. Stays on this device.",new A.aFn(a),r),B.ah,new A.lA(B.LX,B.a1,"Trusted person",n,new A.aFo(s,a),r),B.ah,new A.lA(B.M0,B.C,"Show baseline check-in","Preview the local prompt implementation",new A.aFp(s,a),r),B.aq,new A.nt("Privacy",r),new A.nm(A.aY(A.a([B.a5e,B.aO,B.a4o,B.hL,B.a9G,B.jZ,B.a9E,B.jZ,B.a9H,B.jZ,B.a9I],p),B.J,r,B.k,B.l),r),B.aq,new A.nt("Disclaimer",r),new A.nm(B.a50,r),B.aq,new A.nt("Your data",r),new A.lA(B.LZ,B.C,"Export","Passphrase-sealed file on this device",new A.aFq(a),r),B.ah,new A.lA(B.M_,B.C,"Import","Restore a sealed copy onto this device",new A.aFr(a),r),B.ah,new A.lA(B.Ma,B.bw,"Clear all data","Journal, HRV, check-ins, session log, safe place",new A.aFs(s,a),r),B.ah,new A.lA(B.Mj,B.D,"Redo onboarding","Reset your profile questionnaire",new A.aFt(s,a),r)],p),B.La,r,!1),B.W,!0),r,r)}}
 A.aFh.prototype={
 $1(a){var s=null,r=A.al(20),q=this.a
 return A.nH(A.a([A.dp(B.hU,s,new A.aFf(q),s),A.dp(B.a56,s,new A.aFg(q),s)],t.p),B.E,B.a5_,!1,new A.bq(r,B.r),B.a4T)},
@@ -113120,7 +113120,7 @@ B.ZL=new A.m(!0,B.D,null,null,null,null,14,null,null,null,null,null,null,null,nu
 B.a5w=new A.aa("seconds",null,B.ZL,null,null,null,null,null,null)
 B.a1F=new A.m(!0,B.D,null,null,null,null,15,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.a5x=new A.aa("Heart rate variability",null,B.a1F,null,null,null,null,null,null)
-B.a5y=new A.aa("v0.1.1",null,B.fe,null,null,null,null,null,null)
+B.a5y=new A.aa("v0.1.2",null,B.fe,null,null,null,null,null,null)
 B.a_r=new A.m(!0,null,null,null,null,null,null,B.U,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.a5z=new A.aa("Save",null,B.a_r,null,null,null,null,null,null)
 B.a5A=new A.aa("seconds",null,B.bs,null,null,null,null,null,null)
@@ -113509,11 +113509,11 @@ B.j4=new A.b_(983518,"MaterialIcons",!1)
 B.a9E=new A.nr(B.j4,"HRV readings \u2014 device only",null)
 B.M7=new A.b_(63059,"MaterialIcons",!1)
 B.a9F=new A.nr(B.M7,"github.com/Is0cre/MonkeyThrive",null)
+B.a9G=new A.nr(B.j4,"Journal entries \u2014 device only",null)
+B.a9H=new A.nr(B.j4,"Check-in history \u2014 device only",null)
+B.a9I=new A.nr(B.j4,"Session log \u2014 device only",null)
 B.Ms=new A.b_(983776,"MaterialIcons",!1)
-B.a9G=new A.nr(B.Ms,"GPL-3.0 \xb7 non-military, non-intelligence use only",null)
-B.a9H=new A.nr(B.j4,"Journal entries \u2014 device only",null)
-B.a9I=new A.nr(B.j4,"Check-in history \u2014 device only",null)
-B.a9J=new A.nr(B.j4,"Session log \u2014 device only",null)
+B.a9J=new A.nr(B.Ms,"GPL-3.0-only",null)
 B.kA=new A.hS(0,"body")
 B.kB=new A.hS(1,"appBar")
 B.oF=new A.hS(10,"endDrawer")
