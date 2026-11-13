@@ -332,6 +332,8 @@ String countryIdForDeviceLocale({
       return regionGermany.id;
     case 'MT':
       return regionMalta.id;
+    case 'IN':
+      return regionIndia.id;
     case null:
     case '':
       break;

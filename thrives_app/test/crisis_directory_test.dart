@@ -146,6 +146,10 @@ void main() {
       countryIdForDeviceLocale(countryCode: 'DE', languageCode: 'de'),
       'de',
     );
+    expect(
+      countryIdForDeviceLocale(countryCode: 'IN', languageCode: 'hi'),
+      'in',
+    );
     expect(countryIdForDeviceLocale(languageCode: 'sv'), 'se');
     expect(
       countryIdForDeviceLocale(countryCode: 'AT', languageCode: 'de'),
