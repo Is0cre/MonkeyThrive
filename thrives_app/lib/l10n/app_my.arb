@@ -1,0 +1,33 @@
+{
+  "@@locale": "my",
+  "appTitle": "MonkeyThrive",
+  "@appTitle": {
+    "description": "The app name. Keep this word unchanged in every language."
+  },
+  "boxBreathingTitle": "လေးထောင့်ကွက်ပုံစံ အသက်ရှူလေ့ကျင့်ခန်း",
+  "@boxBreathingTitle": {
+    "description": "Title of the box breathing screen."
+  },
+  "breathingBegin": "စတင်ပါ",
+  "@breathingBegin": {
+    "description": "Button that starts a breathing exercise."
+  },
+  "breathingPause": "ခေတ္တရပ်ပါ",
+  "@breathingPause": {
+    "description": "Button that pauses a breathing exercise."
+  },
+  "breathingCycle": "စက်ဝန်း {total} ကြိမ်အနက် {current} ကြိမ်မြောက်",
+  "@breathingCycle": {
+    "description": "Which pacing cycle is playing, and how many there are in the round.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  }
+}
