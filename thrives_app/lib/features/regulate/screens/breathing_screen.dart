@@ -249,16 +249,22 @@ class _BreathingScreenState extends State<BreathingScreen>
                             AnimatedBuilder(
                               animation: _circleAnimation,
                               builder: (context, _) {
-                                final size =
-                                    MediaQuery.of(context).size.width * 0.55;
-                                return SizedBox(
-                                  width: size,
-                                  height: size,
-                                  child: CustomPaint(
-                                    painter: _BreathCirclePainter(
-                                      progress: _circleAnimation.value,
-                                      color: AppColors.teal,
-                                      isRunning: _running,
+                                final size = _breathCircleSize(constraints);
+                                return ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 300,
+                                    maxHeight: 300,
+                                  ),
+                                  child: SizedBox(
+                                    key: const Key('breath-circle'),
+                                    width: size,
+                                    height: size,
+                                    child: CustomPaint(
+                                      painter: _BreathCirclePainter(
+                                        progress: _circleAnimation.value,
+                                        color: AppColors.teal,
+                                        isRunning: _running,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -384,6 +390,15 @@ class _BreathingScreenState extends State<BreathingScreen>
       ),
     );
   }
+}
+
+/// 55% of the shorter side, never above 300. Wide web windows were using
+/// the full viewport width, which grew the circle past the screen.
+double _breathCircleSize(BoxConstraints constraints) {
+  final width = constraints.maxWidth.isFinite ? constraints.maxWidth : 300.0;
+  final height = constraints.maxHeight.isFinite ? constraints.maxHeight : 300.0;
+  final shortest = width < height ? width : height;
+  return (shortest * 0.55).clamp(120.0, 300.0);
 }
 
 class _BreathCirclePainter extends CustomPainter {

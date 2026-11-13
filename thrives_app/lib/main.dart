@@ -10,6 +10,7 @@ import 'core/storage/tier_service.dart';
 import 'core/widgets/main_shell.dart';
 import 'features/checkin/screens/checkin_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -125,6 +126,8 @@ class _ThrivesAppState extends State<ThrivesApp> {
             navigatorKey: _navigatorKey,
             title: 'MonkeyThrive',
             debugShowCheckedModeBanner: false,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: AppTheme.dark(appearance),
             darkTheme: AppTheme.dark(appearance),
             themeMode: ThemeMode.dark,

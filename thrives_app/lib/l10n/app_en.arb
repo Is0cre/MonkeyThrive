@@ -1,0 +1,33 @@
+{
+  "@@locale": "en",
+  "appTitle": "MonkeyThrive",
+  "@appTitle": {
+    "description": "The app name. Keep this word unchanged in every language."
+  },
+  "boxBreathingTitle": "Box Breathing",
+  "@boxBreathingTitle": {
+    "description": "Title of the box breathing screen."
+  },
+  "breathingBegin": "Begin",
+  "@breathingBegin": {
+    "description": "Button that starts a breathing exercise."
+  },
+  "breathingPause": "Pause",
+  "@breathingPause": {
+    "description": "Button that pauses a breathing exercise."
+  },
+  "breathingCycle": "Cycle {current} of {total}",
+  "@breathingCycle": {
+    "description": "Which pacing cycle is playing, and how many there are in the round.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  }
+}
