@@ -16,13 +16,13 @@ You can do this entirely on GitHub. You do not need Flutter, Android Studio, or 
 
 Pick one of these:
 
-1. Paste the translation in a comment on this issue. Use a table:
+1. Paste the translation in a comment. Copy the full table from the open issue [Translation: all languages](https://github.com/Is0cre/MonkeyThrive/issues/4) and fill the Translation column. That table is the whole catalog. The three rows below only show the shape:
 
    | Key | English | Translation |
    | --- | --- | --- |
    | boxBreathingTitle | Box Breathing | |
    | breathingBegin | Begin | |
-   | breathingPause | Pause | |
+   | breathingCycle | Cycle {current} of {total} | |
 
 2. Or add the file yourself. On GitHub, open `thrives_app/lib/l10n/app_en.arb`, choose **Edit** or **Copy**, and save the copy as `thrives_app/lib/l10n/app_<locale>.arb` (for Swedish, `app_sv.arb`). Change the first line `"@@locale": "en"` to your locale. Translate only the text on the right of each message. Leave every key, every `{placeholder}`, and every `"@key"` description in English.
 
