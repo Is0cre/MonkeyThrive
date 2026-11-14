@@ -73,7 +73,7 @@ The same three states can be corrected later from Monitor. That correction uses 
 
 ### Regulate and Attune (Tier 1, always on the bar)
 
-- **Box breathing.** A 3, 4, or 5 count, with a visual pace and haptics.
+- **Box breathing.** 3, 4, or 5 cycles. Each side is a 4 count, with a visual pace and haptics.
 - **Physiological sigh.** Double inhale, long exhale.
 - **4-7-8 breathing.** Available when the reading is present.
 - **Wim Hof rounds.** Available when the reading is present, and only after the per-session confirmations.

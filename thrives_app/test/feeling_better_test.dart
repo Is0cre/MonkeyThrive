@@ -103,6 +103,7 @@ void main() {
     await tester.tap(find.text('Begin'));
     await tester.pump();
 
+    expect(find.text('Cycle 1 of 3'), findsOneWidget);
     expect(find.text('Are you feeling better?'), findsNothing);
 
     for (var second = 0; second < 48; second++) {

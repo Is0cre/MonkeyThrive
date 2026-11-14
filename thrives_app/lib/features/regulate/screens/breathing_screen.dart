@@ -30,7 +30,8 @@ class _BreathingScreenState extends State<BreathingScreen>
   late AnimationController _circleController;
   late Animation<double> _circleAnimation;
 
-  static const int _sessionCycles = 4;
+  static const int _boxSideSeconds = 4;
+  static const int _fourSevenEightCycles = 4;
 
   bool _running = false;
   bool _sessionDone = false;
@@ -39,17 +40,20 @@ class _BreathingScreenState extends State<BreathingScreen>
   int _cycleCount = 0;
   Timer? _timer;
 
-  // Box breathing variants
-  int _boxCount = 4; // 3, 4, or 5
+  /// Box rounds the person picked: 3, 4, or 5. Each side stays a 4 count.
+  int _boxCycles = 4;
+
+  int get _roundCycles =>
+      widget.mode == BreathingMode.box ? _boxCycles : _fourSevenEightCycles;
 
   List<_Phase> get _phases {
     switch (widget.mode) {
       case BreathingMode.box:
         return [
-          _Phase('Inhale', _boxCount),
-          _Phase('Hold', _boxCount),
-          _Phase('Exhale', _boxCount),
-          _Phase('Hold', _boxCount),
+          _Phase('Inhale', _boxSideSeconds),
+          _Phase('Hold', _boxSideSeconds),
+          _Phase('Exhale', _boxSideSeconds),
+          _Phase('Hold', _boxSideSeconds),
         ];
       case BreathingMode.fourSevenEight:
         return [
@@ -148,7 +152,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     final wrapping = _phaseIndex + 1 >= _phases.length;
     if (wrapping) {
       HapticFeedback.lightImpact();
-      if (_cycleCount >= _sessionCycles) {
+      if (_cycleCount >= _roundCycles) {
         _finishSession();
         return;
       }
@@ -296,7 +300,7 @@ class _BreathingScreenState extends State<BreathingScreen>
                           const SizedBox(height: 8),
                           Text(
                             !_sessionDone && _cycleCount > 0
-                                ? 'Cycle $_cycleCount of $_sessionCycles'
+                                ? 'Cycle $_cycleCount of $_roundCycles'
                                 : '',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
@@ -325,9 +329,9 @@ class _BreathingScreenState extends State<BreathingScreen>
                 children: [
                   if (isBox && !_sessionDone) ...[
                     _CountSelector(
-                      current: _boxCount,
+                      current: _boxCycles,
                       enabled: !_running,
-                      onChanged: (v) => setState(() => _boxCount = v),
+                      onChanged: (v) => setState(() => _boxCycles = v),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -460,7 +464,7 @@ class _CountSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Count',
+          'Cycles',
           style: TextStyle(
             color: enabled ? AppColors.textSecondary : AppColors.textMuted,
             fontSize: 13,
