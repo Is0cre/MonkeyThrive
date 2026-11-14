@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}" dir="{{dir}}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clinical safety — MonkeyThrive</title>
-  <meta name="description" content="What MonkeyThrive is, what it refuses to do, and where to find a person.">
+  <title>{{safetyPageTitle}}</title>
+  <meta name="description" content="{{safetyPageDescription}}">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://monkeythrive.app/safety.html">
+  <link rel="canonical" href="{{canonical}}">
   <meta name="theme-color" content="#0D1117">
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="no-referrer">
@@ -14,6 +14,7 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{alternates}}
   <style>
     :root {
       --bg: #0d1117;
@@ -58,6 +59,15 @@
       box-shadow: 0 0 0 1px rgba(232, 166, 69, 0.35);
     }
 
+    .langs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin: 0 0 18px;
+    }
+
+    .langs a[aria-current="page"] { color: var(--text); text-decoration: none; }
+
     h1 {
       margin: 0 0 8px;
       font-size: 32px;
@@ -99,29 +109,30 @@
 </head>
 <body>
   <div class="wrap">
-    <img class="mark" src="emblem.png" width="72" height="72" alt="">
-    <h1>Clinical safety</h1>
-    <p class="lead">Plain limits for a tool that stays on your device.</p>
+    <img class="mark" src="/emblem.png" width="72" height="72" alt="">
+    {{langSwitch}}
+    <h1>{{safetyHeading}}</h1>
+    <p class="lead">{{safetyLead}}</p>
 
-    <h2>What this is</h2>
-    <p>MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. It does not diagnose, assess, or treat any condition.</p>
+    <h2>{{safetyWhatH}}</h2>
+    <p>{{safetyWhat}}</p>
 
-    <h2>Window of Tolerance</h2>
-    <p>A check-in asks how you are right now. Higher-intensity tools stay closed when that check-in is outside a regulated state. The gates are fixed rules in the app. They are not a score, and they are not a diagnosis.</p>
-    <p>Bilateral cueing is for grounding and attention. It is not EMDR and it is not trauma reprocessing. Wim Hof-style breathing asks for safety confirmations at the start of each session.</p>
+    <h2>{{safetyWotH}}</h2>
+    <p>{{safetyWot1}}</p>
+    <p>{{safetyWot2}}</p>
 
-    <h2>What the app will not do</h2>
-    <p>There is no account, no streak, and no engagement ranking. The app does not send journal entries, check-ins, or sensor readings anywhere. The country you pick in the crisis directory stays in local storage.</p>
+    <h2>{{safetyWontH}}</h2>
+    <p>{{safetyWont}}</p>
 
     <div class="note">
-      <p>Need immediate human support? MonkeyThrive includes an offline crisis directory, or reach out to local emergency services directly.</p>
+      <p>{{safetyNote}}</p>
     </div>
 
     <footer>
-      <nav aria-label="Project">
-        <a href="index.html">MonkeyThrive</a>
-        <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">GitHub</a>
-        <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">License (GPL-3.0)</a>
+      <nav aria-label="{{navProject}}">
+        <a href="index.html">{{brand}}</a>
+        <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">{{footerGithub}}</a>
+        <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">{{footerLicense}}</a>
       </nav>
     </footer>
   </div>

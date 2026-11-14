@@ -14,6 +14,8 @@ Language name, and the locale code to use in the filename (for example `sv`, `de
 
 You can do this entirely on GitHub. You do not need Flutter, Android Studio, or a local build.
 
+This template is the app. The public website has its own list, in the open issue "Translation: landing page".
+
 Pick one of these:
 
 1. Paste the translation in a comment. Copy the full table from the open issue [Translation: all languages](https://github.com/Is0cre/MonkeyThrive/issues/4) and fill the Translation column. That table is the whole catalog. The three rows below only show the shape:

@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://monkeythrive.app/</loc>
-    <lastmod>2026-11-12</lastmod>
+    <loc>https://monkeythrive.app</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://monkeythrive.app"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://monkeythrive.app/sv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://monkeythrive.app"/>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://monkeythrive.app/sv/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://monkeythrive.app"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://monkeythrive.app/sv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://monkeythrive.app"/>
+    <lastmod>2026-11-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://monkeythrive.app/safety.html</loc>
-    <lastmod>2026-11-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://monkeythrive.app/safety.html"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://monkeythrive.app/sv/safety.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://monkeythrive.app/safety.html"/>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://monkeythrive.app/sv/safety.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://monkeythrive.app/safety.html"/>
+    <xhtml:link rel="alternate" hreflang="sv" href="https://monkeythrive.app/sv/safety.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://monkeythrive.app/safety.html"/>
+    <lastmod>2026-11-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>

@@ -58,29 +58,40 @@ jobs:
           rm -rf publish
           mkdir -p publish/app
           cp -a thrives_app/build/web/. publish/app/
-          cp web_landing/index.html web_landing/safety.html web_landing/emblem.png web_landing/favicon.ico web_landing/favicon-192.png web_landing/apple-touch-icon.png web_landing/robots.txt web_landing/sitemap.xml publish/
+          python3 web_landing/build_landing.py publish
+          cp web_landing/emblem.png web_landing/favicon.ico web_landing/favicon-192.png web_landing/apple-touch-icon.png web_landing/robots.txt publish/
           cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
-          python3 - "$VERSION" publish/index.html << 'PY'
+          python3 - "$VERSION" publish << 'PY'
+          import pathlib
           import re
           import sys
-          version, path = sys.argv[1], sys.argv[2]
+          version, root = sys.argv[1], pathlib.Path(sys.argv[2])
           url = f"https://github.com/Is0cre/MonkeyThrive/releases/download/{version}/app-release.apk"
-          text = open(path, encoding="utf-8").read()
+          pages = [
+              path
+              for path in root.rglob("index.html")
+              if path.relative_to(root).parts[:1] != ("app",)
+          ]
+          if not pages:
+              raise SystemExit("no landing index.html")
 
           def repl(match):
               tag = re.sub(r'href="[^"]*"', f'href="{url}"', match.group(1), count=1)
-              return f"{tag}>Download the Android APK {version}</a>"
+              label = re.sub(r"v\d+\.\d+\.\d+", version, match.group(2), count=1)
+              return f"{tag}>{label}</a>"
 
-          updated, count = re.subn(
-              r'(<a\b[^>]*\bdata-apk="release"[^>]*)>.*?</a>',
-              repl,
-              text,
-              count=1,
-              flags=re.S,
-          )
-          if count != 1:
-              raise SystemExit('landing page is missing data-apk="release"')
-          open(path, "w", encoding="utf-8").write(updated)
+          for path in pages:
+              text = path.read_text(encoding="utf-8")
+              updated, count = re.subn(
+                  r'(<a\b[^>]*\bdata-apk="release"[^>]*)>(.*?)</a>',
+                  repl,
+                  text,
+                  count=1,
+                  flags=re.S,
+              )
+              if count != 1:
+                  raise SystemExit(f'{path} is missing data-apk="release"')
+              path.write_text(updated, encoding="utf-8")
           PY
           echo "monkeythrive.app" > publish/CNAME
           touch publish/.nojekyll
