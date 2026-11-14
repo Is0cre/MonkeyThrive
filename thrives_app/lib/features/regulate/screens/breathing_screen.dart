@@ -7,6 +7,7 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 enum BreathingMode { box, fourSevenEight }
 
@@ -119,8 +120,8 @@ class _BreathingScreenState extends State<BreathingScreen>
       SnackBar(
         content: Text(
           wot == null
-              ? 'Check in before using 4-7-8 breathing.'
-              : '4-7-8 breathing is ${wot.lockedReason}.',
+              ? context.l10n.breathing478NeedsCheckin
+              : context.l10n.breathing478Locked(toleranceLock(context.l10n, wot)),
         ),
         backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
@@ -206,12 +207,24 @@ class _BreathingScreenState extends State<BreathingScreen>
     _start(fresh: true);
   }
 
-  String get _title {
+  String _title(BuildContext context) {
     switch (widget.mode) {
       case BreathingMode.box:
-        return 'Box Breathing';
+        return context.l10n.boxBreathingTitle;
       case BreathingMode.fourSevenEight:
-        return '4-7-8 Breathing';
+        return context.l10n.breathing478Title;
+    }
+  }
+
+  String _phaseLabel(BuildContext context, String id) {
+    final l10n = context.l10n;
+    switch (id) {
+      case 'Exhale':
+        return l10n.exhale;
+      case 'Hold':
+        return l10n.hold;
+      default:
+        return l10n.inhale;
     }
   }
 
@@ -221,7 +234,7 @@ class _BreathingScreenState extends State<BreathingScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_title),
+        title: Text(_title(context)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
@@ -235,10 +248,7 @@ class _BreathingScreenState extends State<BreathingScreen>
         child: Column(
           children: [
             if (widget.mode == BreathingMode.fourSevenEight)
-              _InfoBanner(
-                '4-7-8 breathing is very effective for acute anxiety and sleep. '
-                'If you feel dizzy, stop and breathe normally.',
-              ),
+              _InfoBanner(context.l10n.breathing478Caution),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -278,7 +288,9 @@ class _BreathingScreenState extends State<BreathingScreen>
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 400),
                             child: Text(
-                              _running ? _currentPhase.label : '',
+                              _running
+                                  ? _phaseLabel(context, _currentPhase.label)
+                                  : '',
                               key: ValueKey(
                                   _running ? _currentPhase.label : 'idle'),
                               style: const TextStyle(
@@ -300,7 +312,10 @@ class _BreathingScreenState extends State<BreathingScreen>
                           const SizedBox(height: 8),
                           Text(
                             !_sessionDone && _cycleCount > 0
-                                ? 'Cycle $_cycleCount of $_roundCycles'
+                                ? context.l10n.breathingCycle(
+                                    _cycleCount,
+                                    _roundCycles,
+                                  )
                                 : '',
                             style: const TextStyle(
                               color: AppColors.textSecondary,
@@ -349,8 +364,8 @@ class _BreathingScreenState extends State<BreathingScreen>
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'Another round',
+                        child: Text(
+                          context.l10n.anotherRound,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -377,8 +392,10 @@ class _BreathingScreenState extends State<BreathingScreen>
                         ),
                         child: Text(
                           _running
-                              ? 'Pause'
-                              : (_cycleCount > 0 ? 'Resume' : 'Begin'),
+                              ? context.l10n.breathingPause
+                              : (_cycleCount > 0
+                                  ? context.l10n.breathingResume
+                                  : context.l10n.breathingBegin),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -464,7 +481,7 @@ class _CountSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Cycles',
+          context.l10n.breathingCycles,
           style: TextStyle(
             color: enabled ? AppColors.textSecondary : AppColors.textMuted,
             fontSize: 13,

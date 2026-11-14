@@ -7,23 +7,23 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
-const _defaultSafePlace =
+/// Previously stored when the description was left empty. Treat as the default.
+const _legacySafePlaceDefault =
     'Think of a place — real or imagined — where you feel completely safe. '
     'It might be a room, a landscape, a memory. '
     'It belongs only to you.';
 
-const _guidedPrompts = [
-  'Settle in. There is nowhere you need to be right now.\n\n'
-      'Let your breathing slow naturally.',
-  'Bring your safe place to mind. Allow yourself to arrive there.',
-  'Notice what you can see. The colours, the light, the shapes around you.',
-  'What sounds are here? Gentle, familiar sounds that belong to this place.',
-  'Feel the temperature. The air on your skin. The ground beneath you.',
-  'You are safe here. Nothing can reach you in this place.',
-  'Stay as long as you need. This place is always available to you.\n\n'
-      'You can return here any time you close your eyes.',
-];
+List<String> _guidedPrompts(AppLocalizations l10n) => [
+      l10n.safePrompt1,
+      l10n.safePrompt2,
+      l10n.safePrompt3,
+      l10n.safePrompt4,
+      l10n.safePrompt5,
+      l10n.safePrompt6,
+      l10n.safePrompt7,
+    ];
 
 class SafePlaceScreen extends StatefulWidget {
   const SafePlaceScreen({super.key});
@@ -38,7 +38,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
   bool _guiding = false;
   bool _askFeeling = false;
   int _promptIndex = 0;
-  String _safePlaceDescription = _defaultSafePlace;
+  String? _savedDescription;
   int _sessionMinutes = 5;
   int _sessionSecondsLeft = 0;
   Timer? _promptTimer;
@@ -69,11 +69,24 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
     super.dispose();
   }
 
+  bool _isDefaultDescription(String text) {
+    return text == _legacySafePlaceDefault ||
+        text == context.l10n.safePlaceDefault;
+  }
+
+  String _visibleDescription() {
+    final saved = _savedDescription;
+    if (saved == null || _isDefaultDescription(saved)) {
+      return context.l10n.safePlaceDefault;
+    }
+    return saved;
+  }
+
   Future<void> _loadSafePlace() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('safe_place_description');
     if (saved != null && mounted) {
-      setState(() => _safePlaceDescription = saved);
+      setState(() => _savedDescription = saved);
     }
   }
 
@@ -82,7 +95,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
     await prefs.setString('safe_place_description', text);
     if (mounted) {
       setState(() {
-        _safePlaceDescription = text;
+        _savedDescription = text;
         _editing = false;
       });
     }
@@ -95,8 +108,10 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
         SnackBar(
           content: Text(
             wot == null
-                ? 'Check in before using safe place.'
-                : 'Safe place is ${wot.lockedReason}.',
+                ? context.l10n.safePlaceNeedsCheckin
+                : context.l10n.safePlaceLocked(
+                    toleranceLock(context.l10n, wot),
+                  ),
           ),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
@@ -120,7 +135,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
       _fadeController.reverse().then((_) {
         if (!mounted) return;
         setState(() {
-          if (_promptIndex < _guidedPrompts.length - 1) {
+          if (_promptIndex < _guidedPrompts(context.l10n).length - 1) {
             _promptIndex++;
           }
         });
@@ -154,14 +169,18 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
   String get _sessionDisplay {
     final m = _sessionSecondsLeft ~/ 60;
     final s = _sessionSecondsLeft % 60;
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    return context.l10n.clock(
+      m.toString().padLeft(2, '0'),
+      s.toString().padLeft(2, '0'),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Safe Place'),
+        title: Text(l10n.safePlaceTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
@@ -173,12 +192,11 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
           if (!_guiding)
             IconButton(
               icon: const Icon(Icons.edit_rounded),
-              tooltip: 'Customise your safe place',
+              tooltip: l10n.customiseSafePlace,
               onPressed: () {
+                final saved = _savedDescription;
                 _editController.text =
-                    _safePlaceDescription == _defaultSafePlace
-                        ? ''
-                        : _safePlaceDescription;
+                    saved == null || _isDefaultDescription(saved) ? '' : saved;
                 setState(() => _editing = true);
               },
             ),
@@ -207,14 +225,14 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.landscape_rounded,
+                      const Icon(Icons.landscape_rounded,
                           color: AppColors.amber, size: 18),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        'Your safe place',
-                        style: TextStyle(
+                        context.l10n.yourSafePlace,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                           letterSpacing: 1,
@@ -224,7 +242,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    _safePlaceDescription,
+                    _visibleDescription(),
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 15,
@@ -239,8 +257,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
             // Duration selector
             Row(
               children: [
-                const Text('Duration',
-                    style: TextStyle(color: AppColors.textSecondary)),
+                Text(context.l10n.duration,
+                    style: const TextStyle(color: AppColors.textSecondary)),
                 const Spacer(),
                 for (final min in [5, 10]) ...[
                   GestureDetector(
@@ -262,7 +280,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                         ),
                       ),
                       child: Text(
-                        '${min}m',
+                        context.l10n.minutesShort(min),
                         style: TextStyle(
                           color: _sessionMinutes == min
                               ? AppColors.amber
@@ -291,9 +309,9 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Begin visualisation',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                child: Text(context.l10n.beginVisualisation,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w500)),
               ),
             ),
           ] else ...[
@@ -312,7 +330,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 opacity: _fadeAnim,
                 child: Center(
                   child: Text(
-                    _guidedPrompts[_promptIndex],
+                    _guidedPrompts(context.l10n)[_promptIndex],
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 20,
@@ -336,7 +354,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('End session'),
+                child: Text(context.l10n.endSession),
               ),
             ),
           ],
@@ -353,14 +371,13 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Describe your safe place',
+            context.l10n.describeSafePlace,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'This is stored only on your device. '
-            'Write whatever feels right — it only needs to make sense to you.',
-            style: TextStyle(
+          Text(
+            context.l10n.safePlaceStored,
+            style: const TextStyle(
                 color: AppColors.textSecondary, fontSize: 13, height: 1.5),
           ),
           const SizedBox(height: 20),
@@ -376,7 +393,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 height: 1.7,
               ),
               decoration: InputDecoration(
-                hintText: 'A quiet beach, a childhood room, a forest clearing…',
+                hintText: context.l10n.safePlaceHint,
                 hintStyle: const TextStyle(color: AppColors.textMuted),
                 filled: true,
                 fillColor: AppColors.surface,
@@ -401,7 +418,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                         borderRadius: BorderRadius.circular(14)),
                     minimumSize: const Size(0, 52),
                   ),
-                  child: const Text('Cancel'),
+                  child: Text(context.l10n.cancel),
                 ),
               ),
               const SizedBox(width: 12),
@@ -410,7 +427,9 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 child: FilledButton(
                   onPressed: () {
                     final text = _editController.text.trim();
-                    _saveSafePlace(text.isEmpty ? _defaultSafePlace : text);
+                    _saveSafePlace(
+                      text.isEmpty ? context.l10n.safePlaceDefault : text,
+                    );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.amber,
@@ -419,8 +438,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                         borderRadius: BorderRadius.circular(14)),
                     minimumSize: const Size(0, 52),
                   ),
-                  child: const Text('Save',
-                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  child: Text(context.l10n.save,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
                 ),
               ),
             ],

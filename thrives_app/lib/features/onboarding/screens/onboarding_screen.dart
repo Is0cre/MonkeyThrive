@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../../l10n/l10n.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/storage/prefs_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -64,28 +65,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: PageView(
                     controller: _pageController,
                     onPageChanged: (index) => setState(() => _page = index),
-                    children: const [
+                    children: [
                     _IntroPage(
-                      kicker: 'Taming the storm',
-                      title: 'Tame the Storm',
-                      body:
-                          'The nervous system can feel like weather you did not choose. '
-                          'Taming it means learning the shape of that weather: when to slow down, '
-                          'when to stay, and when a tool stays closed. '
-                          'Like Sun Wukong learning to hold his own chaos, '
-                          'this is practice in self-regulation.',
+                      kicker: context.l10n.onboardingKicker1,
+                      title: context.l10n.onboardingTitle1,
+                      body: context.l10n.onboardingBody1,
                       figureAsset: 'assets/brand/monkey_king.png',
                     ),
                     _IntroPage(
-                      kicker: 'On this device',
-                      title: 'Zero Tracking. Zero Guilt.',
-                      body:
-                          'Check-ins, journal entries, and sensor readings stay on this device. '
-                          'There is no account, no streak, and no score for the days you were away. '
-                          'Nothing here is sent or sold.',
-                      footnote:
-                          'MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. '
-                          'If you are in immediate danger, contact emergency services.',
+                      kicker: context.l10n.onboardingKicker2,
+                      title: context.l10n.onboardingTitle2,
+                      body: context.l10n.onboardingBody2,
+                      footnote: context.l10n.onboardingCare,
                     ),
                     ],
                   ),
@@ -121,7 +112,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   child: Text(
-                    _page == 1 ? 'Anchor your baseline' : 'Continue',
+                    _page == 1
+                        ? context.l10n.anchorBaseline
+                        : context.l10n.continueAction,
                   ),
                 ),
               ),
@@ -159,7 +152,7 @@ class _IntroPage extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: Semantics(
                 image: true,
-                label: 'Sun Wukong in red and gold, holding a phone.',
+                label: context.l10n.wukongLabel,
                 child: SizedBox.expand(
                   key: const Key('opening-figure'),
                   child: Image.asset(
@@ -233,7 +226,7 @@ class _PageDots extends StatelessWidget {
           if (i > 0) const SizedBox(width: 8),
           Semantics(
             button: true,
-            label: 'Page ${i + 1}',
+            label: context.l10n.pageLabel(i + 1),
             selected: i == index,
             child: GestureDetector(
               onTap: () => onSelect(i),

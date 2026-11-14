@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n.dart';
 import 'package:flutter/services.dart';
 import '../../core/storage/session_tracker.dart';
 import '../../core/theme/app_theme.dart';
@@ -58,7 +59,7 @@ class EmergencyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Anchor',
+      label: context.l10n.anchorLabel,
       child: Material(
         color: AppColors.danger,
         shape: const CircleBorder(),

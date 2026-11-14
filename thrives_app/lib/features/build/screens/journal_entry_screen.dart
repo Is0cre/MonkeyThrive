@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/journal_service.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,16 +8,16 @@ import '../../../core/widgets/emergency_button.dart';
 
 // Gentle, open-ended prompts — trauma-informed, body-based, no leading questions.
 // Not shown unless the user asks. Never prescriptive.
-const _prompts = [
-  'what are you noticing right now?',
-  'what does your body need today?',
-  'is there something you want to put down somewhere safe?',
-  'what felt okay today, even if small?',
-  'is there something you\'ve been carrying?',
-  'you don\'t have to make it make sense. just write.',
-  'what\'s present for you right now?',
-  'what would you say to yourself if you were being kind?',
-];
+List<String> _promptsFor(AppLocalizations l10n) => [
+      l10n.prompt1,
+      l10n.prompt2,
+      l10n.prompt3,
+      l10n.prompt4,
+      l10n.prompt5,
+      l10n.prompt6,
+      l10n.prompt7,
+      l10n.prompt8,
+    ];
 
 class JournalEntryScreen extends StatefulWidget {
   final JournalEntry entry;
@@ -77,18 +78,19 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
   }
 
   void _nextPrompt() {
+    final prompts = _promptsFor(context.l10n);
     setState(() {
-      _promptIndex = (_promptIndex + 1) % _prompts.length;
+      _promptIndex = (_promptIndex + 1) % prompts.length;
       _showPrompt = true;
     });
   }
 
   void _dismissPrompt() => setState(() => _showPrompt = false);
 
-  String get _wordCountLabel {
+  String _wordCountLabel(AppLocalizations l10n) {
     final n = _entry.copyWith(body: _controller.text).wordCount;
     if (n == 0) return '';
-    return '$n ${n == 1 ? 'word' : 'words'}';
+    return l10n.wordCount(n);
   }
 
   @override
@@ -103,7 +105,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
           },
         ),
         title: Text(
-          _formatDate(_entry.timestamp),
+          _formatDate(context.l10n, _entry.timestamp),
           style: const TextStyle(
             color: AppColors.textMuted,
             fontSize: 13,
@@ -118,9 +120,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
               child: AnimatedOpacity(
                 opacity: _saved ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 400),
-                child: const Text(
-                  'saved',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                child: Text(
+                  context.l10n.saved,
+                  style:
+                      const TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ),
             ),
@@ -148,7 +151,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                         children: [
                           Expanded(
                             child: Text(
-                              _prompts[_promptIndex],
+                              _promptsFor(context.l10n)[_promptIndex],
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 14,
@@ -187,10 +190,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                     height: 1.7,
                     fontWeight: FontWeight.w300,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: 'write here…',
-                    hintStyle: TextStyle(
+                    hintText: context.l10n.journalHint,
+                    hintStyle: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w300,
@@ -215,14 +218,14 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.lightbulb_outline_rounded,
+                          const Icon(Icons.lightbulb_outline_rounded,
                               color: AppColors.textMuted, size: 14),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
-                            'prompt',
-                            style: TextStyle(
+                            context.l10n.prompt,
+                            style: const TextStyle(
                                 color: AppColors.textMuted, fontSize: 12),
                           ),
                         ],
@@ -232,7 +235,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                   const Spacer(),
                   // Word count
                   Text(
-                    _wordCountLabel,
+                    _wordCountLabel(context.l10n),
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12),
                   ),
@@ -246,22 +249,8 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
   }
 }
 
-String _formatDate(DateTime dt) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ];
+String _formatDate(AppLocalizations l10n, DateTime dt) {
   final h = dt.hour.toString().padLeft(2, '0');
   final m = dt.minute.toString().padLeft(2, '0');
-  return '${dt.day} ${months[dt.month - 1]} ${dt.year}  $h:$m';
+  return l10n.journalStamp(dt.day, monthShort(l10n, dt.month), dt.year, h, m);
 }

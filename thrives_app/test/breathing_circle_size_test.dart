@@ -4,6 +4,7 @@ import 'package:monkeythrive/core/models/tolerance_state.dart';
 import 'package:monkeythrive/core/state/wot_scope.dart';
 import 'package:monkeythrive/core/theme/app_theme.dart';
 import 'package:monkeythrive/features/regulate/screens/breathing_screen.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -19,6 +20,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const BreathingScreen(mode: BreathingMode.box),
         ),

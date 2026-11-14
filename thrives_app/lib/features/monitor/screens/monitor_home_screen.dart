@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/hrv_service.dart';
@@ -84,13 +85,13 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Monitor',
+                              Text(context.l10n.navMonitor,
                                   style:
                                       Theme.of(context).textTheme.displayLarge),
                               const SizedBox(height: 6),
-                              const Text(
-                                'Check in with your nervous system.',
-                                style: TextStyle(
+                              Text(
+                                context.l10n.monitorSubtitle,
+                                style: const TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 14),
                               ),
@@ -115,7 +116,7 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                             const SizedBox(height: 24),
 
                             // ── Check-in buttons ───────────────────────────
-                            const _SectionLabel('How are you right now?'),
+                            _SectionLabel(context.l10n.howAreYouNow),
                             const SizedBox(height: 12),
                             _CheckInRow(
                               current: wot,
@@ -125,7 +126,7 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                             // ── Tolerance history ──────────────────────────
                             if (_toleranceHistory.isNotEmpty) ...[
                               const SizedBox(height: 32),
-                              const _SectionLabel('Recent check-ins'),
+                              _SectionLabel(context.l10n.recentCheckins),
                               const SizedBox(height: 12),
                               for (final entry
                                   in _toleranceHistory.take(10)) ...[
@@ -137,7 +138,7 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                             // ── Session history ────────────────────────────
                             if (_sessionHistory.isNotEmpty) ...[
                               const SizedBox(height: 32),
-                              const _SectionLabel('Tools used recently'),
+                              _SectionLabel(context.l10n.toolsUsedRecently),
                               const SizedBox(height: 12),
                               for (final entry in _sessionHistory.take(15)) ...[
                                 _SessionTile(entry: entry),
@@ -148,11 +149,11 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
                             if (_toleranceHistory.isEmpty &&
                                 _sessionHistory.isEmpty) ...[
                               const SizedBox(height: 32),
-                              const Center(
+                              Center(
                                 child: Text(
-                                  'No history yet.\nStart using tools and check back here.',
+                                  context.l10n.noHistory,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 14,
                                       height: 1.6),
@@ -195,17 +196,17 @@ class _HrvCard extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: last == null
-                  ? const Column(
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Heart rate variability',
-                            style: TextStyle(
+                        Text(context.l10n.hrvTitle,
+                            style: const TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400)),
-                        SizedBox(height: 2),
-                        Text('Tap to measure via camera',
-                            style: TextStyle(
+                        const SizedBox(height: 2),
+                        Text(context.l10n.hrvTap,
+                            style: const TextStyle(
                                 color: AppColors.textMuted, fontSize: 12)),
                       ],
                     )
@@ -213,13 +214,16 @@ class _HrvCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${last!.hr.round()} bpm  ·  RMSSD ${last!.rmssd.round()} ms',
+                          context.l10n.hrvSummary(
+                            last!.hr.round(),
+                            last!.rmssd.round(),
+                          ),
                           style: const TextStyle(
                               color: AppColors.textPrimary, fontSize: 14),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          last!.rmssdLabel,
+                          hrvRecoveryLabel(context.l10n, last!.rmssd),
                           style: const TextStyle(
                               color: AppColors.textMuted, fontSize: 12),
                         ),
@@ -252,9 +256,9 @@ class _WindowDiagram extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'WINDOW OF TOLERANCE',
-            style: TextStyle(
+          Text(
+            context.l10n.windowHeading,
+            style: const TextStyle(
               color: AppColors.textMuted,
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -263,30 +267,30 @@ class _WindowDiagram extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _Band(
-            label: 'Hyperarousal',
-            sub: 'Anxiety · Panic · Overwhelm',
+            label: context.l10n.hyperarousal,
+            sub: context.l10n.hyperNote,
             color: const Color(0xFFDA6433),
             isActive: current == ToleranceState.hyperaroused,
           ),
           const SizedBox(height: 4),
           _Band(
-            label: 'Window of tolerance',
-            sub: 'Regulated · Processing possible',
+            label: context.l10n.windowOfTolerance,
+            sub: context.l10n.regulatedNote,
             color: AppColors.teal,
             isActive: current == ToleranceState.regulated,
           ),
           const SizedBox(height: 4),
           _Band(
-            label: 'Hypoarousal',
-            sub: 'Numbness · Shutdown · Dissociation',
+            label: context.l10n.hypoarousal,
+            sub: context.l10n.hypoNote,
             color: const Color(0xFF6B7ADA),
             isActive: current == ToleranceState.hypoaroused,
           ),
           if (current == null) ...[
             const SizedBox(height: 12),
-            const Text(
-              'Check in below to log where you are.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            Text(
+              context.l10n.checkInBelow,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ],
         ],
@@ -362,19 +366,19 @@ class _CheckInRow extends StatelessWidget {
         for (final opt in [
           (
             ToleranceState.hyperaroused,
-            'Overwhelmed',
+            context.l10n.labelOverwhelmed,
             const Color(0xFFDA6433),
             Icons.keyboard_double_arrow_up_rounded
           ),
           (
             ToleranceState.regulated,
-            'Present',
+            context.l10n.labelPresent,
             AppColors.teal,
             Icons.check_circle_outline_rounded
           ),
           (
             ToleranceState.hypoaroused,
-            'Flat',
+            context.l10n.labelFlat,
             const Color(0xFF6B7ADA),
             Icons.keyboard_double_arrow_down_rounded
           ),
@@ -434,9 +438,15 @@ class _ToleranceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     // Normalise legacy short keys ('hyper', 'hypo') and current enum names
     final (label, color) = switch (entry.state) {
-      'hyperaroused' || 'hyper' => ('Overwhelmed', const Color(0xFFDA6433)),
-      'hypoaroused' || 'hypo' => ('Flat', const Color(0xFF6B7ADA)),
-      _ => ('Present', AppColors.teal),
+      'hyperaroused' || 'hyper' => (
+          context.l10n.labelOverwhelmed,
+          const Color(0xFFDA6433)
+        ),
+      'hypoaroused' || 'hypo' => (
+          context.l10n.labelFlat,
+          const Color(0xFF6B7ADA)
+        ),
+      _ => (context.l10n.labelPresent, AppColors.teal),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -457,7 +467,7 @@ class _ToleranceTile extends StatelessWidget {
                   color: color, fontSize: 14, fontWeight: FontWeight.w500)),
           const Spacer(),
           Text(
-            _formatTime(entry.timestamp),
+            _formatTime(context.l10n, entry.timestamp),
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ],
@@ -484,12 +494,12 @@ class _SessionTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(entry.tool,
+                Text(toolTitle(context.l10n, entry.tool),
                     style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w400)),
-                Text(entry.category,
+                Text(categoryLabel(context.l10n, entry.category),
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12)),
               ],
@@ -499,12 +509,12 @@ class _SessionTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                _formatDuration(entry.durationSeconds),
+                _formatDuration(context.l10n, entry.durationSeconds),
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 12),
               ),
               Text(
-                _formatTime(entry.timestamp),
+                _formatTime(context.l10n, entry.timestamp),
                 style:
                     const TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
@@ -534,17 +544,17 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-String _formatTime(DateTime dt) {
+String _formatTime(AppLocalizations l10n, DateTime dt) {
   final now = DateTime.now();
   final diff = now.difference(dt);
-  if (diff.inMinutes < 1) return 'just now';
-  if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-  if (diff.inDays < 1) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return '${dt.day}/${dt.month}';
+  if (diff.inMinutes < 1) return l10n.justNow;
+  if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
+  if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
+  return l10n.dateSlash(dt.day, dt.month);
 }
 
-String _formatDuration(int seconds) {
-  if (seconds < 60) return '${seconds}s';
-  return '${seconds ~/ 60}m ${seconds % 60}s';
+String _formatDuration(AppLocalizations l10n, int seconds) {
+  if (seconds < 60) return l10n.durationSeconds(seconds);
+  return l10n.durationMinutesSeconds(seconds ~/ 60, seconds % 60);
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../features/regulate/screens/breathing_screen.dart';
 import '../../features/regulate/screens/grounding_521_screen.dart';
@@ -152,7 +153,7 @@ class _BaselinePrompt extends StatelessWidget {
                   onPressed: onDismiss,
                   icon: const Icon(Icons.close_rounded),
                   color: AppColors.textMuted,
-                  tooltip: 'Dismiss',
+                  tooltip: context.l10n.dismiss,
                 ),
               ),
               const Spacer(),
@@ -162,20 +163,20 @@ class _BaselinePrompt extends StatelessWidget {
                     : FrogExpression.neutral,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'How are you doing?',
+              Text(
+                context.l10n.howAreYouDoing,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.w300,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'I noticed things look a little different from your usual baseline.',
+              Text(
+                context.l10n.baselineDifferent,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 16,
                   height: 1.45,
@@ -186,13 +187,13 @@ class _BaselinePrompt extends StatelessWidget {
                 Column(
                   children: [
                     _LargeButton(
-                      label: '🙂  I\'m okay',
+                      label: context.l10n.imOkay,
                       color: AppColors.teal,
                       onTap: onOkay,
                     ),
                     const SizedBox(height: 12),
                     _LargeButton(
-                      label: '🙁  Not really',
+                      label: context.l10n.notReally,
                       color: AppColors.surfaceVariant,
                       foreground: AppColors.textPrimary,
                       onTap: onNotReally,
@@ -218,16 +219,16 @@ class _TierOneTools extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
-          'Would one of these help?',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        Text(
+          context.l10n.wouldOneHelp,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
         const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _ToolButton(
-                label: 'Sigh',
+                label: context.l10n.sigh,
                 icon: Icons.air_rounded,
                 onTap: () => onStartTool(const PhysiologicalSighScreen()),
               ),
@@ -235,7 +236,7 @@ class _TierOneTools extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _ToolButton(
-                label: 'Box',
+                label: context.l10n.baselineBox,
                 icon: Icons.crop_square_rounded,
                 onTap: () => onStartTool(
                   const BreathingScreen(mode: BreathingMode.box),
@@ -249,7 +250,7 @@ class _TierOneTools extends StatelessWidget {
           children: [
             Expanded(
               child: _ToolButton(
-                label: 'Ground',
+                label: context.l10n.ground,
                 icon: Icons.filter_5_rounded,
                 onTap: () => onStartTool(const Grounding521Screen()),
               ),
@@ -257,7 +258,7 @@ class _TierOneTools extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _ToolButton(
-                label: 'Vagal',
+                label: context.l10n.vagal,
                 icon: Icons.self_improvement_rounded,
                 onTap: () => onStartTool(const VagalScreen()),
               ),

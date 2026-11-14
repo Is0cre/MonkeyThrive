@@ -5,6 +5,7 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 // CLINICAL SAFETY — Physiological sigh
 // What this does: Guides the user through the physiological sigh — a double
@@ -165,35 +166,37 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
     }
   }
 
-  String get _phaseLabel {
-    if (_done) return 'done';
+  String _phaseLabel(AppLocalizations l10n) {
+    if (_done) return l10n.sighDone;
     if (!_running && _round == 0) return '';
     switch (_phase) {
       case _SighPhase.inhale1:
-        return 'breathe in through your nose';
+        return l10n.sighCueIn;
       case _SighPhase.inhale2:
-        return 'one more sniff';
+        return l10n.sighCueSniff;
       case _SighPhase.exhale:
-        return 'breathe out slowly';
+        return l10n.sighCueOut;
       case _SighPhase.rest:
         return '';
     }
   }
 
-  String get _buttonLabel {
-    if (_done) return 'again';
-    if (_running) return 'pause';
-    if (_round > 0) return 'resume';
-    return 'begin';
+  String _buttonLabel(AppLocalizations l10n) {
+    if (_done) return l10n.sighAgain;
+    if (_running) return l10n.sighPause;
+    if (_round > 0) return l10n.sighResume;
+    return l10n.sighBegin;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final circleSize = _done ? 88.0 : 180.0;
+    final phaseLabel = _phaseLabel(l10n);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Physiological sigh'),
+        title: Text(l10n.sighTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
@@ -212,10 +215,9 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'Double inhale through the nose, then a long slow exhale. '
-                  'One of the fastest ways to calm your nervous system.',
-                  style: TextStyle(
+                child: Text(
+                  l10n.sighIntro,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.5,
@@ -235,7 +237,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                       opacity: _round > 0 && !_done ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 300),
                       child: Text(
-                        '$_round / $_targetRounds',
+                        l10n.breathFraction(_round, _targetRounds),
                         style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 13,
@@ -284,8 +286,8 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 250),
                         child: Text(
-                          _phaseLabel,
-                          key: ValueKey(_phaseLabel),
+                          phaseLabel,
+                          key: ValueKey(phaseLabel),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 16,
@@ -305,9 +307,9 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
               child: Column(
                 children: [
                   if (!_running && _round == 0 && !_done) ...[
-                    const Text(
-                      'ROUNDS',
-                      style: TextStyle(
+                    Text(
+                      l10n.sighRounds,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -383,7 +385,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      child: Text(_buttonLabel),
+                      child: Text(_buttonLabel(l10n)),
                     ),
                   ),
                 ],

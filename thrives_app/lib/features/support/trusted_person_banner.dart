@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../core/data/crisis_dialer.dart';
 import '../../core/models/tolerance_state.dart';
@@ -65,8 +66,9 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
       opened = false;
     }
     if (!mounted || opened) return;
-    final message =
-        text ? 'The messages app did not open.' : 'The phone app did not open.';
+    final message = text
+        ? context.l10n.messagesDidNotOpen
+        : context.l10n.phoneDidNotOpen;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -102,7 +104,7 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
             Expanded(
               child: _ActionButton(
                 key: Key('trusted-text-$i'),
-                label: 'Text ${person.name}',
+                label: context.l10n.textPerson(person.name),
                 filled: true,
                 ink: ink,
                 onPressed: () => _open(person, text: true),
@@ -112,7 +114,7 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
             Expanded(
               child: _ActionButton(
                 key: Key('trusted-call-$i'),
-                label: 'Call ${person.name}',
+                label: context.l10n.callPerson(person.name),
                 filled: false,
                 ink: ink,
                 onPressed: () => _open(person, text: false),
@@ -138,17 +140,19 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              _people.isEmpty ? 'Save a trusted person' : 'Edit trusted people',
+              _people.isEmpty
+                  ? context.l10n.saveTrustedPerson
+                  : context.l10n.editTrustedPeople,
             ),
           ),
         ),
       );
     } else if (widget.offerSetup && _people.isEmpty) {
       rows.add(
-        const Text(
-          'A trusted person can be saved when the reading is present.',
-          key: Key('trusted-closed'),
-          style: TextStyle(
+        Text(
+          context.l10n.trustedWhenPresent,
+          key: const Key('trusted-closed'),
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
             height: 1.45,
@@ -167,7 +171,7 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'Trusted person',
+                context.l10n.trustedPerson,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,

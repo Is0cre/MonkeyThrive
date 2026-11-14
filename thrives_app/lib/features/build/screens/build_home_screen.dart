@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/journal_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
@@ -64,22 +65,22 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Delete this entry?',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
-        content: const Text(
-          'This cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        title: Text(context.l10n.deleteEntryTitle,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 17)),
+        content: Text(
+          context.l10n.cannotBeUndone,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.l10n.cancel,
+                style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child:
-                const Text('Delete', style: TextStyle(color: AppColors.danger)),
+            child: Text(context.l10n.delete,
+                style: const TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -104,7 +105,7 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
               onPressed: _newEntry,
               backgroundColor: AppColors.surface,
               foregroundColor: AppColors.textPrimary,
-              tooltip: 'New entry',
+              tooltip: context.l10n.newEntry,
               child: const Icon(Icons.edit_rounded, size: 22),
             ),
           ),
@@ -120,12 +121,12 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Build',
+                    Text(context.l10n.navBuild,
                         style: Theme.of(context).textTheme.displayLarge),
                     const SizedBox(height: 6),
-                    const Text(
-                      'A private space to write. Nothing leaves this device.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.buildSubtitle,
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 32),
@@ -141,15 +142,15 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
                 ),
               )
             else if (_entries.isEmpty)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      'Nothing written yet.\n\nTap the pencil when you\'re ready.',
+                      context.l10n.nothingWritten,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 14,
                         height: 1.7,
@@ -210,29 +211,16 @@ class _DateHeader extends StatelessWidget {
     final day = DateTime(dt.year, dt.month, dt.day);
     final diff = today.difference(day).inDays;
 
+    final l10n = context.l10n;
     final String label;
     if (diff == 0) {
-      label = 'today';
+      label = l10n.today;
     } else if (diff == 1) {
-      label = 'yesterday';
+      label = l10n.yesterday;
     } else if (diff < 7) {
-      label = '$diff days ago';
+      label = l10n.daysAgoLong(diff);
     } else {
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-      ];
-      label = '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+      label = l10n.dayMonthYear(dt.day, monthShort(l10n, dt.month), dt.year);
     }
 
     return Text(
@@ -290,9 +278,9 @@ class _EntryCard extends StatelessWidget {
                         ),
                       )
                     else
-                      const Text(
-                        'empty entry',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.emptyEntry,
+                        style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 14,
                           fontStyle: FontStyle.italic,
@@ -301,7 +289,7 @@ class _EntryCard extends StatelessWidget {
                     if (entry.wordCount > 0) ...[
                       const SizedBox(height: 4),
                       Text(
-                        '${entry.wordCount} words',
+                        context.l10n.wordsCount(entry.wordCount),
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 11),
                       ),

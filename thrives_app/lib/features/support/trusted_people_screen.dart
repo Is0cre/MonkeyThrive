@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../core/models/tolerance_state.dart';
 import '../../core/models/trusted_person.dart';
@@ -79,8 +80,11 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
   }
 
   _Draft _blankDraft(int index) {
-    final suggestion = TrustedPerson
-        .suggestions[index.clamp(0, TrustedPerson.suggestions.length - 1)];
+    final suggestions = [
+      context.l10n.suggestionSit,
+      context.l10n.suggestionRough,
+    ];
+    final suggestion = suggestions[index.clamp(0, suggestions.length - 1)];
     return _Draft(
       name: TextEditingController(),
       phone: TextEditingController(),
@@ -121,8 +125,8 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
     await _persist();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Saved on this device.'),
+      SnackBar(
+        content: Text(context.l10n.savedOnDevice),
         backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
       ),
@@ -130,18 +134,19 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
   }
 
   String _reason(_Draft draft) {
+    final l10n = context.l10n;
     final name = draft.name.text.trim();
-    if (name.isEmpty) return 'Add a name.';
-    if (name.length > TrustedPerson.nameLimit) return 'Use a shorter name.';
+    if (name.isEmpty) return l10n.addAName;
+    if (name.length > TrustedPerson.nameLimit) return l10n.shorterName;
     if (normalizeTrustedPhone(draft.phone.text) == null) {
-      return 'Use a phone number, with the country code if it needs one.';
+      return l10n.phoneNeedsDigits;
     }
     final message = draft.message.text.trim();
-    if (message.isEmpty) return 'Add a short message.';
+    if (message.isEmpty) return l10n.addAMessage;
     if (message.length > TrustedPerson.messageLimit) {
-      return 'Keep the message to ${TrustedPerson.messageLimit} characters.';
+      return l10n.messageTooLong(TrustedPerson.messageLimit);
     }
-    return 'That number cannot be opened from here.';
+    return l10n.numberCannotOpen;
   }
 
   Future<void> _remove(int index) async {
@@ -151,30 +156,30 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           backgroundColor: AppColors.surface,
-          title: const Text(
-            'Remove this person?',
-            style: TextStyle(color: AppColors.textPrimary),
+          title: Text(
+            context.l10n.removeThisPerson,
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
           content: Text(
             draft.name.text.trim().isEmpty
-                ? 'The saved number will be removed from this device.'
-                : '${draft.name.text.trim()} will be removed from this device.',
+                ? context.l10n.numberWillBeRemoved
+                : context.l10n.personWillBeRemoved(draft.name.text.trim()),
             style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text(
-                'Keep',
-                style: TextStyle(color: AppColors.textSecondary),
+              child: Text(
+                context.l10n.keep,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
             TextButton(
               key: const Key('trusted-remove-confirm'),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text(
-                'Remove',
-                style: TextStyle(color: AppColors.danger),
+              child: Text(
+                context.l10n.remove,
+                style: const TextStyle(color: AppColors.danger),
               ),
             ),
           ],
@@ -204,9 +209,9 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Trusted person',
-          style: TextStyle(
+        title: Text(
+          context.l10n.trustedPerson,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 17,
             fontWeight: FontWeight.w400,
@@ -215,12 +220,12 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
       ),
       body: SafeArea(
         child: !present
-            ? const Padding(
-                padding: EdgeInsets.all(24),
+            ? Padding(
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'This can be saved when the reading is present.',
-                  key: Key('trusted-screen-closed'),
-                  style: TextStyle(
+                  context.l10n.trustedSavedWhenPresent,
+                  key: const Key('trusted-screen-closed'),
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
                     height: 1.45,
@@ -232,9 +237,9 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                     children: [
-                      const Text(
-                        'Saved on this device. Text and call open your phone\'s own apps. Nothing is sent from here.',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.trustedPrivacy,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 15,
                           height: 1.5,
@@ -261,7 +266,7 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
                               foregroundColor: AppColors.amber,
                               minimumSize: const Size(48, 48),
                             ),
-                            child: const Text('Add another person'),
+                            child: Text(context.l10n.addAnotherPerson),
                           ),
                         ),
                     ],
@@ -301,14 +306,14 @@ class _PersonForm extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _Field(
-              label: 'Name',
+              label: context.l10n.name,
               fieldKey: Key('trusted-name-$index'),
               controller: draft.name,
               onChanged: onChanged,
             ),
             const SizedBox(height: 12),
             _Field(
-              label: 'Phone number',
+              label: context.l10n.phoneNumber,
               fieldKey: Key('trusted-phone-$index'),
               controller: draft.phone,
               keyboard: TextInputType.phone,
@@ -316,7 +321,7 @@ class _PersonForm extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _Field(
-              label: 'Message',
+              label: context.l10n.message,
               fieldKey: Key('trusted-message-$index'),
               controller: draft.message,
               maxLength: TrustedPerson.messageLimit,
@@ -332,13 +337,17 @@ class _PersonForm extends StatelessWidget {
                   ActionChip(
                     key: Key('trusted-suggestion-$index-$s'),
                     label: Text(
-                      s == 0 ? 'Sit with me' : 'Just letting you know',
+                      s == 0
+                          ? context.l10n.sitWithMe
+                          : context.l10n.justLettingYouKnow,
                       style: const TextStyle(color: AppColors.textPrimary),
                     ),
                     backgroundColor: colors.surfaceContainerHighest,
                     side: BorderSide.none,
                     onPressed: () {
-                      draft.message.text = TrustedPerson.suggestions[s];
+                      draft.message.text = s == 0
+                          ? context.l10n.suggestionSit
+                          : context.l10n.suggestionRough;
                       onChanged();
                     },
                   ),
@@ -367,7 +376,7 @@ class _PersonForm extends StatelessWidget {
                     foregroundColor: const Color(0xFF1A140C),
                     minimumSize: const Size(48, 48),
                   ),
-                  child: const Text('Save'),
+                  child: Text(context.l10n.save),
                 ),
                 const SizedBox(width: 8),
                 TextButton(
@@ -377,7 +386,7 @@ class _PersonForm extends StatelessWidget {
                     foregroundColor: AppColors.textSecondary,
                     minimumSize: const Size(48, 48),
                   ),
-                  child: const Text('Remove'),
+                  child: Text(context.l10n.remove),
                 ),
               ],
             ),

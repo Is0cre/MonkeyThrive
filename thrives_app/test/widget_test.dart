@@ -7,6 +7,7 @@ import 'package:monkeythrive/core/storage/session_tracker.dart';
 import 'package:monkeythrive/features/regulate/screens/panic_screen.dart';
 import 'package:monkeythrive/features/regulate/screens/wim_hof_screen.dart';
 import 'package:monkeythrive/main.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -111,7 +112,9 @@ void main() {
   testWidgets('panic screen stays black with no choices during the sigh',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(const MaterialApp(home: PanicScreen()));
+    await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,home: PanicScreen()));
     await tester.pump();
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
@@ -128,7 +131,9 @@ void main() {
     await tester.pumpWidget(
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.regulated),
-        child: const MaterialApp(home: WimHofScreen()),
+        child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,home: WimHofScreen()),
       ),
     );
     await tester.pump();

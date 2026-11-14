@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/hrv_service.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
@@ -82,11 +83,12 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
       return;
     }
 
+    final noBackCamera = context.l10n.noBackCamera;
     try {
       final cameras = await availableCameras();
       final back = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
-        orElse: () => throw CameraException('no_camera', 'No back camera'),
+        orElse: () => throw CameraException('no_camera', noBackCamera),
       );
 
       final controller = CameraController(
@@ -368,9 +370,9 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Heart rate variability',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 15),
+        title: Text(
+          context.l10n.hrvTitle,
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 15),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -390,16 +392,16 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
             _HrvPhase.measuring => _buildMeasuring(),
             _HrvPhase.done => _buildDone(),
             _HrvPhase.noCamera => _buildUnavailable(
-                'No camera found',
-                'Camera PPG requires a rear camera with flash.',
+                context.l10n.noCamera,
+                context.l10n.noCameraBody,
               ),
             _HrvPhase.permissionDenied => _buildUnavailable(
-                'Camera access denied',
-                'Allow camera access in your device settings to use this feature.',
+                context.l10n.cameraDenied,
+                context.l10n.cameraDeniedBody,
               ),
             _HrvPhase.error => _buildUnavailable(
-                'Measurement failed',
-                'Not enough signal detected. Make sure your fingertip firmly covers the camera and flash.',
+                context.l10n.measurementFailed,
+                context.l10n.measurementFailedBody,
               ),
           },
         ),
@@ -413,35 +415,33 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Measure in 60 seconds',
-          style: TextStyle(
+        Text(
+          context.l10n.measureIn60,
+          style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.w300),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Place your fingertip firmly over the rear camera and flash. '
-          'Stay still. Results are stored on this device only.',
-          style: TextStyle(
+        Text(
+          context.l10n.hrvInstructions,
+          style: const TextStyle(
               color: AppColors.textSecondary, fontSize: 14, height: 1.6),
         ),
         const SizedBox(height: 32),
         _InstructionCard(
           icon: Icons.camera_rear_rounded,
-          text: 'Cover both the camera lens and the flash with your fingertip.',
+          text: context.l10n.coverLens,
         ),
         const SizedBox(height: 12),
         _InstructionCard(
           icon: Icons.do_not_touch_rounded,
-          text:
-              'Stay as still as possible. Motion creates noise in the signal.',
+          text: context.l10n.stayStill,
         ),
         const SizedBox(height: 12),
         _InstructionCard(
           icon: Icons.info_outline_rounded,
-          text: 'Not a medical device. For self-awareness only.',
+          text: context.l10n.notAMedicalDevice,
         ),
         const Spacer(),
         SizedBox(
@@ -457,7 +457,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               textStyle:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            child: const Text('Start measurement'),
+            child: Text(context.l10n.startMeasurement),
           ),
         ),
       ],
@@ -498,9 +498,10 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                     fontWeight: FontWeight.w200,
                   ),
                 ),
-                const Text(
-                  'seconds',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                Text(
+                  context.l10n.seconds,
+                  style:
+                      const TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -513,24 +514,26 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),
           child: _fingerDetected
-              ? const Row(
+              ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.favorite_rounded,
+                    const Icon(Icons.favorite_rounded,
                         color: AppColors.teal, size: 14),
-                    SizedBox(width: 6),
-                    Text('signal detected',
-                        style: TextStyle(color: AppColors.teal, fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Text(context.l10n.signalDetected,
+                        style: const TextStyle(
+                            color: AppColors.teal, fontSize: 13)),
                   ],
                 )
-              : const Row(
+              : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.touch_app_rounded,
+                    const Icon(Icons.touch_app_rounded,
                         color: AppColors.amber, size: 14),
-                    SizedBox(width: 6),
-                    Text('place finger on camera + flash',
-                        style: TextStyle(color: AppColors.amber, fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Text(context.l10n.placeFinger,
+                        style: const TextStyle(
+                            color: AppColors.amber, fontSize: 13)),
                   ],
                 ),
         ),
@@ -552,10 +555,10 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                     size: Size.infinite,
                   ),
                 )
-              : const Center(
-                  child: Text('waiting for signal…',
-                      style:
-                          TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              : Center(
+                  child: Text(context.l10n.waitingForSignal,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 12)),
                 ),
         ),
 
@@ -573,14 +576,14 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Stop and calculate'),
+              child: Text(context.l10n.stopAndCalculate),
             ),
           ),
 
         const SizedBox(height: 8),
-        const Text(
-          'Not a medical device.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+        Text(
+          context.l10n.notAMedicalDeviceShort,
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
           textAlign: TextAlign.center,
         ),
       ],
@@ -592,45 +595,45 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Your reading',
-          style: TextStyle(
+        Text(
+          context.l10n.yourReading,
+          style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.w300),
         ),
         const SizedBox(height: 4),
         Text(
-          'Based on ${r.rrCount} heartbeats · not a medical device',
+          context.l10n.basedOnHeartbeats(r.rrCount),
           style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
         ),
         const SizedBox(height: 28),
 
         // HR
         _MetricCard(
-          label: 'Heart rate',
+          label: context.l10n.heartRate,
           value: '${r.hr.round()}',
-          unit: 'bpm',
+          unit: context.l10n.bpm,
           color: AppColors.teal,
         ),
         const SizedBox(height: 12),
 
         // RMSSD
         _MetricCard(
-          label: 'RMSSD',
+          label: context.l10n.rmssdName,
           value: r.rmssd.round().toString(),
-          unit: 'ms',
-          sub: r.rmssdLabel,
+          unit: context.l10n.msUnit,
+          sub: hrvRecoveryLabel(context.l10n, r.rmssd),
           color: const Color(0xFF7B68EE),
         ),
         const SizedBox(height: 12),
 
         // SDNN
         _MetricCard(
-          label: 'SDNN',
+          label: context.l10n.sdnnName,
           value: r.sdnn.round().toString(),
-          unit: 'ms',
-          sub: 'overall variability',
+          unit: context.l10n.msUnit,
+          sub: context.l10n.overallVariability,
           color: const Color(0xFF4A9EDA),
         ),
 
@@ -642,10 +645,9 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Text(
-            'HRV is most meaningful as a trend over time, not a single reading. '
-            'Compare against your own baseline, not population averages.',
-            style: TextStyle(
+          child: Text(
+            context.l10n.hrvTrend,
+            style: const TextStyle(
                 color: AppColors.textMuted, fontSize: 12, height: 1.5),
           ),
         ),
@@ -667,7 +669,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Measure again'),
+            child: Text(context.l10n.measureAgain),
           ),
         ),
       ],
@@ -695,8 +697,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:
-                const Text('Go back', style: TextStyle(color: AppColors.teal)),
+            child: Text(context.l10n.goBack,
+                style: const TextStyle(color: AppColors.teal)),
           ),
         ],
       ),

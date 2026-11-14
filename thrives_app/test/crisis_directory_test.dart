@@ -7,6 +7,7 @@ import 'package:monkeythrive/core/data/crisis_helplines.dart';
 import 'package:monkeythrive/core/storage/prefs_service.dart';
 import 'package:monkeythrive/core/theme/app_theme.dart';
 import 'package:monkeythrive/features/settings/screens/crisis_directory_screen.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -273,6 +274,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const CrisisDirectoryScreen(key: Key('reopened')),
         ),
@@ -309,6 +312,8 @@ Future<void> _pumpDirectory(
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.dark(),
       home: CrisisDirectoryScreen(dialer: dialer),
     ),

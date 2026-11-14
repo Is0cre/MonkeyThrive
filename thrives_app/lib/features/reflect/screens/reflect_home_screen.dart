@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/session_log.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../settings/data_portability.dart';
@@ -103,12 +104,12 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Reflect',
+                    Text(context.l10n.navReflect,
                         style: Theme.of(context).textTheme.displayLarge),
                     const SizedBox(height: 6),
-                    const Text(
-                      'a record of what you\'ve explored.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.reflectSubtitle,
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 14),
                     ),
                     const SizedBox(height: 8),
@@ -116,14 +117,14 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
                       children: [
                         TextButton(
                           onPressed: () => showLocalExportDialog(context),
-                          child: const Text('Export'),
+                          child: Text(context.l10n.export),
                         ),
                         TextButton(
                           onPressed: () async {
                             await showLocalImportDialog(context);
                             if (mounted) await _load();
                           },
-                          child: const Text('Import'),
+                          child: Text(context.l10n.import),
                         ),
                       ],
                     ),
@@ -133,15 +134,15 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
               ),
             ),
             if (!hasData)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(40),
                     child: Text(
-                      'Nothing here yet.\n\nUse a few tools and come back.',
+                      context.l10n.reflectEmpty,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 14,
                           height: 1.7),
@@ -160,7 +161,7 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
 
                     // ── Category time ──────────────────────────────────────
                     if (categoryTotals.isNotEmpty) ...[
-                      const _Label('time with each area'),
+                      _Label(context.l10n.timeWithEachArea),
                       const SizedBox(height: 12),
                       _CategoryBars(totals: categoryTotals),
                       const SizedBox(height: 32),
@@ -168,7 +169,7 @@ class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
 
                     // ── Tool usage ─────────────────────────────────────────
                     if (toolStats.isNotEmpty) ...[
-                      const _Label('what you\'ve reached for'),
+                      _Label(context.l10n.whatYouReachedFor),
                       const SizedBox(height: 12),
                       _ToolList(stats: toolStats),
                     ],
@@ -217,9 +218,9 @@ class _StateMap extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'YOUR STATES — PAST 35 DAYS',
-            style: TextStyle(
+          Text(
+            context.l10n.statesPast35,
+            style: const TextStyle(
               color: AppColors.textMuted,
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -234,8 +235,8 @@ class _StateMap extends StatelessWidget {
               final state = stateMap[key];
               return Tooltip(
                 message: state != null
-                    ? _ToleranceStateX.displayFor(state)
-                    : 'no check-in',
+                    ? _ToleranceStateX.displayFor(context.l10n, state)
+                    : context.l10n.noCheckIn,
                 child: Container(
                   width: 22,
                   height: 22,
@@ -251,10 +252,10 @@ class _StateMap extends StatelessWidget {
           Row(
             children: [
               for (final item in [
-                ('overwhelmed', const Color(0xFFDA6433)),
-                ('present', AppColors.teal),
-                ('flat', const Color(0xFF6B7ADA)),
-                ('no data', AppColors.surfaceVariant),
+                (context.l10n.stateOverwhelmed, const Color(0xFFDA6433)),
+                (context.l10n.statePresent, AppColors.teal),
+                (context.l10n.flatShort, const Color(0xFF6B7ADA)),
+                (context.l10n.noData, AppColors.surfaceVariant),
               ]) ...[
                 Container(
                   width: 8,
@@ -315,7 +316,7 @@ class _CategoryBars extends StatelessWidget {
               SizedBox(
                 width: 72,
                 child: Text(
-                  e.key,
+                  categoryLabel(context.l10n, e.key),
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 12),
                 ),
@@ -347,7 +348,7 @@ class _CategoryBars extends StatelessWidget {
               SizedBox(
                 width: 48,
                 child: Text(
-                  _fmtDuration(e.value),
+                  _fmtDuration(context.l10n, e.value),
                   textAlign: TextAlign.right,
                   style:
                       const TextStyle(color: AppColors.textMuted, fontSize: 11),
@@ -386,7 +387,7 @@ class _ToolList extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    e.key,
+                    toolTitle(context.l10n, e.key),
                     style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
@@ -394,13 +395,13 @@ class _ToolList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${e.value.count}×',
+                  context.l10n.countTimes(e.value.count),
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  _fmtDuration(e.value.totalSeconds),
+                  _fmtDuration(context.l10n, e.value.totalSeconds),
                   style:
                       const TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
@@ -433,28 +434,30 @@ class _Label extends StatelessWidget {
   }
 }
 
-String _fmtDuration(int seconds) {
-  if (seconds < 60) return '${seconds}s';
+String _fmtDuration(AppLocalizations l10n, int seconds) {
+  if (seconds < 60) return l10n.durationSeconds(seconds);
   final m = seconds ~/ 60;
   final s = seconds % 60;
-  if (m < 60) return s > 0 ? '${m}m ${s}s' : '${m}m';
+  if (m < 60) {
+    return s > 0 ? l10n.durationMinutesSeconds(m, s) : l10n.minutesShort(m);
+  }
   final h = m ~/ 60;
   final rm = m % 60;
-  return rm > 0 ? '${h}h ${rm}m' : '${h}h';
+  return rm > 0 ? l10n.durationHoursMinutes(h, rm) : l10n.hoursShort(h);
 }
 
 // Normalise legacy + current state name strings to display labels
 class _ToleranceStateX {
-  static String displayFor(String state) {
+  static String displayFor(AppLocalizations l10n, String state) {
     switch (state) {
       case 'hyperaroused':
       case 'hyper':
-        return 'overwhelmed';
+        return l10n.stateOverwhelmed;
       case 'hypoaroused':
       case 'hypo':
-        return 'flat or numb';
+        return l10n.stateFlat;
       default:
-        return 'present';
+        return l10n.statePresent;
     }
   }
 }

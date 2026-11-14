@@ -9,6 +9,7 @@ import 'package:monkeythrive/core/theme/app_theme.dart';
 import 'package:monkeythrive/features/regulate/screens/panic_screen.dart';
 import 'package:monkeythrive/features/settings/screens/crisis_directory_screen.dart';
 import 'package:monkeythrive/features/support/trusted_people_screen.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -102,6 +103,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark(),
         home: CrisisDirectoryScreen(dialer: dialer),
       ),
@@ -128,6 +131,8 @@ void main() {
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused),
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const TrustedPeopleScreen(),
         ),
@@ -145,6 +150,8 @@ void main() {
       WoTScope(
         notifier: present,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const TrustedPeopleScreen(),
         ),
@@ -181,7 +188,9 @@ void main() {
     )!;
     await PrefsService.saveTrustedPeople([person]);
 
-    await tester.pumpWidget(const MaterialApp(home: PanicScreen()));
+    await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,home: PanicScreen()));
     await tester.pump();
     expect(find.text('Text Sam'), findsNothing);
     expect(find.text('go to regulate'), findsNothing);

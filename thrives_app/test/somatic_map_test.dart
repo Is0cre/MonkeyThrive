@@ -7,6 +7,7 @@ import 'package:monkeythrive/core/models/tolerance_state.dart';
 import 'package:monkeythrive/features/checkin/screens/checkin_screen.dart';
 import 'package:monkeythrive/features/checkin/somatic_body_map.dart';
 import 'package:monkeythrive/features/checkin/somatic_map.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -54,6 +55,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: CheckInScreen(onComplete: (_) {}),
       ),
     );
@@ -77,6 +80,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: CheckInScreen(onComplete: (_) {}),
       ),
     );
@@ -99,6 +104,8 @@ void main() {
   testWidgets('head glow stays inside the silhouette', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(disableAnimations: true),

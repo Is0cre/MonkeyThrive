@@ -4,8 +4,11 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 class _VagalTool {
+  /// English session id. Tracking stays `Vagal — $id`.
+  final String id;
   final String title;
   final String why;
   final String instructions;
@@ -13,6 +16,7 @@ class _VagalTool {
   final int? timerSeconds;
 
   const _VagalTool({
+    required this.id,
     required this.title,
     required this.why,
     required this.instructions,
@@ -21,47 +25,38 @@ class _VagalTool {
   });
 }
 
-const _tools = [
-  _VagalTool(
-    title: 'Humming',
-    why: 'Humming creates vibrations that directly stimulate the vagus nerve '
-        'through the larynx. Even 2 minutes can measurably shift your state.',
-    instructions: 'Find a comfortable note and hum steadily. '
-        'Feel the vibration in your chest and throat. '
-        'Let the exhale extend naturally as you hum.',
-    icon: Icons.music_note_rounded,
-  ),
-  _VagalTool(
-    title: 'Gargling',
-    why: 'Gargling activates muscles at the back of the throat that are '
-        'connected to the vagus nerve. 30 seconds is enough to notice a shift.',
-    instructions: 'Take a mouthful of water and gargle vigorously '
-        'for as long as comfortable. Repeat 2-3 times.',
-    icon: Icons.water_drop_rounded,
-    timerSeconds: 30,
-  ),
-  _VagalTool(
-    title: 'Extended Exhale',
-    why: 'The exhale activates the parasympathetic nervous system. '
-        'Making your exhale twice as long as your inhale slows the heart rate '
-        'and signals safety to your body.',
-    instructions: 'Breathe in for 4 counts. Breathe out slowly for 8 counts. '
-        'There is no hold — just a long, steady out-breath. '
-        'Repeat as many times as you need.',
-    icon: Icons.air_rounded,
-  ),
-  _VagalTool(
-    title: 'Diving Reflex',
-    why: 'Submerging your face in cold water (or splashing it) triggers the '
-        'mammalian diving reflex — your heart rate slows within seconds. '
-        'It is one of the fastest calming signals your body responds to.',
-    instructions: 'Fill a bowl or sink with cold water. '
-        'Hold your breath and submerge your face for 15-30 seconds, '
-        'or splash cold water repeatedly over your face and forehead.',
-    icon: Icons.face_rounded,
-    timerSeconds: 30,
-  ),
-];
+List<_VagalTool> _vagalTools(AppLocalizations l10n) => [
+      _VagalTool(
+        id: 'Humming',
+        title: l10n.humming,
+        why: l10n.hummingWhy,
+        instructions: l10n.hummingHow,
+        icon: Icons.music_note_rounded,
+      ),
+      _VagalTool(
+        id: 'Gargling',
+        title: l10n.gargling,
+        why: l10n.garglingWhy,
+        instructions: l10n.garglingHow,
+        icon: Icons.water_drop_rounded,
+        timerSeconds: 30,
+      ),
+      _VagalTool(
+        id: 'Extended Exhale',
+        title: l10n.extendedExhale,
+        why: l10n.extendedWhy,
+        instructions: l10n.extendedHow,
+        icon: Icons.air_rounded,
+      ),
+      _VagalTool(
+        id: 'Diving Reflex',
+        title: l10n.divingReflex,
+        why: l10n.divingWhy,
+        instructions: l10n.divingHow,
+        icon: Icons.face_rounded,
+        timerSeconds: 30,
+      ),
+    ];
 
 class VagalScreen extends StatefulWidget {
   const VagalScreen({super.key});
@@ -75,9 +70,10 @@ class _VagalScreenState extends State<VagalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tools = _vagalTools(context.l10n);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vagal Nerve Activation'),
+        title: Text(context.l10n.vagalScreenTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
@@ -87,33 +83,32 @@ class _VagalScreenState extends State<VagalScreen> {
       body: SafeArea(
         child: _activeToolIndex != null
             ? _VagalToolDetail(
-                tool: _tools[_activeToolIndex!],
+                tool: tools[_activeToolIndex!],
                 onBack: () => setState(() => _activeToolIndex = null),
               )
-            : _buildList(context),
+            : _buildList(context, tools),
       ),
     );
   }
 
-  Widget _buildList(BuildContext context) {
+  Widget _buildList(BuildContext context, List<_VagalTool> tools) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 80),
       children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 20),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20),
           child: Text(
-            'The vagus nerve is your body\'s main pathway to calm. '
-            'These techniques activate it directly.',
-            style: TextStyle(
+            context.l10n.vagalIntro,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
               height: 1.6,
             ),
           ),
         ),
-        for (int i = 0; i < _tools.length; i++) ...[
+        for (int i = 0; i < tools.length; i++) ...[
           _VagalCard(
-            tool: _tools[i],
+            tool: tools[i],
             onTap: () => setState(() => _activeToolIndex = i),
           ),
           const SizedBox(height: 12),
@@ -161,8 +156,8 @@ class _VagalCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       tool.timerSeconds != null
-                          ? '${tool.timerSeconds}s timer'
-                          : 'Breathing guide',
+                          ? context.l10n.secondsTimer(tool.timerSeconds!)
+                          : context.l10n.breathingGuide,
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 13),
                     ),
@@ -203,7 +198,7 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
     super.initState();
     // Tools without a timer begin immediately when opened
     if (!_hasTimer) {
-      beginTracking('Vagal — ${widget.tool.title}', 'Regulate');
+      beginTracking('Vagal — ${widget.tool.id}', 'Regulate');
     }
   }
 
@@ -214,7 +209,7 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
   }
 
   void _startTimer() {
-    beginTracking('Vagal — ${widget.tool.title}', 'Regulate');
+    beginTracking('Vagal — ${widget.tool.id}', 'Regulate');
     setState(() {
       _running = true;
       _done = false;
@@ -255,13 +250,13 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
               _reset();
               widget.onBack();
             },
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.arrow_back_rounded,
+                const Icon(Icons.arrow_back_rounded,
                     color: AppColors.textSecondary, size: 18),
-                SizedBox(width: 6),
-                Text('Back',
-                    style: TextStyle(
+                const SizedBox(width: 6),
+                Text(context.l10n.back,
+                    style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 14)),
               ],
             ),
@@ -298,9 +293,9 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'WHY THIS WORKS',
-                  style: TextStyle(
+                Text(
+                  context.l10n.whyThisWorks,
+                  style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -367,10 +362,11 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
                 ),
                 child: Text(
                   _done
-                      ? 'Again'
+                      ? context.l10n.againLabel
                       : (_running
-                          ? 'Running…'
-                          : 'Start ${widget.tool.timerSeconds}s timer'),
+                          ? context.l10n.running
+                          : context.l10n
+                              .startSecondsTimer(widget.tool.timerSeconds!)),
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w500),
                 ),
@@ -399,7 +395,7 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text(_done ? 'Back' : 'Done'),
+                child: Text(_done ? context.l10n.back : context.l10n.done),
               ),
             ),
           ],

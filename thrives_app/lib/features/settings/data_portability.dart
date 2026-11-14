@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../core/storage/archive_file.dart';
 import '../../core/storage/portable_archive.dart';
@@ -86,9 +87,9 @@ class _ExportDialogState extends State<_ExportDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text(
-        'Export',
-        style: TextStyle(color: AppColors.textPrimary),
+      title: Text(
+        context.l10n.export,
+        style: const TextStyle(color: AppColors.textPrimary),
       ),
       content: SingleChildScrollView(
         child: token == null
@@ -96,11 +97,9 @@ class _ExportDialogState extends State<_ExportDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'The copy is sealed with a passphrase you choose. '
-                    'MonkeyThrive does not keep that passphrase and cannot '
-                    'open the copy without it. Nothing is uploaded.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.exportBody,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
                       height: 1.6,
@@ -108,10 +107,11 @@ class _ExportDialogState extends State<_ExportDialog> {
                   ),
                   const SizedBox(height: 14),
                   _PassphraseField(
-                      controller: _passphrase, label: 'Passphrase'),
+                      controller: _passphrase, label: context.l10n.passphrase),
                   const SizedBox(height: 8),
                   _PassphraseField(
-                      controller: _repeat, label: 'Repeat passphrase'),
+                      controller: _repeat,
+                      label: context.l10n.repeatPassphrase),
                   if (_error != null) _ErrorText(_error!),
                 ],
               )
@@ -119,10 +119,9 @@ class _ExportDialogState extends State<_ExportDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Keep this copy somewhere you control. Opening it on '
-                    'another device needs the same passphrase.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.exportKeep,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
                       height: 1.6,
@@ -140,7 +139,7 @@ class _ExportDialogState extends State<_ExportDialog> {
                   if (_savedAs != null) ...[
                     const SizedBox(height: 10),
                     Text(
-                      'Saved: $_savedAs',
+                      context.l10n.savedAs(_savedAs!),
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
@@ -153,25 +152,25 @@ class _ExportDialogState extends State<_ExportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Close',
-            style: TextStyle(color: AppColors.textSecondary),
+          child: Text(
+            context.l10n.close,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         if (token == null)
           TextButton(
             onPressed: _working ? null : _create,
             child: Text(
-              _working ? 'Sealing' : 'Create copy',
+              _working ? context.l10n.sealing : context.l10n.createCopy,
               style: const TextStyle(color: AppColors.teal),
             ),
           )
         else
           TextButton(
             onPressed: _save,
-            child: const Text(
-              'Save file and copy',
-              style: TextStyle(color: AppColors.teal),
+            child: Text(
+              context.l10n.saveFileAndCopy,
+              style: const TextStyle(color: AppColors.teal),
             ),
           ),
       ],
@@ -211,8 +210,8 @@ class _ImportDialogState extends State<_ImportDialog> {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Copy restored on this device.'),
+        SnackBar(
+          content: Text(context.l10n.copyRestored),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
         ),
@@ -237,27 +236,26 @@ class _ImportDialogState extends State<_ImportDialog> {
     return AlertDialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text(
-        'Import',
-        style: TextStyle(color: AppColors.textPrimary),
+      title: Text(
+        context.l10n.import,
+        style: const TextStyle(color: AppColors.textPrimary),
       ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'This replaces the journal, check-ins, session log, '
-              'trusted people, and preferences on this device. '
-              'It does not contact a server.',
-              style: TextStyle(
+            Text(
+              context.l10n.importBody,
+              style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,
                 height: 1.6,
               ),
             ),
             const SizedBox(height: 14),
-            _PassphraseField(controller: _passphrase, label: 'Passphrase'),
+            _PassphraseField(
+                controller: _passphrase, label: context.l10n.passphrase),
             const SizedBox(height: 8),
             TextField(
               controller: _token,
@@ -265,7 +263,7 @@ class _ImportDialogState extends State<_ImportDialog> {
               maxLines: 6,
               style:
                   const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-              decoration: _fieldDecoration('Paste the copy'),
+              decoration: _fieldDecoration(context.l10n.pasteTheCopy),
             ),
             if (_error != null) _ErrorText(_error!),
           ],
@@ -274,15 +272,15 @@ class _ImportDialogState extends State<_ImportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
+          child: Text(
+            context.l10n.cancel,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         TextButton(
           onPressed: _working ? null : _restore,
           child: Text(
-            _working ? 'Restoring' : 'Restore',
+            _working ? context.l10n.restoring : context.l10n.restore,
             style: const TextStyle(color: AppColors.teal),
           ),
         ),
@@ -319,11 +317,31 @@ class _ErrorText extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Text(
-        message,
+        _archiveErrorText(context.l10n, message),
         style:
             const TextStyle(color: AppColors.danger, fontSize: 13, height: 1.4),
       ),
     );
+  }
+}
+
+/// The seal keeps these sentences in English. Show the matching translation.
+String _archiveErrorText(AppLocalizations l10n, String message) {
+  switch (message) {
+    case 'The two passphrases do not match.':
+      return l10n.passphrasesDoNotMatch;
+    case 'This is not a MonkeyThrive copy.':
+      return l10n.notACopy;
+    case 'This copy could not be read.':
+      return l10n.copyUnreadable;
+    case 'This copy is from a newer version.':
+      return l10n.copyNewer;
+    case 'That passphrase did not open this copy.':
+      return l10n.passphraseWrong;
+    case 'Use at least 8 characters.':
+      return l10n.passphraseMin(8);
+    default:
+      return message;
   }
 }
 

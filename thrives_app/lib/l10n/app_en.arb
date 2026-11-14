@@ -4,10 +4,66 @@
   "@appTitle": {
     "description": "The app name. Keep this word unchanged in every language."
   },
+  "navRegulate": "Regulate",
+  "navAttune": "Attune",
+  "navMonitor": "Monitor",
+  "navBuild": "Build",
+  "navReflect": "Reflect",
+  "navProcess": "Process",
+  "anchorLabel": "Anchor",
+  "checkinTitle": "how are you\nright now?",
+  "@checkinTitle": {
+    "description": "Check-in title. Keep the line break. Do not turn this into a diagnosis."
+  },
+  "checkinHint": "Tap where the body is speaking. Tap again to change it. This shapes what is available.",
+  "readingAs": "this reads as {state}",
+  "@readingAs": {
+    "description": "Shows the person's own reading. {state} is overwhelmed, present, or flat or numb.",
+    "placeholders": {
+      "state": {
+        "type": "String",
+        "example": "present"
+      }
+    }
+  },
+  "nothingStandsOut": "nothing stands out",
+  "continueLabel": "continue",
+  "tight": "tight",
+  "heavy": "heavy",
+  "unmarked": "unmarked",
+  "stateOverwhelmed": "overwhelmed",
+  "@stateOverwhelmed": {
+    "description": "The person's hyperaroused reading. Not a diagnosis."
+  },
+  "statePresent": "present",
+  "@statePresent": {
+    "description": "The person's regulated reading. Not a diagnosis."
+  },
+  "stateFlat": "flat or numb",
+  "@stateFlat": {
+    "description": "The person's hypoaroused reading. Not a diagnosis."
+  },
+  "lockedWhenOverwhelmed": "not available when overwhelmed",
+  "lockedWhenFlat": "not available when flat",
+  "bodyMasculine": "Masculine",
+  "bodyFeminine": "Feminine",
+  "bodyNeutral": "Neutral",
+  "zoneHead": "Head",
+  "zoneThroat": "Throat",
+  "zoneChest": "Chest",
+  "zoneStomach": "Stomach",
+  "feelingBetterQuestion": "Are you feeling better?",
+  "yes": "Yes",
+  "notYet": "Not yet",
+  "readingStays": "The reading stays as it is.",
+  "markedPresent": "Marked as present.",
+  "stillMarkedPresent": "Still marked as present.",
+  "readingNotSaved": "The reading could not be saved.",
   "boxBreathingTitle": "Box Breathing",
   "@boxBreathingTitle": {
     "description": "Title of the box breathing screen."
   },
+  "breathing478Title": "4-7-8 Breathing",
   "breathingBegin": "Begin",
   "@breathingBegin": {
     "description": "Button that starts a breathing exercise."
@@ -16,6 +72,8 @@
   "@breathingPause": {
     "description": "Button that pauses a breathing exercise."
   },
+  "breathingResume": "Resume",
+  "breathingCycles": "Cycles",
   "breathingCycle": "Cycle {current} of {total}",
   "@breathingCycle": {
     "description": "Which pacing cycle is playing, and how many there are in the round.",
@@ -29,5 +87,837 @@
         "example": "4"
       }
     }
-  }
+  },
+  "anotherRound": "Another round",
+  "inhale": "Inhale",
+  "hold": "Hold",
+  "exhale": "Exhale",
+  "breathing478NeedsCheckin": "Check in before using 4-7-8 breathing.",
+  "breathing478Locked": "4-7-8 breathing is {reason}.",
+  "@breathing478Locked": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "regulateSubtitle": "Immediate tools for the state you are in now.",
+  "sectionBreathing": "Breathing",
+  "sectionGrounding": "Grounding",
+  "sectionVagal": "Vagal nerve activation",
+  "boxBreathingSubtitle": "4-4-4-4 · Calm the nervous system",
+  "sighTitle": "Physiological sigh",
+  "sighSubtitle": "Double inhale + long exhale · Fastest reset",
+  "breathing478Subtitle": "Sleep & acute anxiety",
+  "wimHofTitle": "Wim Hof Breathing",
+  "wimHofSubtitle": "Guided round protocol",
+  "groundingTitle": "5-4-3-2-1 Grounding",
+  "groundingSubtitle": "Sensory anchoring — bring yourself back",
+  "coldWaterTitle": "Cold Water",
+  "coldWaterSubtitle": "Diving reflex · Vagal activation",
+  "safePlaceTitle": "Safe Place",
+  "safePlaceSubtitle": "Guided visualisation with ambient sound",
+  "vagalTitle": "Vagal Prompts",
+  "vagalSubtitle": "Humming · Gargling · Extended exhale",
+  "sighCueIn": "breathe in through your nose",
+  "sighCueSniff": "one more sniff",
+  "sighCueOut": "breathe out slowly",
+  "sighDone": "done",
+  "sighAgain": "again",
+  "sighPhaseLabel": "Double inhale, long exhale",
+  "youAreHere": "you're here.",
+  "takeYourTime": "take your time.",
+  "goToRegulate": "go to regulate",
+  "callCrisisLine": "call a crisis line",
+  "leave": "Leave",
+  "youAreHereSentence": "You are here.",
+  "finish": "Finish",
+  "next": "Next",
+  "complete": "Complete",
+  "back": "Back",
+  "humming": "Humming",
+  "gargling": "Gargling",
+  "extendedExhale": "Extended Exhale",
+  "divingReflex": "Diving Reflex",
+  "vagalScreenTitle": "Vagal Nerve Activation",
+  "done": "Done",
+  "safePlaceLocked": "Safe place is {reason}.",
+  "@safePlaceLocked": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "duration": "Duration",
+  "beginVisualisation": "Begin visualisation",
+  "endSession": "End session",
+  "safePlaceHint": "A quiet beach, a childhood room, a forest clearing…",
+  "customiseSafePlace": "Customise your safe place",
+  "wimHofOnlyWhenPresent": "Wim Hof breathing is only available when present.",
+  "wimHofChecksFirst": "Complete the safety checks before starting.",
+  "wimHofWarning": "Never practice in water or while driving. Stop if you feel unwell.",
+  "roundNumber": "Round {round}",
+  "@roundNumber": {
+    "placeholders": {
+      "round": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "roundComplete": "Round {round} complete",
+  "@roundComplete": {
+    "placeholders": {
+      "round": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "exhaleAndHold": "Exhale & Hold",
+  "recoveryBreath": "Recovery Breath",
+  "retentionHold": "Retention Hold",
+  "readyRecovery": "I'm ready — recovery breath",
+  "release": "Release",
+  "nextRound": "Next round",
+  "thirtyBreaths": "30 Deep Breaths",
+  "thirtyBreathsBody": "Breathe in fully, let go without forcing. After 30 breaths, exhale and hold only as long as comfortable.",
+  "wimHofCheck1": "I am not in water, driving, or standing.",
+  "wimHofCheck2": "I am lying down or seated somewhere safe.",
+  "wimHofCheck3": "I do not have a seizure disorder.",
+  "wimHofCheck4": "I do not have a serious heart, blood pressure, or respiratory condition.",
+  "wimHofCheck5": "I am not pregnant.",
+  "wimHofCheck6": "If this is my first time, another person is nearby.",
+  "wimHofCheck7": "I will stop immediately if I feel unwell.",
+  "onboardingKicker1": "Taming the storm",
+  "onboardingTitle1": "Tame the Storm",
+  "onboardingBody1": "The nervous system can feel like weather you did not choose. Taming it means learning the shape of that weather: when to slow down, when to stay, and when a tool stays closed. Like Sun Wukong learning to hold his own chaos, this is practice in self-regulation.",
+  "onboardingKicker2": "On this device",
+  "onboardingTitle2": "Zero Tracking. Zero Guilt.",
+  "onboardingBody2": "Check-ins, journal entries, and sensor readings stay on this device. There is no account, no streak, and no score for the days you were away. Nothing here is sent or sold.",
+  "onboardingCare": "MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy. If you are in immediate danger, contact emergency services.",
+  "continueAction": "Continue",
+  "anchorBaseline": "Anchor your baseline",
+  "wukongLabel": "Sun Wukong in red and gold, holding a phone.",
+  "pageLabel": "Page {page}",
+  "@pageLabel": {
+    "placeholders": {
+      "page": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "processSubtitle": "Deeper work. Use when regulated and ready.",
+  "processCaution": "These tools are for processing, not crisis. Make sure you feel regulated before starting.",
+  "bilateralTitle": "Bilateral Stimulation",
+  "eftTapping": "EFT Tapping",
+  "somaticScan": "Somatic Body Scan",
+  "traumaJournal": "Trauma-informed Journaling",
+  "comingSoon": "Coming soon",
+  "bilateralOnlyWhenPresent": "Bilateral stimulation is only available when present.",
+  "sessionComplete": "Session complete",
+  "sessionCompleteBody": "Take a moment. Notice what came up, if anything.\n\nThere is no right way to feel.",
+  "close": "Close",
+  "settings": "Settings",
+  "beginSession": "Begin session",
+  "mode": "Mode",
+  "speed": "Speed",
+  "sessionLength": "Session length",
+  "dotSize": "Dot size",
+  "dotColour": "Dot colour",
+  "visual": "Visual",
+  "audio": "Audio",
+  "tactile": "Tactile",
+  "visualAudio": "Visual + Audio",
+  "visualTactile": "Visual + Tactile",
+  "visualAudioTactile": "Visual + Audio + Tactile",
+  "slow": "Slow",
+  "medium": "Medium",
+  "fast": "Fast",
+  "visualOnly": "Visual only",
+  "audioOnly": "Audio only",
+  "tactileOnly": "Tactile only",
+  "allThree": "All three",
+  "open": "Open",
+  "minutesShort": "{minutes}m",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "bilateralCare": "MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy.\nBilateral stimulation — between-session support, not therapy.",
+  "attuneSubtitle": "Generated sound tools for steady attention.",
+  "binauralBeats": "Binaural beats",
+  "isochronicTones": "Isochronic tones",
+  "natureSoundscapes": "Nature soundscapes",
+  "monitorSubtitle": "Check in with your nervous system.",
+  "hrvTitle": "Heart rate variability",
+  "hrvTap": "Tap to measure via camera",
+  "hyperarousal": "Hyperarousal",
+  "windowOfTolerance": "Window of tolerance",
+  "hypoarousal": "Hypoarousal",
+  "justNow": "just now",
+  "minutesAgo": "{minutes}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{hours}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "noCamera": "No camera found",
+  "noCameraBody": "Camera PPG requires a rear camera with flash.",
+  "cameraDenied": "Camera access denied",
+  "cameraDeniedBody": "Allow camera access in your device settings to use this feature.",
+  "measurementFailed": "Measurement failed",
+  "measurementFailedBody": "Not enough signal detected. Make sure your fingertip firmly covers the camera and flash.",
+  "measureIn60": "Measure in 60 seconds",
+  "hrvInstructions": "Place your fingertip firmly over the rear camera and flash. Stay still. Results are stored on this device only.",
+  "coverLens": "Cover both the camera lens and the flash with your fingertip.",
+  "stayStill": "Stay as still as possible. Motion creates noise in the signal.",
+  "notAMedicalDevice": "Not a medical device. For self-awareness only.",
+  "notAMedicalDeviceShort": "Not a medical device.",
+  "startMeasurement": "Start measurement",
+  "signalDetected": "signal detected",
+  "placeFinger": "place finger on camera + flash",
+  "waitingForSignal": "waiting for signal…",
+  "stopAndCalculate": "Stop and calculate",
+  "yourReading": "Your reading",
+  "basedOnHeartbeats": "Based on {count} heartbeats · not a medical device",
+  "@basedOnHeartbeats": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "heartRate": "Heart rate",
+  "hrvTrend": "HRV is most meaningful as a trend over time, not a single reading. Compare against your own baseline, not population averages.",
+  "measureAgain": "Measure again",
+  "goBack": "Go back",
+  "buildSubtitle": "A private space to write. Nothing leaves this device.",
+  "nothingWritten": "Nothing written yet.\n\nTap the pencil when you're ready.",
+  "newEntry": "New entry",
+  "deleteEntryTitle": "Delete this entry?",
+  "cannotBeUndone": "This cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "today": "today",
+  "yesterday": "yesterday",
+  "emptyEntry": "empty entry",
+  "journalHint": "write here…",
+  "saved": "saved",
+  "prompt": "prompt",
+  "wordCount": "{count, plural, =1{1 word} other{{count} words}}",
+  "@wordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "prompt1": "what are you noticing right now?",
+  "prompt2": "what does your body need today?",
+  "prompt3": "is there something you want to put down somewhere safe?",
+  "prompt4": "what felt okay today, even if small?",
+  "prompt5": "is there something you've been carrying?",
+  "prompt6": "you don't have to make it make sense. just write.",
+  "prompt7": "what's present for you right now?",
+  "prompt8": "what would you say to yourself if you were being kind?",
+  "reflectSubtitle": "a record of what you've explored.",
+  "export": "Export",
+  "import": "Import",
+  "reflectEmpty": "Nothing here yet.\n\nUse a few tools and come back.",
+  "timeWithEachArea": "time with each area",
+  "whatYouReachedFor": "what you've reached for",
+  "statesPast35": "YOUR STATES — PAST 35 DAYS",
+  "noCheckIn": "no check-in",
+  "flatShort": "flat",
+  "noData": "no data",
+  "crisisSupport": "Crisis support",
+  "crisisDanger": "If you are in immediate danger, call the emergency number for where you are.",
+  "country": "Country",
+  "searchNameOrNumber": "Search name or number",
+  "noLinesStored": "No lines are stored for this country. Choose International for what to do next.",
+  "supportLines": "Support lines",
+  "noSupportMatch": "No support lines match that search. The emergency number stays listed above.",
+  "somewhereElse": "Somewhere else? Choose International in the country list.",
+  "crisisDisclaimer": "These directories are stored completely offline on your device. Calls route through your cellular provider and standard carrier rates or calling rules apply.",
+  "numberCopied": "Number copied",
+  "copyNumber": "Copy number",
+  "dialsNumber": "Dials {number}",
+  "@dialsNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "sendThisText": "Send this text?",
+  "callThisNumber": "Call this number?",
+  "message": "Message",
+  "textOpensApp": "This opens your messages app with the text ready. This app does not send it or use the internet.",
+  "callOpensDialer": "This opens your phone dialer with the number ready. This app does not place the call or use the internet.",
+  "textNumber": "Text {number}",
+  "@textNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "callNumber": "Call {number}",
+  "@callNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "trustedPerson": "Trusted person",
+  "saveTrustedPerson": "Save a trusted person",
+  "editTrustedPeople": "Edit trusted people",
+  "trustedWhenPresent": "A trusted person can be saved when the reading is present.",
+  "trustedSavedWhenPresent": "This can be saved when the reading is present.",
+  "availableWhenPresent": "Available when the reading is present.",
+  "savedTextOnDevice": "A saved text, kept on this device.",
+  "savedOnDevice": "Saved on this device.",
+  "trustedPrivacy": "Saved on this device. Text and call open your phone's own apps. Nothing is sent from here.",
+  "addAnotherPerson": "Add another person",
+  "name": "Name",
+  "phoneNumber": "Phone number",
+  "save": "Save",
+  "remove": "Remove",
+  "keep": "Keep",
+  "removeThisPerson": "Remove this person?",
+  "numberWillBeRemoved": "The saved number will be removed from this device.",
+  "addAName": "Add a name.",
+  "shorterName": "Use a shorter name.",
+  "phoneNeedsDigits": "Use a phone number, with the country code if it needs one.",
+  "addAMessage": "Add a short message.",
+  "messageTooLong": "Keep the message to {limit} characters.",
+  "@messageTooLong": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "numberCannotOpen": "That number cannot be opened from here.",
+  "messagesDidNotOpen": "The messages app did not open.",
+  "phoneDidNotOpen": "The phone app did not open.",
+  "textPerson": "Text {name}",
+  "@textPerson": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "callPerson": "Call {name}",
+  "@callPerson": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sitWithMe": "Sit with me",
+  "justLettingYouKnow": "Just letting you know",
+  "clearAllDataTitle": "Clear all data?",
+  "clearAllDataBody": "This will permanently delete:\n\n• Journal entries\n• HRV readings\n• Check-in history\n• Baseline feedback history\n• Session log\n• Safe place description\n• Trusted people\n\nThis cannot be undone.",
+  "clearAll": "Clear all",
+  "allDataCleared": "All data cleared.",
+  "checkinAlreadyOpen": "A check-in is already open.",
+  "about": "About",
+  "builtFromLivedExperience": "Built from lived experience.\nFor everyone who is still here.",
+  "openSourceLine": "Open source · No ads · No data collection · Free forever.",
+  "appearance": "Appearance",
+  "safety": "Safety",
+  "crisisDirectoryLabel": "Crisis support directory",
+  "crisisDirectorySubtitle": "Offline helplines by country. Stays on this device.",
+  "showBaseline": "Show baseline check-in",
+  "showBaselineSubtitle": "Preview the local prompt implementation",
+  "privacy": "Privacy",
+  "entriesStay": "Your entries stay on this device.",
+  "privacyBody": "Zero network requests. Zero analytics. Zero crash reporting. Everything you enter — check-ins, journal entries, HRV readings, your safe place description, and trusted people — is stored only on this device.\n\nWe cannot provide your data to anyone because we do not have it.",
+  "journalDeviceOnly": "Journal entries — device only",
+  "hrvDeviceOnly": "HRV readings — device only",
+  "checkinDeviceOnly": "Check-in history — device only",
+  "sessionDeviceOnly": "Session log — device only",
+  "disclaimer": "Disclaimer",
+  "settingsDisclaimer": "MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy, and does not diagnose, assess, or treat any condition.\n\nIf you are in crisis, please reach out to a professional or use the crisis resources listed above.",
+  "yourData": "Your data",
+  "exportSubtitle": "Passphrase-sealed file on this device",
+  "importSubtitle": "Restore a sealed copy onto this device",
+  "clearAllSubtitle": "Journal, HRV, check-ins, session log, safe place",
+  "redoOnboarding": "Redo onboarding",
+  "redoOnboardingSubtitle": "Reset your profile questionnaire",
+  "redoOnboardingTitle": "Redo onboarding?",
+  "redoOnboardingBody": "Your profile will be reset and you'll go through the questionnaire again. Your history is not affected.",
+  "reset": "Reset",
+  "accent": "Accent",
+  "contrast": "Contrast",
+  "contrastSoft": "Soft",
+  "contrastStandard": "Standard",
+  "contrastHigh": "High",
+  "passphrasesDoNotMatch": "The two passphrases do not match.",
+  "passphrase": "Passphrase",
+  "repeatPassphrase": "Repeat passphrase",
+  "exportBody": "The copy is sealed with a passphrase you choose. MonkeyThrive does not keep that passphrase and cannot open the copy without it. Nothing is uploaded.",
+  "exportKeep": "Keep this copy somewhere you control. Opening it on another device needs the same passphrase.",
+  "savedAs": "Saved: {name}",
+  "@savedAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sealing": "Sealing",
+  "createCopy": "Create copy",
+  "saveFileAndCopy": "Save file and copy",
+  "copyRestored": "Copy restored on this device.",
+  "importBody": "This replaces the journal, check-ins, session log, trusted people, and preferences on this device. It does not contact a server.",
+  "pasteTheCopy": "Paste the copy",
+  "restoring": "Restoring",
+  "restore": "Restore",
+  "howAreYouDoing": "How are you doing?",
+  "baselineDifferent": "I noticed things look a little different from your usual baseline.",
+  "imOkay": "🙂  I'm okay",
+  "wouldOneHelp": "Would one of these help?",
+  "sigh": "Sigh",
+  "ground": "Ground",
+  "vagal": "Vagal",
+  "dismiss": "Dismiss",
+  "coldHow": "How this works",
+  "coldBody": "Cold water activates the diving reflex — your body's built-in emergency brake. It slows your heart rate and activates the vagus nerve within seconds.\n\nApply cold water to your face, wrists, or the back of your neck.",
+  "coldFace": "Splash cold water on your face",
+  "coldWrists": "Hold cold water on your wrists",
+  "coldNeck": "Cold cloth on the back of your neck",
+  "good": "Good.",
+  "alreadyResponding": "Your nervous system is already responding.",
+  "seconds": "seconds",
+  "againLabel": "Again",
+  "running": "Running…",
+  "start30": "Start 30s timer",
+  "startSecondsTimer": "Start {seconds}s timer",
+  "@startSecondsTimer": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "secondsTimer": "{seconds}s timer",
+  "@secondsTimer": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "wimHofLetGo": "breathe in · let go",
+  "wimHofExhaleBody": "Let all the air out and hold. Do not force it. Hold as long as comfortable.",
+  "wimHofRecoveryBody": "Take one deep breath in and hold for 15 seconds.",
+  "wimHofStillness": "Hold. Feel the stillness.",
+  "wimHofRoundRest": "Rest for a moment before your next round, or finish here.",
+  "timerClock": "{minutes}m {seconds}s",
+  "@timerClock": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "timerSecondsOnly": "{seconds}s",
+  "@timerSecondsOnly": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "breathFraction": "{current} / {total}",
+  "@breathFraction": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sighIntro": "Double inhale through the nose, then a long slow exhale. One of the fastest ways to calm your nervous system.",
+  "sighRounds": "ROUNDS",
+  "sighBegin": "begin",
+  "sighPause": "pause",
+  "sighResume": "resume",
+  "senseSee": "See",
+  "senseHear": "Hear",
+  "senseTouch": "Touch",
+  "senseSmell": "Smell",
+  "senseTaste": "Taste",
+  "groundSee": "Look around you. Find 5 things you can see right now.\n\nTake your time. Notice each one clearly — colour, shape, texture.",
+  "groundHear": "Close your eyes if that feels safe. Find 4 things you can hear.\n\nNear and far. Notice the sounds without judgement.",
+  "groundTouch": "Find 3 things you can feel right now — the chair beneath you, the fabric on your skin, the air temperature.\n\nPress your feet into the floor if that helps.",
+  "groundSmell": "Find 2 things you can smell, or remember scents that feel safe and familiar to you.\n\nTake a slow breath in through your nose.",
+  "groundTaste": "Notice 1 thing you can taste, or take a sip of water if you have some.\n\nYou are here. You are safe.",
+  "groundCount": "{count} things you can {sense}",
+  "@groundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "sense": {
+        "type": "String"
+      }
+    }
+  },
+  "groundBroughtBack": "You just brought yourself back with your own senses. That is the skill — and you have it.",
+  "youAreSafe": "You are here. You are safe.",
+  "vagalIntro": "The vagus nerve is your body's main pathway to calm. These techniques activate it directly.",
+  "hummingWhy": "Humming creates vibrations that directly stimulate the vagus nerve through the larynx. Even 2 minutes can measurably shift your state.",
+  "hummingHow": "Find a comfortable note and hum steadily. Feel the vibration in your chest and throat. Let the exhale extend naturally as you hum.",
+  "garglingWhy": "Gargling activates muscles at the back of the throat that are connected to the vagus nerve. 30 seconds is enough to notice a shift.",
+  "garglingHow": "Take a mouthful of water and gargle vigorously for as long as comfortable. Repeat 2-3 times.",
+  "extendedWhy": "The exhale activates the parasympathetic nervous system. Making your exhale twice as long as your inhale slows the heart rate and signals safety to your body.",
+  "extendedHow": "Breathe in for 4 counts. Breathe out slowly for 8 counts. There is no hold — just a long, steady out-breath. Repeat as many times as you need.",
+  "divingWhy": "Submerging your face in cold water (or splashing it) triggers the mammalian diving reflex — your heart rate slows within seconds. It is one of the fastest calming signals your body responds to.",
+  "divingHow": "Fill a bowl or sink with cold water. Hold your breath and submerge your face for 15-30 seconds, or splash cold water repeatedly over your face and forehead.",
+  "breathingGuide": "Breathing guide",
+  "vagalToolTitle": "Vagal — {title}",
+  "@vagalToolTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "whyThisWorks": "WHY THIS WORKS",
+  "safePlaceDefault": "Think of a place — real or imagined — where you feel completely safe. It might be a room, a landscape, a memory. It belongs only to you.",
+  "safePrompt1": "Settle in. There is nowhere you need to be right now.\n\nLet your breathing slow naturally.",
+  "safePrompt2": "Bring your safe place to mind. Allow yourself to arrive there.",
+  "safePrompt3": "Notice what you can see. The colours, the light, the shapes around you.",
+  "safePrompt4": "What sounds are here? Gentle, familiar sounds that belong to this place.",
+  "safePrompt5": "Feel the temperature. The air on your skin. The ground beneath you.",
+  "safePrompt6": "You are safe here. Nothing can reach you in this place.",
+  "safePrompt7": "Stay as long as you need. This place is always available to you.\n\nYou can return here any time you close your eyes.",
+  "safePlaceNeedsCheckin": "Check in before using safe place.",
+  "yourSafePlace": "Your safe place",
+  "describeSafePlace": "Describe your safe place",
+  "safePlaceStored": "This is stored only on your device. Write whatever feels right — it only needs to make sense to you.",
+  "breathing478Caution": "4-7-8 breathing is very effective for acute anxiety and sleep. If you feel dizzy, stop and breathe normally.",
+  "howAreYouNow": "How are you right now?",
+  "recentCheckins": "Recent check-ins",
+  "toolsUsedRecently": "Tools used recently",
+  "noHistory": "No history yet.\nStart using tools and check back here.",
+  "hrvSummary": "{hr} bpm  ·  RMSSD {rmssd} ms",
+  "@hrvSummary": {
+    "placeholders": {
+      "hr": {
+        "type": "int"
+      },
+      "rmssd": {
+        "type": "int"
+      }
+    }
+  },
+  "windowHeading": "WINDOW OF TOLERANCE",
+  "hyperNote": "Anxiety · Panic · Overwhelm",
+  "regulatedNote": "Regulated · Processing possible",
+  "hypoNote": "Numbness · Shutdown · Dissociation",
+  "checkInBelow": "Check in below to log where you are.",
+  "labelOverwhelmed": "Overwhelmed",
+  "labelPresent": "Present",
+  "labelFlat": "Flat",
+  "durationSeconds": "{seconds}s",
+  "@durationSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutesSeconds": "{minutes}m {seconds}s",
+  "@durationMinutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHoursMinutes": "{hours}h {minutes}m",
+  "@durationHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "dateSlash": "{day}/{month}",
+  "@dateSlash": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "noBackCamera": "No back camera",
+  "hrvMeasurement": "HRV Measurement",
+  "hrvGoodRecovery": "good recovery",
+  "hrvModerate": "moderate",
+  "hrvLow": "low — rest or regulate",
+  "overallVariability": "overall variability",
+  "bpm": "bpm",
+  "msUnit": "ms",
+  "rmssdName": "RMSSD",
+  "sdnnName": "SDNN",
+  "daysAgoLong": "{days} days ago",
+  "@daysAgoLong": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "wordsCount": "{count} words",
+  "@wordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthJan": "Jan",
+  "monthFeb": "Feb",
+  "monthMar": "Mar",
+  "monthApr": "Apr",
+  "monthMay": "May",
+  "monthJun": "Jun",
+  "monthJul": "Jul",
+  "monthAug": "Aug",
+  "monthSep": "Sep",
+  "monthOct": "Oct",
+  "monthNov": "Nov",
+  "monthDec": "Dec",
+  "journalStamp": "{day} {month} {year}  {hour}:{minute}",
+  "@journalStamp": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "int"
+      },
+      "hour": {
+        "type": "String"
+      },
+      "minute": {
+        "type": "String"
+      }
+    }
+  },
+  "dayMonthYear": "{day} {month} {year}",
+  "@dayMonthYear": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "headphonesNote": "Binaural beats require stereo headphones to work.",
+  "frequencyBand": "Frequency band",
+  "carrierFrequency": "Carrier frequency",
+  "hertz": "{hz} Hz",
+  "@hertz": {
+    "placeholders": {
+      "hz": {
+        "type": "String"
+      }
+    }
+  },
+  "hertzBeat": "{hz} Hz beat",
+  "@hertzBeat": {
+    "placeholders": {
+      "hz": {
+        "type": "String"
+      }
+    }
+  },
+  "generating": "Generating…",
+  "natureSounds": "Nature sounds",
+  "natureLayer": "Layer ambient sound over any tone, or use on its own.",
+  "couldNotStartAudio": "Could not start audio. Try again.",
+  "play": "Play",
+  "stop": "Stop",
+  "none": "None",
+  "binauralShort": "Binaural",
+  "isochronicShort": "Isochronic",
+  "binauralBeatsTitle": "Binaural Beats — {band}",
+  "@binauralBeatsTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "isochronicTonesTitle": "Isochronic Tones — {band}",
+  "@isochronicTonesTitle": {
+    "placeholders": {
+      "band": {
+        "type": "String"
+      }
+    }
+  },
+  "natureSoundTitle": "Nature Sound — {type}",
+  "@natureSoundTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "bandDelta": "Delta",
+  "bandTheta": "Theta",
+  "bandAlpha": "Alpha",
+  "bandBeta": "Beta",
+  "rangeDelta": "0.5–4 Hz",
+  "rangeTheta": "4–8 Hz",
+  "rangeAlpha": "8–14 Hz",
+  "rangeBeta": "14–30 Hz",
+  "useDelta": "Deep sleep · Recovery",
+  "useTheta": "Deep relaxation · Processing",
+  "useAlpha": "Calm focus · Grounded",
+  "useBeta": "Alert · Present",
+  "noiseRain": "Rain",
+  "noiseOcean": "Ocean",
+  "noiseForest": "Forest",
+  "noiseRiver": "River",
+  "noiseThunder": "Thunder",
+  "noiseWind": "Wind",
+  "messagesStillOnScreen": "The messages app did not open. The number is still on this screen.",
+  "phoneStillOnScreen": "The phone app did not open. The number is still on this screen for you to dial.",
+  "textKeywordTo": "Text {keyword} to {number}",
+  "@textKeywordTo": {
+    "placeholders": {
+      "keyword": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "notACopy": "This is not a MonkeyThrive copy.",
+  "copyUnreadable": "This copy could not be read.",
+  "copyNewer": "This copy is from a newer version.",
+  "passphraseWrong": "That passphrase did not open this copy.",
+  "passphraseMin": "Use at least {count} characters.",
+  "@passphraseMin": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "suggestionSit": "I'm feeling overwhelmed right now. Could you sit with me or send a quiet check-in? No need to fix anything.",
+  "suggestionRough": "Having a rough moment and grounding myself. Just letting you know so I'm not alone.",
+  "personWillBeRemoved": "{name} will be removed from this device.",
+  "@personWillBeRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notReally": "🙁  Not really",
+  "baselineBox": "Box",
+  "acousticMessage": "Deterministic acoustic synthesis is undergoing calibration to prevent sudden sensory triggers. Available in a future release.",
+  "generalCategory": "General",
+  "countTimes": "{count}×",
+  "@countTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accentTeal": "teal",
+  "accentGreen": "green",
+  "accentBlue": "blue",
+  "accentAmber": "amber",
+  "bilateralSupport": "between-session support, not therapy",
+  "journaling": "Journaling",
+  "panicTool": "Panic / Physiological Sigh",
+  "sighTracked": "Physiological Sigh",
+  "wimHofTracked": "Wim Hof",
+  "clearAllData": "Clear all data",
+  "attuneType": "Type",
+  "hoursShort": "{hours}h",
+  "@hoursShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "clock": "{minutes}:{seconds}",
+  "@clock": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "crisisEmergency": "Emergency",
+  "crisisSupportLine": "Support line",
+  "crisisWhereYouAre": "Where you are",
+  "ok": "OK"
 }

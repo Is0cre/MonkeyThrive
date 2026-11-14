@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/theme/app_theme.dart';
@@ -20,7 +21,8 @@ class ProcessHomeScreen extends StatelessWidget {
         //   that require regulation as a prerequisite.
         // Informed by: Marit Leito, clinical advisor.
         final bilateralLocked = wot != null && !wot.canBilateral;
-        final lockedReason = wot?.lockedReason ?? '';
+        final lockedReason =
+            wot == null ? '' : toleranceLock(context.l10n, wot);
 
         return Scaffold(
           body: SafeArea(
@@ -32,12 +34,12 @@ class ProcessHomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Process',
+                        Text(context.l10n.navProcess,
                             style: Theme.of(context).textTheme.displayLarge),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Deeper work. Use when regulated and ready.',
-                          style: TextStyle(
+                        Text(
+                          context.l10n.processSubtitle,
+                          style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 14),
                         ),
                         const SizedBox(height: 16),
@@ -47,10 +49,9 @@ class ProcessHomeScreen extends StatelessWidget {
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'These tools are for processing, not crisis. '
-                            'Make sure you feel regulated before starting.',
-                            style: TextStyle(
+                          child: Text(
+                            context.l10n.processCaution,
+                            style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
                               height: 1.5,
@@ -68,10 +69,10 @@ class ProcessHomeScreen extends StatelessWidget {
                     delegate: SliverChildListDelegate([
                       _ProcessCard(
                         icon: Icons.swap_horiz_rounded,
-                        title: 'Bilateral Stimulation',
+                        title: context.l10n.bilateralTitle,
                         subtitle: bilateralLocked && lockedReason.isNotEmpty
                             ? lockedReason
-                            : 'between-session support, not therapy',
+                            : context.l10n.bilateralSupport,
                         color: const Color(0xFF4A9EDA),
                         enabled: !bilateralLocked,
                         onTap: () => Navigator.push(
@@ -82,8 +83,8 @@ class ProcessHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ProcessCard(
                         icon: Icons.accessibility_new_rounded,
-                        title: 'EFT Tapping',
-                        subtitle: 'Coming soon',
+                        title: context.l10n.eftTapping,
+                        subtitle: context.l10n.comingSoon,
                         color: const Color(0xFF4A9EDA),
                         enabled: false,
                         onTap: () {},
@@ -91,8 +92,8 @@ class ProcessHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ProcessCard(
                         icon: Icons.self_improvement_rounded,
-                        title: 'Somatic Body Scan',
-                        subtitle: 'Coming soon',
+                        title: context.l10n.somaticScan,
+                        subtitle: context.l10n.comingSoon,
                         color: const Color(0xFF4A9EDA),
                         enabled: false,
                         onTap: () {},
@@ -100,8 +101,8 @@ class ProcessHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ProcessCard(
                         icon: Icons.edit_note_rounded,
-                        title: 'Trauma-informed Journaling',
-                        subtitle: 'Coming soon',
+                        title: context.l10n.traumaJournal,
+                        subtitle: context.l10n.comingSoon,
                         color: const Color(0xFF4A9EDA),
                         enabled: false,
                         onTap: () {},

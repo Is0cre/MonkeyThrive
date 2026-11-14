@@ -125,6 +125,7 @@ class _ThrivesAppState extends State<ThrivesApp> {
           return MaterialApp(
             navigatorKey: _navigatorKey,
             title: 'MonkeyThrive',
+            onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
             debugShowCheckedModeBanner: false,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

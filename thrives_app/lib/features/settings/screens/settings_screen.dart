@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/baseline/baseline_models.dart';
 import '../../../core/baseline/baseline_monitor.dart';
@@ -36,31 +37,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Clear all data?',
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
-          'This will permanently delete:\n\n'
-          '• Journal entries\n'
-          '• HRV readings\n'
-          '• Check-in history\n'
-          '• Baseline feedback history\n'
-          '• Session log\n'
-          '• Safe place description\n'
-          '• Trusted people\n\n'
-          'This cannot be undone.',
-          style: TextStyle(
+        title: Text(context.l10n.clearAllDataTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          context.l10n.clearAllDataBody,
+          style: const TextStyle(
               color: AppColors.textSecondary, fontSize: 14, height: 1.7),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.l10n.cancel,
+                style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear all',
-                style: TextStyle(color: AppColors.danger)),
+            child: Text(context.l10n.clearAll,
+                style: const TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -69,8 +62,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _clearAll();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All data cleared.'),
+          SnackBar(
+            content: Text(context.l10n.allDataCleared),
             backgroundColor: AppColors.surface,
             behavior: SnackBarBehavior.floating,
           ),
@@ -107,8 +100,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A check-in is already open.'),
+        SnackBar(
+          content: Text(context.l10n.checkinAlreadyOpen),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
         ),
@@ -122,9 +115,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(
+        title: Text(
+          context.l10n.settings,
+          style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 17,
               fontWeight: FontWeight.w400),
@@ -135,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 60),
           children: [
             // ── About ───────────────────────────────────────────────────────
-            _Section('About'),
+            _Section(context.l10n.about),
             _InfoCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,9 +161,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Built from lived experience.\nFor everyone who is still here.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.builtFromLivedExperience,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                       height: 1.5,
@@ -178,10 +171,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Open source · No ads · No data collection · Free forever.',
-                    style:
-                        TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  Text(
+                    context.l10n.openSourceLine,
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
                   const _RowDetail(
@@ -200,18 +193,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             // ── Appearance ──────────────────────────────────────────────────
-            _Section('Appearance'),
+            _Section(context.l10n.appearance),
             const _AppearancePanel(),
 
             const SizedBox(height: 24),
 
             // ── Safety ──────────────────────────────────────────────────────
-            _Section('Safety'),
+            _Section(context.l10n.safety),
             _TileButton(
               icon: Icons.emergency_rounded,
               iconColor: AppColors.danger,
-              label: 'Crisis support directory',
-              subtitle: 'Offline helplines by country. Stays on this device.',
+              label: context.l10n.crisisDirectoryLabel,
+              subtitle: context.l10n.crisisDirectorySubtitle,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -223,16 +216,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _TileButton(
               icon: Icons.person_outline,
               iconColor: AppColors.amber,
-              label: 'Trusted person',
+              label: context.l10n.trustedPerson,
               subtitle: _readingIsPresent(context)
-                  ? 'A saved text, kept on this device.'
-                  : 'Available when the reading is present.',
+                  ? context.l10n.savedTextOnDevice
+                  : context.l10n.availableWhenPresent,
               onTap: () {
                 if (!_readingIsPresent(context)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                        'This can be saved when the reading is present.',
+                        context.l10n.trustedSavedWhenPresent,
                       ),
                       backgroundColor: AppColors.surface,
                       behavior: SnackBarBehavior.floating,
@@ -252,57 +245,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _TileButton(
               icon: Icons.forum_outlined,
               iconColor: AppColors.teal,
-              label: 'Show baseline check-in',
-              subtitle: 'Preview the local prompt implementation',
+              label: context.l10n.showBaseline,
+              subtitle: context.l10n.showBaselineSubtitle,
               onTap: () => _showBaselinePromptPreview(context),
             ),
 
             const SizedBox(height: 24),
 
             // ── Privacy ─────────────────────────────────────────────────────
-            _Section('Privacy'),
+            _Section(context.l10n.privacy),
             _InfoCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Your entries stay on this device.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.entriesStay,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Zero network requests. Zero analytics. Zero crash reporting. '
-                    'Everything you enter — check-ins, '
-                    'journal entries, HRV readings, your safe place description, '
-                    'and trusted people — is stored only on this device.\n\n'
-                    'We cannot provide your data to anyone because we do '
-                    'not have it.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.privacyBody,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                       height: 1.65,
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const _RowDetail(
+                  _RowDetail(
                       icon: Icons.storage_rounded,
-                      text: 'Journal entries — device only'),
+                      text: context.l10n.journalDeviceOnly),
                   const SizedBox(height: 5),
-                  const _RowDetail(
+                  _RowDetail(
                       icon: Icons.storage_rounded,
-                      text: 'HRV readings — device only'),
+                      text: context.l10n.hrvDeviceOnly),
                   const SizedBox(height: 5),
-                  const _RowDetail(
+                  _RowDetail(
                       icon: Icons.storage_rounded,
-                      text: 'Check-in history — device only'),
+                      text: context.l10n.checkinDeviceOnly),
                   const SizedBox(height: 5),
-                  const _RowDetail(
+                  _RowDetail(
                       icon: Icons.storage_rounded,
-                      text: 'Session log — device only'),
+                      text: context.l10n.sessionDeviceOnly),
                 ],
               ),
             ),
@@ -310,15 +298,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             // ── Disclaimer ───────────────────────────────────────────────────
-            _Section('Disclaimer'),
+            _Section(context.l10n.disclaimer),
             _InfoCard(
-              child: const Text(
-                'MonkeyThrive is a supportive self-regulation tool. It does not '
-                'replace professional therapy, and does not diagnose, assess, '
-                'or treat any condition.\n\n'
-                'If you are in crisis, please reach out to a professional or '
-                'use the crisis resources listed above.',
-                style: TextStyle(
+              child: Text(
+                context.l10n.settingsDisclaimer,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                   height: 1.65,
@@ -329,36 +313,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             // ── Your data ────────────────────────────────────────────────────
-            _Section('Your data'),
+            _Section(context.l10n.yourData),
             _TileButton(
               icon: Icons.file_download_outlined,
               iconColor: AppColors.teal,
-              label: 'Export',
-              subtitle: 'Passphrase-sealed file on this device',
+              label: context.l10n.export,
+              subtitle: context.l10n.exportSubtitle,
               onTap: () => showLocalExportDialog(context),
             ),
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.file_upload_outlined,
               iconColor: AppColors.teal,
-              label: 'Import',
-              subtitle: 'Restore a sealed copy onto this device',
+              label: context.l10n.import,
+              subtitle: context.l10n.importSubtitle,
               onTap: () => showLocalImportDialog(context),
             ),
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.delete_outline_rounded,
               iconColor: AppColors.danger,
-              label: 'Clear all data',
-              subtitle: 'Journal, HRV, check-ins, session log, safe place',
+              label: context.l10n.clearAllData,
+              subtitle: context.l10n.clearAllSubtitle,
               onTap: () => _confirmClearData(context),
             ),
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.refresh_rounded,
               iconColor: AppColors.textMuted,
-              label: 'Redo onboarding',
-              subtitle: 'Reset your profile questionnaire',
+              label: context.l10n.redoOnboarding,
+              subtitle: context.l10n.redoOnboardingSubtitle,
               onTap: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
@@ -366,12 +350,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     backgroundColor: AppColors.surface,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
-                    title: const Text('Redo onboarding?',
-                        style: TextStyle(color: AppColors.textPrimary)),
-                    content: const Text(
-                      'Your profile will be reset and you\'ll go through the '
-                      'questionnaire again. Your history is not affected.',
-                      style: TextStyle(
+                    title: Text(context.l10n.redoOnboardingTitle,
+                        style: const TextStyle(color: AppColors.textPrimary)),
+                    content: Text(
+                      context.l10n.redoOnboardingBody,
+                      style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                           height: 1.6),
@@ -379,13 +362,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel',
-                            style: TextStyle(color: AppColors.textSecondary)),
+                        child: Text(context.l10n.cancel,
+                            style:
+                                const TextStyle(color: AppColors.textSecondary)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Reset',
-                            style: TextStyle(color: AppColors.teal)),
+                        child: Text(context.l10n.reset,
+                            style: const TextStyle(color: AppColors.teal)),
                       ),
                     ],
                   ),
@@ -455,9 +439,9 @@ class _AppearancePanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Accent',
-                style: TextStyle(
+              Text(
+                context.l10n.accent,
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -479,9 +463,9 @@ class _AppearancePanel extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Contrast',
-                style: TextStyle(
+              Text(
+                context.l10n.contrast,
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -513,7 +497,12 @@ class _AccentSwatch extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: accent.name,
+      label: switch (accent) {
+        AppAccent.teal => context.l10n.accentTeal,
+        AppAccent.green => context.l10n.accentGreen,
+        AppAccent.blue => context.l10n.accentBlue,
+        AppAccent.amber => context.l10n.accentAmber,
+      },
       child: GestureDetector(
         onTap: () => AppAppearanceController.instance.setAccent(accent),
         child: AnimatedContainer(
@@ -586,9 +575,9 @@ class _ContrastChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
     final label = switch (contrast) {
-      AppContrast.soft => 'Soft',
-      AppContrast.standard => 'Standard',
-      AppContrast.high => 'High',
+      AppContrast.soft => context.l10n.contrastSoft,
+      AppContrast.standard => context.l10n.contrastStandard,
+      AppContrast.high => context.l10n.contrastHigh,
     };
     return GestureDetector(
       onTap: () => AppAppearanceController.instance.setContrast(contrast),

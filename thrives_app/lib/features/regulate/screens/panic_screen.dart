@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/main_shell.dart';
 import '../../settings/screens/crisis_directory_screen.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 import '../../support/trusted_person_banner.dart';
 
 // CLINICAL SAFETY — Panic sequence / physiological sigh
@@ -188,7 +189,7 @@ class _PanicScreenState extends State<PanicScreen>
                 bottom: 8,
                 child: Semantics(
                   button: true,
-                  label: 'Leave',
+                  label: context.l10n.leave,
                   child: GestureDetector(
                     onTap: _dismiss,
                     behavior: HitTestBehavior.opaque,
@@ -211,7 +212,7 @@ class _BreathView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Double inhale, long exhale',
+      label: context.l10n.sighPhaseLabel,
       child: AnimatedBuilder(
         animation: circleAnim,
         builder: (context, _) {
@@ -250,18 +251,18 @@ class _DoneView extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'you\'re here.',
-          style: TextStyle(
+        Text(
+          context.l10n.youAreHere,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 28,
             fontWeight: FontWeight.w300,
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'take your time.',
-          style: TextStyle(
+        Text(
+          context.l10n.takeYourTime,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.w300,
@@ -274,9 +275,9 @@ class _DoneView extends StatelessWidget {
         const SizedBox(height: 20),
         TextButton(
           onPressed: onGoRegulate,
-          child: const Text(
-            'go to regulate',
-            style: TextStyle(
+          child: Text(
+            context.l10n.goToRegulate,
+            style: const TextStyle(
               color: Color(0xFFE8A645),
               fontSize: 15,
               fontWeight: FontWeight.w500,
@@ -286,9 +287,9 @@ class _DoneView extends StatelessWidget {
         const SizedBox(height: 8),
         TextButton(
           onPressed: onOpenDirectory,
-          child: const Text(
-            'call a crisis line',
-            style: TextStyle(
+          child: Text(
+            context.l10n.callCrisisLine,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
               fontWeight: FontWeight.w400,

@@ -11,6 +11,7 @@ import 'package:monkeythrive/features/regulate/screens/grounding_521_screen.dart
 import 'package:monkeythrive/features/regulate/screens/panic_screen.dart';
 import 'package:monkeythrive/features/regulate/screens/vagal_screen.dart';
 import 'package:monkeythrive/features/settings/screens/settings_screen.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -29,6 +30,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Scaffold(body: Center(child: FeelingBetterPrompt())),
         ),
@@ -56,6 +59,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Scaffold(body: Center(child: FeelingBetterPrompt())),
         ),
@@ -92,6 +97,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const BreathingScreen(mode: BreathingMode.box),
         ),
@@ -130,6 +137,8 @@ void main() {
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused),
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Grounding521Screen(),
         ),
@@ -155,6 +164,8 @@ void main() {
   testWidgets('a vagal guide asks when it is done', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark(),
         home: const VagalScreen(),
       ),
@@ -177,6 +188,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const PanicScreen(),
         ),
@@ -220,6 +233,8 @@ void main() {
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused),
         child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: SettingsScreen(onResetOnboarding: () {}),
         ),

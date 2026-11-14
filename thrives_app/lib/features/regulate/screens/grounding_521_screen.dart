@@ -3,6 +3,7 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 class _GroundingStep {
   final int count;
@@ -18,49 +19,38 @@ class _GroundingStep {
   });
 }
 
-const _steps = [
-  _GroundingStep(
-    count: 5,
-    sense: 'See',
-    instruction: 'Look around you. Find 5 things you can see right now.\n\n'
-        'Take your time. Notice each one clearly — colour, shape, texture.',
-    icon: Icons.visibility_rounded,
-  ),
-  _GroundingStep(
-    count: 4,
-    sense: 'Hear',
-    instruction:
-        'Close your eyes if that feels safe. Find 4 things you can hear.\n\n'
-        'Near and far. Notice the sounds without judgement.',
-    icon: Icons.hearing_rounded,
-  ),
-  _GroundingStep(
-    count: 3,
-    sense: 'Touch',
-    instruction:
-        'Find 3 things you can feel right now — the chair beneath you, '
-        'the fabric on your skin, the air temperature.\n\n'
-        'Press your feet into the floor if that helps.',
-    icon: Icons.touch_app_rounded,
-  ),
-  _GroundingStep(
-    count: 2,
-    sense: 'Smell',
-    instruction:
-        'Find 2 things you can smell, or remember scents that feel safe and '
-        'familiar to you.\n\n'
-        'Take a slow breath in through your nose.',
-    icon: Icons.spa_rounded,
-  ),
-  _GroundingStep(
-    count: 1,
-    sense: 'Taste',
-    instruction:
-        'Notice 1 thing you can taste, or take a sip of water if you have some.\n\n'
-        'You are here. You are safe.',
-    icon: Icons.water_drop_outlined,
-  ),
-];
+List<_GroundingStep> _groundingSteps(AppLocalizations l10n) => [
+      _GroundingStep(
+        count: 5,
+        sense: l10n.senseSee,
+        instruction: l10n.groundSee,
+        icon: Icons.visibility_rounded,
+      ),
+      _GroundingStep(
+        count: 4,
+        sense: l10n.senseHear,
+        instruction: l10n.groundHear,
+        icon: Icons.hearing_rounded,
+      ),
+      _GroundingStep(
+        count: 3,
+        sense: l10n.senseTouch,
+        instruction: l10n.groundTouch,
+        icon: Icons.touch_app_rounded,
+      ),
+      _GroundingStep(
+        count: 2,
+        sense: l10n.senseSmell,
+        instruction: l10n.groundSmell,
+        icon: Icons.spa_rounded,
+      ),
+      _GroundingStep(
+        count: 1,
+        sense: l10n.senseTaste,
+        instruction: l10n.groundTaste,
+        icon: Icons.water_drop_outlined,
+      ),
+    ];
 
 class Grounding521Screen extends StatefulWidget {
   const Grounding521Screen({super.key});
@@ -100,8 +90,9 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
   void _next() {
     _fadeController.reverse().then((_) {
       if (!mounted) return;
+      final count = _groundingSteps(context.l10n).length;
       setState(() {
-        if (_stepIndex < _steps.length - 1) {
+        if (_stepIndex < count - 1) {
           _stepIndex++;
         } else {
           _finished = true;
@@ -125,11 +116,13 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
 
   @override
   Widget build(BuildContext context) {
-    final step = _finished ? null : _steps[_stepIndex];
+    final l10n = context.l10n;
+    final steps = _groundingSteps(l10n);
+    final step = _finished ? null : steps[_stepIndex];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('5-4-3-2-1 Grounding'),
+        title: Text(l10n.groundingTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
@@ -145,7 +138,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (int i = 0; i < _steps.length; i++) ...[
+                  for (int i = 0; i < steps.length; i++) ...[
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: i == _stepIndex && !_finished ? 24 : 8,
@@ -157,7 +150,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    if (i < _steps.length - 1) const SizedBox(width: 6),
+                    if (i < steps.length - 1) const SizedBox(width: 6),
                   ],
                 ],
               ),
@@ -196,8 +189,8 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: const Text('Finish',
-                            style: TextStyle(
+                        child: Text(l10n.finish,
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500)),
                       ),
                     )
@@ -235,9 +228,9 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                                     borderRadius: BorderRadius.circular(14)),
                               ),
                               child: Text(
-                                _stepIndex == _steps.length - 1
-                                    ? 'Complete'
-                                    : 'Next',
+                                _stepIndex == steps.length - 1
+                                    ? l10n.complete
+                                    : l10n.next,
                                 style: const TextStyle(
                                     fontSize: 16, fontWeight: FontWeight.w500),
                               ),
@@ -269,7 +262,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
         ),
         const SizedBox(height: 24),
         Text(
-          '${step.count} things you can ${step.sense.toLowerCase()}',
+          context.l10n.groundCount(step.count, step.sense.toLowerCase()),
           style: Theme.of(context).textTheme.titleLarge,
           textAlign: TextAlign.center,
         ),
@@ -290,13 +283,12 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
         const Icon(Icons.check_circle_outline_rounded,
             color: AppColors.amber, size: 64),
         const SizedBox(height: 24),
-        Text('You are here.',
+        Text(context.l10n.youAreHereSentence,
             style: Theme.of(context).textTheme.titleLarge,
             textAlign: TextAlign.center),
         const SizedBox(height: 16),
         Text(
-          'You just brought yourself back with your own senses. '
-          'That is the skill — and you have it.',
+          context.l10n.groundBroughtBack,
           style: Theme.of(context).textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),

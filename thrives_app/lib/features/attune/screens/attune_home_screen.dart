@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/audio/acoustic_synthesis_gate.dart';
 import '../../../core/audio/local_audio_cache.dart';
 import '../../../core/audio/noise_generator.dart';
@@ -48,8 +49,8 @@ class _AttuneUnavailableScreen extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: 42),
               child: AppHeader(
-                title: 'Attune',
-                subtitle: 'Generated sound tools for steady attention.',
+                title: context.l10n.navAttune,
+                subtitle: context.l10n.attuneSubtitle,
                 icon: Icons.graphic_eq_rounded,
               ),
             ),
@@ -58,20 +59,20 @@ class _AttuneUnavailableScreen extends StatelessWidget {
             SizedBox(height: 20),
             AcousticUnavailableCard(
               icon: Icons.headphones_rounded,
-              title: 'Binaural beats',
-              subtitle: 'Coming soon',
+              title: context.l10n.binauralBeats,
+              subtitle: context.l10n.comingSoon,
             ),
             SizedBox(height: 10),
             AcousticUnavailableCard(
               icon: Icons.graphic_eq_rounded,
-              title: 'Isochronic tones',
-              subtitle: 'Coming soon',
+              title: context.l10n.isochronicTones,
+              subtitle: context.l10n.comingSoon,
             ),
             SizedBox(height: 10),
             AcousticUnavailableCard(
               icon: Icons.forest_rounded,
-              title: 'Nature soundscapes',
-              subtitle: 'Coming soon',
+              title: context.l10n.natureSoundscapes,
+              subtitle: context.l10n.comingSoon,
             ),
           ],
         ),
@@ -166,7 +167,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
       if (mounted) {
         setState(() {
           _toneLoading = false;
-          _toneError = 'Could not start audio. Try again.';
+          _toneError = context.l10n.couldNotStartAudio;
         });
       }
     }
@@ -247,11 +248,11 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
               sliver: SliverToBoxAdapter(
-                child: const Padding(
-                  padding: EdgeInsets.only(right: 42),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 42),
                   child: AppHeader(
-                    title: 'Attune',
-                    subtitle: 'Generated sound tools for steady attention.',
+                    title: context.l10n.navAttune,
+                    subtitle: context.l10n.attuneSubtitle,
                     icon: Icons.graphic_eq_rounded,
                   ),
                 ),
@@ -262,7 +263,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // ── Mode selector ───────────────────────────────────────
-                  const AppSectionLabel('Type', icon: Icons.tune_rounded),
+                  AppSectionLabel(context.l10n.attuneType, icon: Icons.tune_rounded),
                   const SizedBox(height: 12),
                   _ModeRow(
                     selected: _mode,
@@ -286,15 +287,15 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                           color: AppColors.amber.withValues(alpha: 0.24),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.headphones_rounded,
+                          const Icon(Icons.headphones_rounded,
                               color: AppColors.amber, size: 16),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Binaural beats require stereo headphones to work.',
-                              style: TextStyle(
+                              context.l10n.headphonesNote,
+                              style: const TextStyle(
                                   color: AppColors.amber,
                                   fontSize: 12,
                                   height: 1.4),
@@ -309,8 +310,8 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                     const SizedBox(height: 24),
 
                     // ── Band selector ─────────────────────────────────────
-                    const AppSectionLabel(
-                      'Frequency band',
+                    AppSectionLabel(
+                      context.l10n.frequencyBand,
                       icon: Icons.equalizer_rounded,
                     ),
                     const SizedBox(height: 12),
@@ -324,15 +325,15 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                     const SizedBox(height: 24),
 
                     // ── Carrier frequency ─────────────────────────────────
-                    const AppSectionLabel(
-                      'Carrier frequency',
+                    AppSectionLabel(
+                      context.l10n.carrierFrequency,
                       icon: Icons.radio_button_checked_rounded,
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Text('100 Hz',
-                            style: TextStyle(
+                        Text(context.l10n.hertz('100'),
+                            style: const TextStyle(
                                 color: AppColors.textMuted, fontSize: 11)),
                         Expanded(
                           child: Slider(
@@ -350,7 +351,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                             },
                           ),
                         ),
-                        Text('${_carrierHz.round()} Hz',
+                        Text(context.l10n.hertz('${_carrierHz.round()}'),
                             style: const TextStyle(
                                 color: AppColors.textSecondary, fontSize: 12)),
                       ],
@@ -387,8 +388,10 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                                 : Icons.play_arrow_rounded),
                         label: Text(
                           _toneLoading
-                              ? 'Generating…'
-                              : (_tonePlaying ? 'Stop' : 'Play'),
+                              ? context.l10n.generating
+                              : (_tonePlaying
+                                  ? context.l10n.stop
+                                  : context.l10n.play),
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: _tonePlaying
@@ -415,14 +418,14 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                   const SizedBox(height: 32),
 
                   // ── Nature sounds ─────────────────────────────────────────
-                  const AppSectionLabel(
-                    'Nature sounds',
+                  AppSectionLabel(
+                    context.l10n.natureSounds,
                     icon: Icons.forest_rounded,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Layer ambient sound over any tone, or use on its own.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.natureLayer,
+                    style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 12, height: 1.4),
                   ),
                   const SizedBox(height: 12),
@@ -453,9 +456,17 @@ class _ModeRow extends StatelessWidget {
     return Row(
       children: [
         for (final entry in [
-          (AttuneMode.none, 'None', Icons.volume_off_rounded),
-          (AttuneMode.binaural, 'Binaural', Icons.headphones_rounded),
-          (AttuneMode.isochronic, 'Isochronic', Icons.graphic_eq_rounded),
+          (AttuneMode.none, context.l10n.none, Icons.volume_off_rounded),
+          (
+            AttuneMode.binaural,
+            context.l10n.binauralShort,
+            Icons.headphones_rounded
+          ),
+          (
+            AttuneMode.isochronic,
+            context.l10n.isochronicShort,
+            Icons.graphic_eq_rounded
+          ),
         ]) ...[
           Expanded(
             child: GestureDetector(
@@ -541,7 +552,7 @@ class _BandGrid extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${band.label}  ·  ${band.range}',
+                          '${_bandName(context.l10n, band)}  ·  ${_bandRange(context.l10n, band)}',
                           style: TextStyle(
                             color: selected == band
                                 ? AppColors.textPrimary
@@ -552,7 +563,7 @@ class _BandGrid extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          band.use,
+                          _bandUse(context.l10n, band),
                           style: const TextStyle(
                               color: AppColors.textMuted, fontSize: 12),
                         ),
@@ -560,7 +571,9 @@ class _BandGrid extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${band.defaultBeatHz.toStringAsFixed(1)} Hz beat',
+                    context.l10n.hertzBeat(
+                      band.defaultBeatHz.toStringAsFixed(1),
+                    ),
                     style: TextStyle(
                       color: selected == band
                           ? const Color(0xFF7B68EE)
@@ -628,7 +641,7 @@ class _NoiseSoundGrid extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  type.label,
+                  _noiseName(context.l10n, type),
                   style: TextStyle(
                     color: isActive ? AppColors.teal : AppColors.textSecondary,
                     fontSize: 11,
@@ -697,8 +710,8 @@ class _PlayingBadgeState extends State<_PlayingBadge>
               ),
               const SizedBox(width: 8),
               Text(
-                '${widget.mode == AttuneMode.binaural ? "Binaural" : "Isochronic"} · '
-                '${widget.band.label} · ${widget.band.defaultBeatHz.toStringAsFixed(1)} Hz',
+                '${widget.mode == AttuneMode.binaural ? context.l10n.binauralShort : context.l10n.isochronicShort} · '
+                '${_bandName(context.l10n, widget.band)} · ${context.l10n.hertz(widget.band.defaultBeatHz.toStringAsFixed(1))}',
                 style: const TextStyle(
                   color: Color(0xFF7B68EE),
                   fontSize: 12,
@@ -710,5 +723,61 @@ class _PlayingBadgeState extends State<_PlayingBadge>
         );
       },
     );
+  }
+}
+
+String _bandName(AppLocalizations l10n, BrainwaveBand band) {
+  switch (band) {
+    case BrainwaveBand.delta:
+      return l10n.bandDelta;
+    case BrainwaveBand.theta:
+      return l10n.bandTheta;
+    case BrainwaveBand.alpha:
+      return l10n.bandAlpha;
+    case BrainwaveBand.beta:
+      return l10n.bandBeta;
+  }
+}
+
+String _bandRange(AppLocalizations l10n, BrainwaveBand band) {
+  switch (band) {
+    case BrainwaveBand.delta:
+      return l10n.rangeDelta;
+    case BrainwaveBand.theta:
+      return l10n.rangeTheta;
+    case BrainwaveBand.alpha:
+      return l10n.rangeAlpha;
+    case BrainwaveBand.beta:
+      return l10n.rangeBeta;
+  }
+}
+
+String _bandUse(AppLocalizations l10n, BrainwaveBand band) {
+  switch (band) {
+    case BrainwaveBand.delta:
+      return l10n.useDelta;
+    case BrainwaveBand.theta:
+      return l10n.useTheta;
+    case BrainwaveBand.alpha:
+      return l10n.useAlpha;
+    case BrainwaveBand.beta:
+      return l10n.useBeta;
+  }
+}
+
+String _noiseName(AppLocalizations l10n, NatureNoiseType type) {
+  switch (type) {
+    case NatureNoiseType.rain:
+      return l10n.noiseRain;
+    case NatureNoiseType.ocean:
+      return l10n.noiseOcean;
+    case NatureNoiseType.forest:
+      return l10n.noiseForest;
+    case NatureNoiseType.river:
+      return l10n.noiseRiver;
+    case NatureNoiseType.thunder:
+      return l10n.noiseThunder;
+    case NatureNoiseType.wind:
+      return l10n.noiseWind;
   }
 }

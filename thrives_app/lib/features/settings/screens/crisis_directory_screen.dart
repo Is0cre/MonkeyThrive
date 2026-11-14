@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../../core/data/crisis_dialer.dart';
 import '../../../core/data/crisis_helplines.dart';
@@ -15,6 +16,17 @@ import '../../support/trusted_person_banner.dart';
 //   the web, create an account, or tell this app where they are.
 // What happens if removed: The in-app path to real-world help disappears.
 // The selected country is a local display preference. It is never sent.
+
+String _crisisCategoryLabel(AppLocalizations l10n, CrisisCategory category) {
+  switch (category) {
+    case CrisisCategory.emergency:
+      return l10n.crisisEmergency;
+    case CrisisCategory.helpline:
+      return l10n.crisisSupportLine;
+    case CrisisCategory.guidance:
+      return l10n.crisisWhereYouAre;
+  }
+}
 
 class CrisisDirectoryScreen extends StatefulWidget {
   const CrisisDirectoryScreen({super.key, this.dialer});
@@ -86,8 +98,8 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
     if (!mounted || opened) return;
 
     final message = text
-        ? 'The messages app did not open. The number is still on this screen.'
-        : 'The phone app did not open. The number is still on this screen for you to dial.';
+        ? context.l10n.messagesStillOnScreen
+        : context.l10n.phoneStillOnScreen;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -104,11 +116,11 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
     if (value.isEmpty) return;
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Number copied'),
+      SnackBar(
+        content: Text(context.l10n.numberCopied),
         backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -131,9 +143,9 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Crisis support',
-          style: TextStyle(
+        title: Text(
+          context.l10n.crisisSupport,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 17,
             fontWeight: FontWeight.w400,
@@ -148,9 +160,9 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'If you are in immediate danger, call the emergency number for where you are.',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.crisisDanger,
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                       height: 1.45,
@@ -162,7 +174,7 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                     offerSetup: true,
                   ),
                   const SizedBox(height: 18),
-                  const _FieldLabel('Country'),
+                  _FieldLabel(context.l10n.country),
                   _CountryDropdown(
                     countryId: _countryId,
                     onChanged: _selectCountry,
@@ -179,7 +191,7 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                     ),
                     cursorColor: colors.primary,
                     decoration: InputDecoration(
-                      hintText: 'Search name or number',
+                      hintText: context.l10n.searchNameOrNumber,
                       hintStyle: const TextStyle(color: AppColors.textMuted),
                       prefixIcon: const Icon(
                         Icons.search_rounded,
@@ -208,9 +220,9 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                 children: [
                   if (visible.isEmpty)
-                    const Text(
-                      'No lines are stored for this country. Choose International for what to do next.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.noLinesStored,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                         height: 1.5,
@@ -226,7 +238,7 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                     const SizedBox(height: 10),
                   ],
                   if (support.isNotEmpty) ...[
-                    const _FieldLabel('Support lines'),
+                    _FieldLabel(context.l10n.supportLines),
                     const SizedBox(height: 8),
                     for (final contact in support) ...[
                       _ContactCard(
@@ -239,11 +251,11 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                     ],
                   ],
                   if (_search.text.trim().isNotEmpty && support.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
-                        'No support lines match that search. The emergency number stays listed above.',
-                        style: TextStyle(
+                        context.l10n.noSupportMatch,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                           height: 1.5,
@@ -251,9 +263,9 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
                       ),
                     ),
                   if (_countryId != regionInternational.id)
-                    const Text(
-                      'Somewhere else? Choose International in the country list.',
-                      style: TextStyle(
+                    Text(
+                      context.l10n.somewhereElse,
+                      style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12,
                         height: 1.5,
@@ -336,9 +348,9 @@ class _Disclaimer extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: colors.surfaceContainerHighest),
       ),
-      child: const Text(
-        crisisDirectoryDisclaimer,
-        style: TextStyle(
+      child: Text(
+        context.l10n.crisisDisclaimer,
+        style: const TextStyle(
           color: AppColors.textSecondary,
           fontSize: 13,
           height: 1.5,
@@ -392,7 +404,7 @@ class _ContactCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              contact.category.label.toUpperCase(),
+              _crisisCategoryLabel(context.l10n, contact.category).toUpperCase(),
               style: TextStyle(
                 color: accent,
                 fontSize: 11,
@@ -461,7 +473,10 @@ class _ContactCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 contact.usesText
-                                    ? 'Text ${contact.smsOptional} to ${contact.number}'
+                                    ? context.l10n.textKeywordTo(
+                                        contact.smsOptional ?? '',
+                                        contact.number,
+                                      )
                                     : contact.number,
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
@@ -480,7 +495,7 @@ class _ContactCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 IconButton(
-                  tooltip: 'Copy number',
+                  tooltip: context.l10n.copyNumber,
                   onPressed: onCopy,
                   icon: const Icon(
                     Icons.copy_rounded,
@@ -493,7 +508,7 @@ class _ContactCard extends StatelessWidget {
             if (contact.dialsDifferentDigits) ...[
               const SizedBox(height: 8),
               Text(
-                'Dials ${dialableNumber(contact.number)}',
+                context.l10n.dialsNumber(dialableNumber(contact.number)),
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
@@ -520,15 +535,16 @@ class _ConfirmCallDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isEmergency = contact.category == CrisisCategory.emergency;
-    final actionLabel =
-        text ? 'Text ${contact.number}' : 'Call ${contact.number}';
+    final actionLabel = text
+        ? context.l10n.textNumber(contact.number)
+        : context.l10n.callNumber(contact.number);
 
     return AlertDialog(
       backgroundColor: colors.surface,
       scrollable: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
-        text ? 'Send this text?' : 'Call this number?',
+        text ? context.l10n.sendThisText : context.l10n.callThisNumber,
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 20),
       ),
       content: Column(
@@ -561,7 +577,7 @@ class _ConfirmCallDialog extends StatelessWidget {
           if (contact.dialsDifferentDigits) ...[
             const SizedBox(height: 8),
             Text(
-              'Dials ${dialableNumber(contact.number)}',
+              context.l10n.dialsNumber(dialableNumber(contact.number)),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
@@ -571,9 +587,9 @@ class _ConfirmCallDialog extends StatelessWidget {
           ],
           if (text) ...[
             const SizedBox(height: 16),
-            const Text(
-              'Message',
-              style: TextStyle(
+            Text(
+              context.l10n.message,
+              style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 12,
                 letterSpacing: 0.6,
@@ -594,9 +610,7 @@ class _ConfirmCallDialog extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           Text(
-            text
-                ? 'This opens your messages app with the text ready. This app does not send it or use the internet.'
-                : 'This opens your phone dialer with the number ready. This app does not place the call or use the internet.',
+            text ? context.l10n.textOpensApp : context.l10n.callOpensDialer,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -608,9 +622,9 @@ class _ConfirmCallDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
+          child: Text(
+            context.l10n.cancel,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         FilledButton(

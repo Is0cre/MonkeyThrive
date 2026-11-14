@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n.dart';
 
 import '../models/tolerance_state.dart';
 import '../state/wot_scope.dart';
@@ -65,7 +66,7 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
 
   @override
   Widget build(BuildContext context) {
-    final result = _resultText;
+    final result = _resultText(context.l10n);
     if (result != null) {
       return Text(
         result,
@@ -83,8 +84,8 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Are you feeling better?',
+        Text(
+          context.l10n.feelingBetterQuestion,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -110,8 +111,8 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text(
-                    'Yes',
+                  child: Text(
+                    context.l10n.yes,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -131,8 +132,8 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text(
-                    'Not yet',
+                  child: Text(
+                    context.l10n.notYet,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -144,15 +145,15 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
     );
   }
 
-  String? get _resultText {
-    if (_notYet) return 'The reading stays as it is.';
+  String? _resultText(AppLocalizations l10n) {
+    if (_notYet) return l10n.readingStays;
     switch (_mark) {
       case PresentMark.recorded:
-        return 'Marked as present.';
+        return l10n.markedPresent;
       case PresentMark.already:
-        return 'Still marked as present.';
+        return l10n.stillMarkedPresent;
       case PresentMark.unavailable:
-        return 'The reading could not be saved.';
+        return l10n.readingNotSaved;
       case null:
         return null;
     }

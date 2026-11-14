@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
-import '../audio/acoustic_synthesis_gate.dart';
 import '../theme/app_theme.dart';
 
 /// Dismissible notice. Tapping outside or OK closes it and leaves the
@@ -17,13 +17,13 @@ class AcousticComingSoon {
           backgroundColor: AppColors.surface,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            'Coming soon',
-            style: TextStyle(color: AppColors.textPrimary),
+          title: Text(
+            dialogContext.l10n.comingSoon,
+            style: const TextStyle(color: AppColors.textPrimary),
           ),
-          content: const Text(
-            AcousticSynthesisGate.message,
-            style: TextStyle(
+          content: Text(
+            dialogContext.l10n.acousticMessage,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
               height: 1.6,
@@ -32,7 +32,8 @@ class AcousticComingSoon {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('OK', style: TextStyle(color: AppColors.teal)),
+              child: Text(dialogContext.l10n.ok,
+                  style: const TextStyle(color: AppColors.teal)),
             ),
           ],
         );
@@ -56,15 +57,15 @@ class AcousticSynthesisNotice extends StatelessWidget {
           color: AppColors.amber.withValues(alpha: 0.28),
         ),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.schedule_rounded, color: AppColors.amber, size: 18),
-          SizedBox(width: 10),
+          const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 18),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              AcousticSynthesisGate.message,
-              style: TextStyle(
+              context.l10n.acousticMessage,
+              style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
                 height: 1.5,

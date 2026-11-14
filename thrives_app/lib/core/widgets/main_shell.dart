@@ -8,8 +8,26 @@ import '../../features/process/screens/process_home_screen.dart';
 import '../../features/reflect/screens/reflect_home_screen.dart';
 import '../../features/regulate/screens/regulate_home_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../l10n/l10n.dart';
 import 'baseline_checkin_prompt.dart';
 import 'emergency_button.dart';
+
+String _navLabel(AppLocalizations l10n, String id) {
+  switch (id) {
+    case 'Attune':
+      return l10n.navAttune;
+    case 'Monitor':
+      return l10n.navMonitor;
+    case 'Build':
+      return l10n.navBuild;
+    case 'Reflect':
+      return l10n.navReflect;
+    case 'Process':
+      return l10n.navProcess;
+    default:
+      return l10n.navRegulate;
+  }
+}
 
 /// Describes a single tab entry: the widget to show and its nav bar item.
 /// [minTier] controls when the tab becomes visible:
@@ -275,7 +293,7 @@ class _NavItem extends StatelessWidget {
       child: Semantics(
         button: true,
         selected: selected,
-        label: tab.label,
+        label: _navLabel(context.l10n, tab.label),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
@@ -304,7 +322,7 @@ class _NavItem extends StatelessWidget {
                 const SizedBox(height: 3),
                 Flexible(
                   child: Text(
-                    tab.label,
+                    _navLabel(context.l10n, tab.label),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

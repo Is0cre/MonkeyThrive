@@ -7,6 +7,7 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 enum _WimHofPhase { idle, breathing, exhaleHold, recovery, retentionHold, done }
 
@@ -20,15 +21,16 @@ class WimHofScreen extends StatefulWidget {
 class _WimHofScreenState extends State<WimHofScreen>
     with TickerProviderStateMixin, SessionTracking {
   static const int _totalBreaths = 30;
-  static const _safetyItems = [
-    'I am not in water, driving, or standing.',
-    'I am lying down or seated somewhere safe.',
-    'I do not have a seizure disorder.',
-    'I do not have a serious heart, blood pressure, or respiratory condition.',
-    'I am not pregnant.',
-    'If this is my first time, another person is nearby.',
-    'I will stop immediately if I feel unwell.',
-  ];
+
+  List<String> _safetyItems(AppLocalizations l10n) => [
+        l10n.wimHofCheck1,
+        l10n.wimHofCheck2,
+        l10n.wimHofCheck3,
+        l10n.wimHofCheck4,
+        l10n.wimHofCheck5,
+        l10n.wimHofCheck6,
+        l10n.wimHofCheck7,
+      ];
 
   _WimHofPhase _phase = _WimHofPhase.idle;
   int _breathCount = 0;
@@ -59,8 +61,8 @@ class _WimHofScreenState extends State<WimHofScreen>
     final wot = WoTScope.stateOf(context);
     if (wot == null || !wot.canWimHof) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Wim Hof breathing is only available when present.'),
+        SnackBar(
+          content: Text(context.l10n.wimHofOnlyWhenPresent),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
         ),
@@ -68,10 +70,10 @@ class _WimHofScreenState extends State<WimHofScreen>
       return;
     }
 
-    if (_confirmedSafetyItems.length != _safetyItems.length) {
+    if (_confirmedSafetyItems.length != _safetyItems(context.l10n).length) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Complete the safety checks before starting.'),
+        SnackBar(
+          content: Text(context.l10n.wimHofChecksFirst),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
         ),
@@ -160,18 +162,19 @@ class _WimHofScreenState extends State<WimHofScreen>
     });
   }
 
-  String get _timerDisplay {
+  String _timerDisplay(AppLocalizations l10n) {
     final m = _timerSeconds ~/ 60;
     final s = _timerSeconds % 60;
-    if (m > 0) return '${m}m ${s.toString().padLeft(2, '0')}s';
-    return '${s}s';
+    if (m > 0) return l10n.timerClock(m, s.toString().padLeft(2, '0'));
+    return l10n.timerSecondsOnly(s);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wim Hof Breathing'),
+        title: Text(l10n.wimHofTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
@@ -195,16 +198,15 @@ class _WimHofScreenState extends State<WimHofScreen>
                   border: Border.all(
                       color: AppColors.danger.withValues(alpha: 0.4)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded,
+                    const Icon(Icons.warning_amber_rounded,
                         color: AppColors.danger, size: 18),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Never practice in water or while driving. '
-                        'Stop if you feel unwell.',
-                        style: TextStyle(
+                        l10n.wimHofWarning,
+                        style: const TextStyle(
                           color: AppColors.danger,
                           fontSize: 12,
                           height: 1.4,
@@ -217,7 +219,7 @@ class _WimHofScreenState extends State<WimHofScreen>
               const SizedBox(height: 12),
 
               Text(
-                'Round $_round',
+                l10n.roundNumber(_round),
                 style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 13,
@@ -270,7 +272,7 @@ class _WimHofScreenState extends State<WimHofScreen>
             ),
             const SizedBox(height: 32),
             Text(
-              '$_breathCount / $_totalBreaths',
+              context.l10n.breathFraction(_breathCount, _totalBreaths),
               style: const TextStyle(
                 color: AppColors.teal,
                 fontSize: 32,
@@ -278,9 +280,9 @@ class _WimHofScreenState extends State<WimHofScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'breathe in · let go',
-              style: TextStyle(
+            Text(
+              context.l10n.wimHofLetGo,
+              style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 14,
                 letterSpacing: 1.5,
@@ -292,37 +294,35 @@ class _WimHofScreenState extends State<WimHofScreen>
       case _WimHofPhase.exhaleHold:
         return _CentredContent(
           icon: Icons.pause_circle_outline_rounded,
-          title: 'Exhale & Hold',
-          body: 'Let all the air out and hold. '
-              'Do not force it. Hold as long as comfortable.',
-          timerDisplay: _timerDisplay,
+          title: context.l10n.exhaleAndHold,
+          body: context.l10n.wimHofExhaleBody,
+          timerDisplay: _timerDisplay(context.l10n),
           timerColor: AppColors.amber,
         );
 
       case _WimHofPhase.recovery:
         return _CentredContent(
           icon: Icons.air_rounded,
-          title: 'Recovery Breath',
-          body: 'Take one deep breath in and hold for 15 seconds.',
-          timerDisplay: _timerDisplay,
+          title: context.l10n.recoveryBreath,
+          body: context.l10n.wimHofRecoveryBody,
+          timerDisplay: _timerDisplay(context.l10n),
           timerColor: AppColors.teal,
         );
 
       case _WimHofPhase.retentionHold:
         return _CentredContent(
           icon: Icons.self_improvement_rounded,
-          title: 'Retention Hold',
-          body: 'Hold. Feel the stillness.',
-          timerDisplay: _timerDisplay,
+          title: context.l10n.retentionHold,
+          body: context.l10n.wimHofStillness,
+          timerDisplay: _timerDisplay(context.l10n),
           timerColor: AppColors.teal,
         );
 
       case _WimHofPhase.done:
         return _CentredContent(
           icon: Icons.check_circle_outline_rounded,
-          title: 'Round $_round complete',
-          body: 'Rest for a moment before your next round, '
-              'or finish here.',
+          title: context.l10n.roundComplete(_round),
+          body: context.l10n.wimHofRoundRest,
         );
     }
   }
@@ -331,9 +331,10 @@ class _WimHofScreenState extends State<WimHofScreen>
     switch (_phase) {
       case _WimHofPhase.idle:
         return _BigButton(
-          label: 'Begin',
+          label: context.l10n.breathingBegin,
           color: AppColors.teal,
-          onTap: _confirmedSafetyItems.length == _safetyItems.length
+          onTap: _confirmedSafetyItems.length ==
+                  _safetyItems(context.l10n).length
               ? _startBreathing
               : null,
         );
@@ -341,7 +342,7 @@ class _WimHofScreenState extends State<WimHofScreen>
         return const SizedBox.shrink();
       case _WimHofPhase.exhaleHold:
         return _BigButton(
-          label: 'I\'m ready — recovery breath',
+          label: context.l10n.readyRecovery,
           color: AppColors.amber,
           onTap: _advanceFromExhaleHold,
         );
@@ -349,7 +350,7 @@ class _WimHofScreenState extends State<WimHofScreen>
         return const SizedBox.shrink(); // auto-advances
       case _WimHofPhase.retentionHold:
         return _BigButton(
-          label: 'Release',
+          label: context.l10n.release,
           color: AppColors.teal,
           onTap: _advanceFromRetention,
         );
@@ -359,7 +360,7 @@ class _WimHofScreenState extends State<WimHofScreen>
             const FeelingBetterPrompt(),
             const SizedBox(height: 16),
             _BigButton(
-              label: 'Next round',
+              label: context.l10n.nextRound,
               color: AppColors.teal,
               onTap: _nextRound,
             ),
@@ -369,9 +370,9 @@ class _WimHofScreenState extends State<WimHofScreen>
                 _reset();
                 Navigator.pop(context);
               },
-              child: const Text(
-                'Finish',
-                style: TextStyle(color: AppColors.textSecondary),
+              child: Text(
+                context.l10n.finish,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
           ],
@@ -380,16 +381,17 @@ class _WimHofScreenState extends State<WimHofScreen>
   }
 
   Widget _buildSafetyGate() {
+    final l10n = context.l10n;
+    final items = _safetyItems(l10n);
     return ListView(
       children: [
-        const _CentredContent(
+        _CentredContent(
           icon: Icons.waves_rounded,
-          title: '30 Deep Breaths',
-          body: 'Breathe in fully, let go without forcing. '
-              'After 30 breaths, exhale and hold only as long as comfortable.',
+          title: l10n.thirtyBreaths,
+          body: l10n.thirtyBreathsBody,
         ),
         const SizedBox(height: 12),
-        for (var i = 0; i < _safetyItems.length; i++)
+        for (var i = 0; i < items.length; i++)
           CheckboxListTile(
             value: _confirmedSafetyItems.contains(i),
             onChanged: (checked) {
@@ -406,7 +408,7 @@ class _WimHofScreenState extends State<WimHofScreen>
             activeColor: AppColors.teal,
             checkColor: AppColors.background,
             title: Text(
-              _safetyItems[i],
+              items[i],
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,

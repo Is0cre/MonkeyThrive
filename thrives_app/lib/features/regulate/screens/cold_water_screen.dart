@@ -4,6 +4,7 @@ import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
+import '../../../l10n/l10n.dart';
 
 class ColdWaterScreen extends StatefulWidget {
   const ColdWaterScreen({super.key});
@@ -58,9 +59,10 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cold Water'),
+        title: Text(l10n.coldWaterTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
@@ -83,14 +85,14 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.water_drop_rounded,
+                        const Icon(Icons.water_drop_rounded,
                             color: AppColors.teal, size: 20),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Text(
-                          'How this works',
-                          style: TextStyle(
+                          l10n.coldHow,
+                          style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w500,
                             fontSize: 15,
@@ -99,12 +101,9 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Cold water activates the diving reflex — your body\'s '
-                      'built-in emergency brake. It slows your heart rate and '
-                      'activates the vagus nerve within seconds.\n\n'
-                      'Apply cold water to your face, wrists, or the back of your neck.',
-                      style: TextStyle(
+                    Text(
+                      l10n.coldBody,
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
                         height: 1.6,
@@ -117,19 +116,19 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
               const SizedBox(height: 32),
 
               // Instructions
-              const _InstructionRow(
+              _InstructionRow(
                 icon: Icons.face_rounded,
-                text: 'Splash cold water on your face',
+                text: l10n.coldFace,
               ),
               const SizedBox(height: 12),
-              const _InstructionRow(
+              _InstructionRow(
                 icon: Icons.back_hand_rounded,
-                text: 'Hold cold water on your wrists',
+                text: l10n.coldWrists,
               ),
               const SizedBox(height: 12),
-              const _InstructionRow(
+              _InstructionRow(
                 icon: Icons.airline_seat_recline_extra_rounded,
-                text: 'Cold cloth on the back of your neck',
+                text: l10n.coldNeck,
               ),
 
               const SizedBox(height: 32),
@@ -146,13 +145,13 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                                 color: AppColors.teal, size: 52),
                             const SizedBox(height: 12),
                             Text(
-                              'Good.',
+                              l10n.good,
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'Your nervous system is already responding.',
-                              style: TextStyle(color: AppColors.textPrimary),
+                            Text(
+                              l10n.alreadyResponding,
+                              style: const TextStyle(color: AppColors.textPrimary),
                             ),
                             const SizedBox(height: 24),
                             const FeelingBetterPrompt(),
@@ -169,9 +168,9 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                                 fontWeight: FontWeight.w200,
                               ),
                             ),
-                            const Text(
-                              'seconds',
-                              style: TextStyle(
+                            Text(
+                              l10n.seconds,
+                              style: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 14,
                               ),
@@ -197,8 +196,8 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
                   ),
                   child: Text(
                     _done
-                        ? 'Again'
-                        : (_running ? 'Running…' : 'Start 30s timer'),
+                        ? l10n.againLabel
+                        : (_running ? l10n.running : l10n.start30),
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                   ),

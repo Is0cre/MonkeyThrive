@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:vibration/vibration.dart';
 import '../../../core/audio/acoustic_synthesis_gate.dart';
@@ -231,9 +232,8 @@ class _EmdrScreenState extends State<EmdrScreen>
     final wot = WoTScope.stateOf(context);
     if (wot == null || !wot.canBilateral) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Bilateral stimulation is only available when present.'),
+        SnackBar(
+          content: Text(context.l10n.bilateralOnlyWhenPresent),
           backgroundColor: AppColors.surface,
           behavior: SnackBarBehavior.floating,
         ),
@@ -295,27 +295,26 @@ class _EmdrScreenState extends State<EmdrScreen>
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Session complete',
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: const Column(
+        title: Text(context.l10n.sessionComplete,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Take a moment. Notice what came up, if anything.\n\n'
-              'There is no right way to feel.',
-              style: TextStyle(
+              context.l10n.sessionCompleteBody,
+              style: const TextStyle(
                   color: AppColors.textPrimary, fontSize: 15, height: 1.6),
             ),
-            SizedBox(height: 16),
-            FeelingBetterPrompt(),
+            const SizedBox(height: 16),
+            const FeelingBetterPrompt(),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:
-                const Text('Close', style: TextStyle(color: AppColors.teal)),
+            child: Text(context.l10n.close,
+                style: const TextStyle(color: AppColors.teal)),
           ),
         ],
       ),
@@ -331,7 +330,7 @@ class _EmdrScreenState extends State<EmdrScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bilateral Stimulation'),
+        title: Text(context.l10n.bilateralTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () {
@@ -343,7 +342,7 @@ class _EmdrScreenState extends State<EmdrScreen>
           if (!_showSettings)
             IconButton(
               icon: const Icon(Icons.tune_rounded),
-              tooltip: 'Settings',
+              tooltip: context.l10n.settings,
               onPressed: () {
                 _stop();
                 setState(() => _showSettings = true);
@@ -375,17 +374,16 @@ class _EmdrScreenState extends State<EmdrScreen>
               color: const Color(0xFF4A9EDA).withValues(alpha: 0.3),
             ),
           ),
-          child: const Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded,
+              const Icon(Icons.info_outline_rounded,
                   color: Color(0xFF4A9EDA), size: 18),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'MonkeyThrive is a supportive self-regulation tool. It does not replace professional therapy.\n'
-                  'Bilateral stimulation — between-session support, not therapy.',
-                  style: TextStyle(
+                  context.l10n.bilateralCare,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.5,
@@ -395,15 +393,15 @@ class _EmdrScreenState extends State<EmdrScreen>
             ],
           ),
         ),
-        const _SettingsSection('Mode'),
+        _SettingsSection(context.l10n.mode),
         _ModeSelector(
             selected: _mode, onSelect: (m) => setState(() => _mode = m)),
         const SizedBox(height: 24),
-        const _SettingsSection('Speed'),
+        _SettingsSection(context.l10n.speed),
         _SpeedSelector(
             selected: _speed, onSelect: (s) => setState(() => _speed = s)),
         const SizedBox(height: 24),
-        const _SettingsSection('Session length'),
+        _SettingsSection(context.l10n.sessionLength),
         _SessionSelector(
           selected: _sessionMinutes,
           onSelect: (m) => setState(() {
@@ -413,13 +411,13 @@ class _EmdrScreenState extends State<EmdrScreen>
         ),
         const SizedBox(height: 24),
         if (_useVisual) ...[
-          const _SettingsSection('Dot size'),
+          _SettingsSection(context.l10n.dotSize),
           _SizeSlider(
             value: _dotSize,
             onChanged: (v) => setState(() => _dotSize = v),
           ),
           const SizedBox(height: 24),
-          const _SettingsSection('Dot colour'),
+          _SettingsSection(context.l10n.dotColour),
           _ColorPicker(
             colors: _colorOptions,
             selected: _dotColor,
@@ -440,7 +438,7 @@ class _EmdrScreenState extends State<EmdrScreen>
               textStyle:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            child: const Text('Begin session'),
+            child: Text(context.l10n.beginSession),
           ),
         ),
       ],
@@ -462,7 +460,7 @@ class _EmdrScreenState extends State<EmdrScreen>
                 final m = (secs ~/ 60).toString().padLeft(2, '0');
                 final s = (secs % 60).toString().padLeft(2, '0');
                 return Text(
-                  '$m:$s',
+                  context.l10n.clock(m, s),
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 13,
@@ -515,11 +513,15 @@ class _EmdrScreenState extends State<EmdrScreen>
               Wrap(
                 spacing: 8,
                 children: [
-                  _ModeChip(label: _modeName, color: const Color(0xFF4A9EDA)),
-                  _ModeChip(label: _speedName, color: AppColors.textMuted),
+                  _ModeChip(
+                      label: _modeName(context.l10n),
+                      color: const Color(0xFF4A9EDA)),
+                  _ModeChip(
+                      label: _speedName(context.l10n),
+                      color: AppColors.textMuted),
                   if (_sessionMinutes > 0)
                     _ModeChip(
-                        label: '${_sessionMinutes}m',
+                        label: context.l10n.minutesShort(_sessionMinutes),
                         color: AppColors.textMuted),
                 ],
               ),
@@ -540,7 +542,9 @@ class _EmdrScreenState extends State<EmdrScreen>
                     textStyle: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  child: Text(_running ? 'Pause' : 'Resume'),
+                  child: Text(_running
+                      ? context.l10n.breathingPause
+                      : context.l10n.breathingResume),
                 ),
               ),
             ],
@@ -550,31 +554,31 @@ class _EmdrScreenState extends State<EmdrScreen>
     );
   }
 
-  String get _modeName {
+  String _modeName(AppLocalizations l10n) {
     switch (_mode) {
       case EmdrMode.visual:
-        return 'Visual';
+        return l10n.visual;
       case EmdrMode.audio:
-        return 'Audio';
+        return l10n.audio;
       case EmdrMode.tactile:
-        return 'Tactile';
+        return l10n.tactile;
       case EmdrMode.visualAudio:
-        return 'Visual + Audio';
+        return l10n.visualAudio;
       case EmdrMode.visualTactile:
-        return 'Visual + Tactile';
+        return l10n.visualTactile;
       case EmdrMode.all:
-        return 'Visual + Audio + Tactile';
+        return l10n.visualAudioTactile;
     }
   }
 
-  String get _speedName {
+  String _speedName(AppLocalizations l10n) {
     switch (_speed) {
       case EmdrSpeed.slow:
-        return 'Slow';
+        return l10n.slow;
       case EmdrSpeed.medium:
-        return 'Medium';
+        return l10n.medium;
       case EmdrSpeed.fast:
-        return 'Fast';
+        return l10n.fast;
     }
   }
 }
@@ -664,20 +668,20 @@ class _ModeSelector extends StatelessWidget {
 
   const _ModeSelector({required this.selected, required this.onSelect});
 
-  static const _modes = [
-    (EmdrMode.visual, 'Visual only', Icons.visibility_rounded),
-    (EmdrMode.audio, 'Audio only', Icons.headphones_rounded),
-    (EmdrMode.tactile, 'Tactile only', Icons.vibration_rounded),
-    (EmdrMode.visualAudio, 'Visual + Audio', Icons.multitrack_audio_rounded),
-    (EmdrMode.visualTactile, 'Visual + Tactile', Icons.touch_app_rounded),
-    (EmdrMode.all, 'All three', Icons.layers_rounded),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final modes = [
+      (EmdrMode.visual, l10n.visualOnly, Icons.visibility_rounded),
+      (EmdrMode.audio, l10n.audioOnly, Icons.headphones_rounded),
+      (EmdrMode.tactile, l10n.tactileOnly, Icons.vibration_rounded),
+      (EmdrMode.visualAudio, l10n.visualAudio, Icons.multitrack_audio_rounded),
+      (EmdrMode.visualTactile, l10n.visualTactile, Icons.touch_app_rounded),
+      (EmdrMode.all, l10n.allThree, Icons.layers_rounded),
+    ];
     return Column(
       children: [
-        for (final mode in _modes) ...[
+        for (final mode in modes) ...[
           _ModeTile(
             label: mode.$2,
             icon: mode.$3,
@@ -754,9 +758,9 @@ class _ModeTile extends StatelessWidget {
                             fontSize: 14)),
                     if (unavailable) ...[
                       const SizedBox(height: 2),
-                      const Text(
-                        'Coming soon',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.comingSoon,
+                        style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 12,
                         ),
@@ -776,6 +780,17 @@ class _ModeTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _speedLabel(AppLocalizations l10n, EmdrSpeed speed) {
+  switch (speed) {
+    case EmdrSpeed.slow:
+      return l10n.slow;
+    case EmdrSpeed.medium:
+      return l10n.medium;
+    case EmdrSpeed.fast:
+      return l10n.fast;
   }
 }
 
@@ -808,7 +823,7 @@ class _SpeedSelector extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  s.name[0].toUpperCase() + s.name.substring(1),
+                  _speedLabel(context.l10n, s),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: selected == s
@@ -858,7 +873,7 @@ class _SessionSelector extends StatelessWidget {
                 ),
               ),
               child: Text(
-                m == 0 ? 'Open' : '${m}m',
+                m == 0 ? context.l10n.open : context.l10n.minutesShort(m),
                 style: TextStyle(
                   color: selected == m
                       ? const Color(0xFF4A9EDA)

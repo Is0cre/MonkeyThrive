@@ -3,6 +3,7 @@ import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_chrome.dart';
+import '../../../l10n/l10n.dart';
 import 'breathing_screen.dart';
 import 'physiological_sigh_screen.dart';
 import 'grounding_521_screen.dart';
@@ -19,6 +20,8 @@ class RegulateHomeScreen extends StatelessWidget {
     return ValueListenableBuilder<ToleranceState?>(
       valueListenable: WoTScope.of(context),
       builder: (context, wot, _) {
+        final l10n = context.l10n;
+        final lockReason = wot == null ? null : toleranceLock(l10n, wot);
         return AppBackdrop(
           child: SafeArea(
             child: CustomScrollView(
@@ -29,9 +32,8 @@ class RegulateHomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(right: 42),
                       child: AppHeader(
-                        title: 'Regulate',
-                        subtitle:
-                            'Immediate tools for the state you are in now.',
+                        title: l10n.navRegulate,
+                        subtitle: l10n.regulateSubtitle,
                         icon: Icons.waves_rounded,
                         trailing: wot == null ? null : _StateChip(wot: wot),
                       ),
@@ -42,13 +44,13 @@ class RegulateHomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 30, 20, 32),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      const AppSectionLabel('Breathing',
+                      AppSectionLabel(l10n.sectionBreathing,
                           icon: Icons.air_rounded),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.air_rounded,
-                        title: 'Box Breathing',
-                        subtitle: '4-4-4-4 · Calm the nervous system',
+                        title: l10n.boxBreathingTitle,
+                        subtitle: l10n.boxBreathingSubtitle,
                         color: AppColors.teal,
                         locked: false,
                         onTap: () => Navigator.push(
@@ -63,8 +65,8 @@ class RegulateHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.air_rounded,
-                        title: 'Physiological sigh',
-                        subtitle: 'Double inhale + long exhale · Fastest reset',
+                        title: l10n.sighTitle,
+                        subtitle: l10n.sighSubtitle,
                         color: AppColors.teal,
                         locked: false,
                         onTap: () => Navigator.push(
@@ -77,11 +79,11 @@ class RegulateHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.nights_stay_rounded,
-                        title: '4-7-8 Breathing',
-                        subtitle: 'Sleep & acute anxiety',
+                        title: l10n.breathing478Title,
+                        subtitle: l10n.breathing478Subtitle,
                         color: AppColors.teal,
                         locked: wot != null && !wot.can4_7_8,
-                        lockedReason: wot?.lockedReason,
+                        lockedReason: lockReason,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -94,11 +96,11 @@ class RegulateHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.waves_rounded,
-                        title: 'Wim Hof Breathing',
-                        subtitle: 'Guided round protocol',
+                        title: l10n.wimHofTitle,
+                        subtitle: l10n.wimHofSubtitle,
                         color: AppColors.teal,
                         locked: wot != null && !wot.canWimHof,
-                        lockedReason: wot?.lockedReason,
+                        lockedReason: lockReason,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -106,15 +108,15 @@ class RegulateHomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const AppSectionLabel(
-                        'Grounding',
+                      AppSectionLabel(
+                        l10n.sectionGrounding,
                         icon: Icons.spa_rounded,
                       ),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.filter_5_rounded,
-                        title: '5-4-3-2-1 Grounding',
-                        subtitle: 'Sensory anchoring — bring yourself back',
+                        title: l10n.groundingTitle,
+                        subtitle: l10n.groundingSubtitle,
                         color: AppColors.amber,
                         locked: false,
                         onTap: () => Navigator.push(
@@ -127,8 +129,8 @@ class RegulateHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.water_drop_rounded,
-                        title: 'Cold Water',
-                        subtitle: 'Diving reflex · Vagal activation',
+                        title: l10n.coldWaterTitle,
+                        subtitle: l10n.coldWaterSubtitle,
                         color: AppColors.amber,
                         locked: false,
                         onTap: () => Navigator.push(
@@ -141,11 +143,11 @@ class RegulateHomeScreen extends StatelessWidget {
                       const SizedBox(height: 10),
                       _ToolCard(
                         icon: Icons.landscape_rounded,
-                        title: 'Safe Place',
-                        subtitle: 'Guided visualisation with ambient sound',
+                        title: l10n.safePlaceTitle,
+                        subtitle: l10n.safePlaceSubtitle,
                         color: AppColors.amber,
                         locked: wot != null && !wot.canSafePlace,
-                        lockedReason: wot?.lockedReason,
+                        lockedReason: lockReason,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -154,15 +156,15 @@ class RegulateHomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const AppSectionLabel(
-                        'Vagal nerve activation',
+                      AppSectionLabel(
+                        l10n.sectionVagal,
                         icon: Icons.self_improvement_rounded,
                       ),
                       const SizedBox(height: 12),
                       _ToolCard(
                         icon: Icons.self_improvement_rounded,
-                        title: 'Vagal Prompts',
-                        subtitle: 'Humming · Gargling · Extended exhale',
+                        title: l10n.vagalTitle,
+                        subtitle: l10n.vagalSubtitle,
                         color: const Color(0xFF8B6FD4),
                         locked: false,
                         onTap: () => Navigator.push(
@@ -220,7 +222,7 @@ class _StateChip extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           Text(
-            wot.displayName,
+            toleranceLabel(context.l10n, wot),
             style: TextStyle(
               color: chipColor,
               fontSize: 12,

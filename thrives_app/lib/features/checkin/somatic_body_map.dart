@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'somatic_map.dart';
@@ -292,7 +293,7 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
 
   Widget _chip(SilhouetteType type) {
     final selected = type == _silhouette;
-    final label = _silhouetteLabel(type);
+    final label = _silhouetteLabel(context.l10n, type);
     return Semantics(
       button: true,
       selected: selected,
@@ -332,7 +333,8 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
       height: rect.height,
       child: Semantics(
         button: true,
-        label: '${_zoneName(zone)}, ${_qualityName(quality)}',
+        label:
+            '${_zoneName(context.l10n, zone)}, ${_qualityName(context.l10n, quality)}',
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => widget.onTap(zone),
@@ -444,37 +446,37 @@ Color? _glowColor(SomaticQuality quality) {
   }
 }
 
-String _silhouetteLabel(SilhouetteType type) {
+String _silhouetteLabel(AppLocalizations l10n, SilhouetteType type) {
   switch (type) {
     case SilhouetteType.masculine:
-      return 'Masculine';
+      return l10n.bodyMasculine;
     case SilhouetteType.feminine:
-      return 'Feminine';
+      return l10n.bodyFeminine;
     case SilhouetteType.neutral:
-      return 'Neutral';
+      return l10n.bodyNeutral;
   }
 }
 
-String _zoneName(SomaticZone zone) {
+String _zoneName(AppLocalizations l10n, SomaticZone zone) {
   switch (zone) {
     case SomaticZone.head:
-      return 'Head';
+      return l10n.zoneHead;
     case SomaticZone.throat:
-      return 'Throat';
+      return l10n.zoneThroat;
     case SomaticZone.chest:
-      return 'Chest';
+      return l10n.zoneChest;
     case SomaticZone.stomach:
-      return 'Stomach';
+      return l10n.zoneStomach;
   }
 }
 
-String _qualityName(SomaticQuality quality) {
+String _qualityName(AppLocalizations l10n, SomaticQuality quality) {
   switch (quality) {
     case SomaticQuality.unmarked:
-      return 'unmarked';
+      return l10n.unmarked;
     case SomaticQuality.tight:
-      return 'tight';
+      return l10n.tight;
     case SomaticQuality.heavy:
-      return 'heavy';
+      return l10n.heavy;
   }
 }

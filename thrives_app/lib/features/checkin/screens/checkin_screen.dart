@@ -4,6 +4,7 @@ import '../../../core/storage/prefs_service.dart';
 import '../../../core/storage/session_log.dart';
 import '../../../core/storage/tier_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/l10n.dart';
 import '../somatic_body_map.dart';
 import '../somatic_map.dart';
 
@@ -79,16 +80,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
           padding: const EdgeInsets.fromLTRB(28, 36, 28, 24),
           children: [
             Text(
-              'how are you\nright now?',
+              context.l10n.checkinTitle,
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
                     fontSize: 36,
                     height: 1.2,
                   ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Tap where the body is speaking. Tap again to change it. '
-              'This shapes what is available.',
+            Text(
+              context.l10n.checkinHint,
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 15,
@@ -102,7 +102,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
             const SizedBox(height: 8),
             if (reading != null)
               Text(
-                'this reads as ${reading.displayName}',
+                context.l10n.readingAs(toleranceLabel(context.l10n, reading)),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
@@ -113,7 +113,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
             TextButton(
               onPressed: _markPresent,
               child: Text(
-                'nothing stands out',
+                context.l10n.nothingStandsOut,
                 style: TextStyle(
                   color: _explicitPresent
                       ? AppColors.teal
@@ -146,8 +146,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
                               color: AppColors.teal,
                             ),
                           )
-                        : const Text(
-                            'continue',
+                        : Text(
+                            context.l10n.continueLabel,
                             style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 16,
@@ -171,11 +171,12 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final l10n = context.l10n;
+    return Row(
       children: [
-        _Swatch(color: Color(0xFFDA3633), label: 'tight'),
-        SizedBox(width: 16),
-        _Swatch(color: Color(0xFF6B8EAD), label: 'heavy'),
+        _Swatch(color: const Color(0xFFDA3633), label: l10n.tight),
+        const SizedBox(width: 16),
+        _Swatch(color: const Color(0xFF6B8EAD), label: l10n.heavy),
       ],
     );
   }

@@ -9,6 +9,7 @@ import 'package:monkeythrive/core/models/tolerance_state.dart';
 import 'package:monkeythrive/core/state/wot_scope.dart';
 import 'package:monkeythrive/features/attune/screens/attune_home_screen.dart';
 import 'package:monkeythrive/features/process/screens/emdr_screen.dart';
+import 'package:monkeythrive/l10n/app_localizations.dart';
 
 void main() {
   test('playback cache does not synthesize while acoustic tools are gated',
@@ -40,7 +41,9 @@ void main() {
 
   testWidgets('Attune shows the calibration notice instead of a player',
       (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: AttuneHomeScreen()));
+    await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,home: AttuneHomeScreen()));
     await tester.pump();
 
     expect(find.text(AcousticSynthesisGate.message), findsOneWidget);
@@ -67,7 +70,9 @@ void main() {
     await tester.pumpWidget(
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.regulated),
-        child: const MaterialApp(home: EmdrScreen()),
+        child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,home: EmdrScreen()),
       ),
     );
     await tester.pump();
