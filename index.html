@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MonkeyThrive — Offline Nervous System Regulation</title>
   <meta name="description" content="A free, 100% offline, zero-telemetry nervous system regulation toolkit for trauma recovery, CPTSD grounding, and physiological sighs. No guilt mechanics.">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://monkeythrive.app/">
+  <link rel="canonical" href="https://monkeythrive.app">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <meta property="og:title" content="MonkeyThrive — Offline Nervous System Regulation">
   <meta property="og:description" content="A free, zero-telemetry nervous system regulation toolkit for trauma recovery and CPTSD grounding. 100% offline. No tracking, no guilt mechanics.">
-  <meta property="og:url" content="https://monkeythrive.app/">
+  <meta property="og:url" content="https://monkeythrive.app">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://monkeythrive.app/emblem.png">
   <meta property="og:image:alt" content="Gold coin mark for MonkeyThrive">
@@ -28,6 +28,8 @@
   <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="alternate" hreflang="en" href="https://monkeythrive.app">
+  <link rel="alternate" hreflang="x-default" href="https://monkeythrive.app">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"MonkeyThrive","url":"https://monkeythrive.app/"},{"@type":"SoftwareApplication","name":"MonkeyThrive","url":"https://monkeythrive.app/","description":"A free, 100% offline, zero-telemetry nervous system regulation toolkit for trauma recovery, CPTSD grounding, and physiological sighs. No guilt mechanics. It does not replace professional care.","applicationCategory":"LifestyleApplication","operatingSystem":"Android, Web","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://www.gnu.org/licenses/gpl-3.0.html"}]}</script>
   <style>
     :root {
@@ -368,6 +370,16 @@
 
     .footer a { color: var(--text); }
 
+    .langs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+
+    .langs a { color: var(--text); text-decoration: none; }
+
+    .langs a[aria-current="page"] { color: var(--amber); }
+
     ::selection { background: var(--amber); color: var(--ink); }
 
     @media (min-width: 720px) {
@@ -411,7 +423,7 @@
   <header class="wrap">
     <div class="bar">
       <a class="brand" href="#content">
-        <img src="emblem.png" width="40" height="40" alt="">
+        <img src="/emblem.png" width="40" height="40" alt="">
         MonkeyThrive
       </a>
       <nav aria-label="On this page">
@@ -532,6 +544,7 @@
   <footer class="wrap">
     <div class="footer">
       <p>Built from lived experience. For everyone who is still here.</p>
+      
       <nav aria-label="Project">
         <a href="https://github.com/Is0cre/MonkeyThrive" rel="noreferrer">GitHub</a>
         <a href="https://github.com/Is0cre/MonkeyThrive/blob/main/LICENSE" rel="noreferrer">License (GPL-3.0)</a>
