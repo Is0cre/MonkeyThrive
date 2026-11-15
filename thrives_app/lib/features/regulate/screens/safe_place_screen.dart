@@ -56,7 +56,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..value = 1.0;
-    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeAnim =
+        CurvedAnimation(parent: _fadeController, curve: AppMotion.arrive);
     _loadSafePlace();
   }
 
@@ -113,7 +114,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                     toleranceLock(context.l10n, wot),
                   ),
           ),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -219,7 +220,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -227,8 +228,9 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.landscape_rounded,
-                          color: AppColors.amber, size: 18),
+                      Icon(Icons.landscape_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 18),
                       const SizedBox(width: 8),
                       Text(
                         context.l10n.yourSafePlace,
@@ -264,18 +266,22 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                   GestureDetector(
                     onTap: () => setState(() => _sessionMinutes = min),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppMotion.press,
+                      curve: AppMotion.arrive,
                       margin: const EdgeInsets.only(left: 8),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: _sessionMinutes == min
-                            ? AppColors.amber.withValues(alpha: 0.2)
+                            ? Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.2)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: _sessionMinutes == min
-                              ? AppColors.amber
+                              ? Theme.of(context).colorScheme.primary
                               : AppColors.textMuted.withValues(alpha: 0.3),
                         ),
                       ),
@@ -283,7 +289,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                         context.l10n.minutesShort(min),
                         style: TextStyle(
                           color: _sessionMinutes == min
-                              ? AppColors.amber
+                              ? Theme.of(context).colorScheme.primary
                               : AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -304,8 +310,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
               child: FilledButton(
                 onPressed: _startGuide,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.amber,
-                  foregroundColor: AppColors.background,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).scaffoldBackgroundColor,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
@@ -350,7 +356,10 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 onPressed: () => _stopGuide(finished: true),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.surfaceVariant),
+                  side: BorderSide(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
@@ -396,7 +405,7 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                 hintText: context.l10n.safePlaceHint,
                 hintStyle: const TextStyle(color: AppColors.textMuted),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
@@ -413,7 +422,10 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                   onPressed: () => setState(() => _editing = false),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
-                    side: const BorderSide(color: AppColors.surfaceVariant),
+                    side: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                     minimumSize: const Size(0, 52),
@@ -432,8 +444,8 @@ class _SafePlaceScreenState extends State<SafePlaceScreen>
                     );
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: AppColors.background,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).scaffoldBackgroundColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                     minimumSize: const Size(0, 52),

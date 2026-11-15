@@ -129,7 +129,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
         _circleController.animateTo(
           0.62,
           duration: const Duration(milliseconds: _inhale1Ms),
-          curve: Curves.easeInOut,
+          curve: AppMotion.breathe,
         );
         HapticFeedback.selectionClick();
         _phaseTimer = Timer(
@@ -141,7 +141,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
         _circleController.animateTo(
           1.0,
           duration: const Duration(milliseconds: _inhale2Ms),
-          curve: Curves.easeOut,
+          curve: AppMotion.arrive,
         );
         _phaseTimer = Timer(
           const Duration(milliseconds: _inhale2Ms),
@@ -152,7 +152,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
         _circleController.animateTo(
           0.0,
           duration: const Duration(milliseconds: _exhaleMs),
-          curve: Curves.easeInOut,
+          curve: AppMotion.breathe,
         );
         HapticFeedback.selectionClick();
         _phaseTimer = Timer(
@@ -271,7 +271,9 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
             onPressed: _toggleHaptics,
             icon: Icon(
               Icons.vibration,
-              color: _hapticsEnabled ? AppColors.teal : AppColors.textMuted,
+              color: _hapticsEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : AppColors.textMuted,
             ),
           ),
         ],
@@ -286,7 +288,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -314,7 +316,8 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                           // Round counter
                           AnimatedOpacity(
                             opacity: _round > 0 && !_done ? 1.0 : 0.0,
-                            duration: const Duration(milliseconds: 300),
+                            duration: AppMotion.settle,
+                            curve: AppMotion.arrive,
                             child: Text(
                               l10n.breathFraction(_round, _targetRounds),
                               style: const TextStyle(
@@ -346,10 +349,14 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                                     height: size,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: AppColors.teal
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
                                           .withValues(alpha: alpha),
                                       border: Border.all(
-                                        color: AppColors.teal
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
                                             .withValues(alpha: borderAlpha),
                                         width: 1.5,
                                       ),
@@ -366,7 +373,9 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                           SizedBox(
                             height: 28,
                             child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
+                              duration: AppMotion.press,
+                              switchInCurve: AppMotion.arrive,
+                              switchOutCurve: AppMotion.depart,
                               child: Text(
                                 phaseLabel,
                                 key: ValueKey(phaseLabel),
@@ -402,7 +411,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                       max: _maxRounds.toDouble(),
                       divisions: _maxRounds - _minRounds,
                       enabled: true,
-                      activeColor: AppColors.teal,
+                      activeColor: Theme.of(context).colorScheme.primary,
                       sliderKey: const Key('sigh-round-slider'),
                       onChanged: (v) =>
                           setState(() => _targetRounds = v.round()),
@@ -422,11 +431,13 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
                       onPressed: _startStop,
                       style: FilledButton.styleFrom(
                         backgroundColor: _running
-                            ? AppColors.surfaceVariant
-                            : AppColors.teal,
+                            ? Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                            : Theme.of(context).colorScheme.primary,
                         foregroundColor: _running
                             ? AppColors.textPrimary
-                            : AppColors.background,
+                            : Theme.of(context).scaffoldBackgroundColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),

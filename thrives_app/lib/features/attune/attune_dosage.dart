@@ -114,7 +114,7 @@ Future<bool> confirmAttunePastDailyLimit(BuildContext context) async {
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           dialogContext.l10n.attuneDosageOverTitle,

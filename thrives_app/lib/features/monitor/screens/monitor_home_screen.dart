@@ -75,8 +75,9 @@ class _MonitorHomeScreenState extends State<MonitorHomeScreen> {
         return Scaffold(
           body: SafeArea(
             child: _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.teal))
+                ? Center(
+                    child: CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.primary))
                 : CustomScrollView(
                     slivers: [
                       SliverPadding(
@@ -186,13 +187,13 @@ class _HrvCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           children: [
-            const Icon(Icons.favorite_border_rounded,
-                color: AppColors.teal, size: 22),
+            Icon(Icons.favorite_border_rounded,
+                color: Theme.of(context).colorScheme.primary, size: 22),
             const SizedBox(width: 14),
             Expanded(
               child: last == null
@@ -249,7 +250,7 @@ class _WindowDiagram extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(20),
@@ -276,7 +277,7 @@ class _WindowDiagram extends StatelessWidget {
           _Band(
             label: context.l10n.windowOfTolerance,
             sub: context.l10n.regulatedNote,
-            color: AppColors.teal,
+            color: Theme.of(context).colorScheme.primary,
             isActive: current == ToleranceState.regulated,
           ),
           const SizedBox(height: 4),
@@ -315,7 +316,8 @@ class _Band extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: AppMotion.settle,
+      curve: AppMotion.arrive,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isActive
@@ -373,7 +375,7 @@ class _CheckInRow extends StatelessWidget {
           (
             ToleranceState.regulated,
             context.l10n.labelPresent,
-            AppColors.teal,
+            Theme.of(context).colorScheme.primary,
             Icons.check_circle_outline_rounded
           ),
           (
@@ -387,12 +389,13 @@ class _CheckInRow extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onSelect(opt.$1),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: AppMotion.press,
+                curve: AppMotion.arrive,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   color: current == opt.$1
                       ? opt.$3.withValues(alpha: 0.15)
-                      : AppColors.surface,
+                      : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: current == opt.$1 ? opt.$3 : Colors.transparent,
@@ -446,12 +449,12 @@ class _ToleranceTile extends StatelessWidget {
           context.l10n.labelFlat,
           const Color(0xFF6B7ADA)
         ),
-      _ => (context.l10n.labelPresent, AppColors.teal),
+      _ => (context.l10n.labelPresent, Theme.of(context).colorScheme.primary),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -485,7 +488,7 @@ class _SessionTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

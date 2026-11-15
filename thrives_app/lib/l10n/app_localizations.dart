@@ -2991,6 +2991,66 @@ abstract class AppLocalizations {
   /// **'Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.'**
   String get attuneMaskCredit;
 
+  /// No description provided for @attunePickMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose music'**
+  String get attunePickMusic;
+
+  /// No description provided for @attuneAddPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a pack from this device'**
+  String get attuneAddPack;
+
+  /// No description provided for @attuneIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Included'**
+  String get attuneIncluded;
+
+  /// No description provided for @attunePackOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This recording stays on this device.'**
+  String get attunePackOnDevice;
+
+  /// No description provided for @attunePackAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 track added on this device} other{{count} tracks added on this device}}'**
+  String attunePackAdded(int count);
+
+  /// No description provided for @attunePackUnusable.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the zip with letters and numbers, then try again.'**
+  String get attunePackUnusable;
+
+  /// No description provided for @attunePackNotAPack.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is not a music pack.'**
+  String get attunePackNotAPack;
+
+  /// No description provided for @attunePackTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'That pack is too large for this device.'**
+  String get attunePackTooLarge;
+
+  /// No description provided for @attunePackUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Packs can be added in the Android app.'**
+  String get attunePackUnavailable;
+
+  /// No description provided for @attunePackSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'That file could not be saved on this device.'**
+  String get attunePackSaveFailed;
+
   /// No description provided for @attuneFocus.
   ///
   /// In en, this message translates to:

@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/l10n.dart';
 
-const attuneViolet = Color(0xFF7B68EE);
-
 /// Blocks the player until all three confirmations are stored on the device.
 class AttuneWaiverGate extends StatefulWidget {
   final Future<void> Function() onAccepted;
@@ -96,8 +94,8 @@ class _AttuneWaiverGateState extends State<AttuneWaiverGate> {
                           },
                     contentPadding: EdgeInsets.zero,
                     controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: attuneViolet,
-                    checkColor: AppColors.background,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    checkColor: Theme.of(context).scaffoldBackgroundColor,
                     title: Text(
                       lines[i],
                       style: const TextStyle(
@@ -116,7 +114,7 @@ class _AttuneWaiverGateState extends State<AttuneWaiverGate> {
             child: TextButton(
               onPressed: widget.onOpenPhysics,
               style: TextButton.styleFrom(
-                foregroundColor: attuneViolet,
+                foregroundColor: Theme.of(context).colorScheme.primary,
                 padding: EdgeInsets.zero,
               ),
               child: Text(l10n.physicsOpen),
@@ -130,9 +128,12 @@ class _AttuneWaiverGateState extends State<AttuneWaiverGate> {
               key: const Key('attune-waiver-enter'),
               onPressed: _ready ? _enter : null,
               style: FilledButton.styleFrom(
-                backgroundColor: attuneViolet,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: attuneViolet.withValues(alpha: 0.35),
+                disabledBackgroundColor: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.35),
                 disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -155,7 +156,7 @@ class _AttuneWaiverGateState extends State<AttuneWaiverGate> {
       );
     }
     return Material(
-      color: AppColors.background.withValues(alpha: 0.96),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.96),
       child: SafeArea(child: body),
     );
   }
@@ -182,17 +183,16 @@ class _AttuneVisualizerState extends State<AttuneVisualizer>
       vsync: this,
       duration: const Duration(seconds: 12),
     );
-    if (widget.active) _pulse.repeat(reverse: true);
+    if (widget.active) _pulse.repeat();
   }
 
   @override
   void didUpdateWidget(AttuneVisualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.active && !_pulse.isAnimating) {
-      _pulse.repeat(reverse: true);
+      _pulse.repeat();
     } else if (!widget.active && _pulse.isAnimating) {
       _pulse.stop();
-      _pulse.value = 0;
     }
   }
 
@@ -210,13 +210,18 @@ class _AttuneVisualizerState extends State<AttuneVisualizer>
       child: SizedBox(
         height: 180,
         width: double.infinity,
-        child: AnimatedBuilder(
-          animation: _pulse,
-          builder: (context, _) {
-            return CustomPaint(
-              painter: _TorusPainter(turn: _pulse.value),
-            );
-          },
+        child: RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: _pulse,
+            builder: (context, _) {
+              return CustomPaint(
+                painter: _TorusPainter(
+                  turn: _pulse.value,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -225,8 +230,9 @@ class _AttuneVisualizerState extends State<AttuneVisualizer>
 
 class _TorusPainter extends CustomPainter {
   final double turn;
+  final Color color;
 
-  const _TorusPainter({required this.turn});
+  const _TorusPainter({required this.turn, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -236,7 +242,7 @@ class _TorusPainter extends CustomPainter {
     final shell = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4
-      ..color = attuneViolet.withValues(alpha: 0.35);
+      ..color = color.withValues(alpha: 0.35);
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
@@ -246,7 +252,7 @@ class _TorusPainter extends CustomPainter {
       shell,
     );
 
-    final point = Paint()..color = attuneViolet.withValues(alpha: 0.7);
+    final point = Paint()..color = color.withValues(alpha: 0.7);
     const turns = 3.0;
     const count = 72;
     for (var i = 0; i < count; i++) {
@@ -263,7 +269,8 @@ class _TorusPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TorusPainter oldDelegate) => oldDelegate.turn != turn;
+  bool shouldRepaint(_TorusPainter oldDelegate) =>
+      oldDelegate.turn != turn || oldDelegate.color != color;
 }
 
 /// One mix row. The label, track, number, and trailing slot share fixed
@@ -288,7 +295,8 @@ class AttuneSliderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = enabled ? attuneViolet : AppColors.textMuted;
+    final color =
+        enabled ? Theme.of(context).colorScheme.primary : AppColors.textMuted;
     return Row(
       children: [
         SizedBox(
@@ -313,7 +321,8 @@ class AttuneSliderRow extends StatelessWidget {
               min: 0,
               max: 1,
               activeColor: color,
-              inactiveColor: AppColors.surfaceVariant,
+              inactiveColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
               onChanged: enabled ? onChanged : null,
             ),
           ),
@@ -387,7 +396,7 @@ class _ZenCollapseState extends State<ZenCollapse>
     super.initState();
     _reveal = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 520),
       value: widget.show ? 1 : 0,
     );
   }
@@ -415,7 +424,7 @@ class _ZenCollapseState extends State<ZenCollapse>
       child: AnimatedBuilder(
         animation: _reveal,
         builder: (context, child) {
-          final t = Curves.easeInOut.transform(_reveal.value);
+          final t = AppMotion.fold.transform(_reveal.value);
           final hidden = t < 0.99;
           return ExcludeSemantics(
             excluding: hidden,

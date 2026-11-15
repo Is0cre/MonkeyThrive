@@ -69,7 +69,7 @@ class _WimHofScreenState extends State<WimHofScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.wimHofOnlyWhenPresent),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -80,7 +80,7 @@ class _WimHofScreenState extends State<WimHofScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.wimHofChecksFirst),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -257,7 +257,9 @@ class _WimHofScreenState extends State<WimHofScreen>
             AnimatedBuilder(
               animation: _pulseController,
               builder: (context, _) {
-                final scale = 0.8 + (_pulseController.value * 0.2);
+                final eased =
+                    Curves.easeInOutSine.transform(_pulseController.value);
+                final scale = 0.8 + (eased * 0.2);
                 return Transform.scale(
                   scale: scale,
                   child: Container(
@@ -265,10 +267,15 @@ class _WimHofScreenState extends State<WimHofScreen>
                     height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.teal.withValues(
-                          alpha: 0.12 + _pulseController.value * 0.1),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.12 + eased * 0.1),
                       border: Border.all(
-                        color: AppColors.teal.withValues(alpha: 0.5),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.5),
                         width: 1.5,
                       ),
                     ),
@@ -279,8 +286,8 @@ class _WimHofScreenState extends State<WimHofScreen>
             const SizedBox(height: 32),
             Text(
               context.l10n.breathFraction(_breathCount, _totalBreaths),
-              style: const TextStyle(
-                color: AppColors.teal,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
                 fontSize: 32,
                 fontWeight: FontWeight.w300,
               ),
@@ -312,7 +319,7 @@ class _WimHofScreenState extends State<WimHofScreen>
           title: context.l10n.recoveryBreath,
           body: context.l10n.wimHofRecoveryBody,
           timerDisplay: _timerDisplay(context.l10n),
-          timerColor: AppColors.teal,
+          timerColor: Theme.of(context).colorScheme.primary,
         );
 
       case _WimHofPhase.retentionHold:
@@ -321,7 +328,7 @@ class _WimHofScreenState extends State<WimHofScreen>
           title: context.l10n.retentionHold,
           body: context.l10n.wimHofStillness,
           timerDisplay: _timerDisplay(context.l10n),
-          timerColor: AppColors.teal,
+          timerColor: Theme.of(context).colorScheme.primary,
         );
 
       case _WimHofPhase.done:
@@ -338,7 +345,7 @@ class _WimHofScreenState extends State<WimHofScreen>
       case _WimHofPhase.idle:
         return _BigButton(
           label: context.l10n.breathingBegin,
-          color: AppColors.teal,
+          color: Theme.of(context).colorScheme.primary,
           onTap:
               _confirmedSafetyItems.length == _safetyItems(context.l10n).length
                   ? _startBreathing
@@ -357,7 +364,7 @@ class _WimHofScreenState extends State<WimHofScreen>
       case _WimHofPhase.retentionHold:
         return _BigButton(
           label: context.l10n.release,
-          color: AppColors.teal,
+          color: Theme.of(context).colorScheme.primary,
           onTap: _advanceFromRetention,
         );
       case _WimHofPhase.done:
@@ -368,7 +375,7 @@ class _WimHofScreenState extends State<WimHofScreen>
             if (_round < _plannedRounds) ...[
               _BigButton(
                 label: context.l10n.nextRound,
-                color: AppColors.teal,
+                color: Theme.of(context).colorScheme.primary,
                 onTap: _nextRound,
               ),
               const SizedBox(height: 10),
@@ -404,7 +411,7 @@ class _WimHofScreenState extends State<WimHofScreen>
             max: _maxRounds.toDouble(),
             divisions: _maxRounds - _minRounds,
             enabled: true,
-            activeColor: AppColors.teal,
+            activeColor: Theme.of(context).colorScheme.primary,
             sliderKey: const Key('wim-hof-round-slider'),
             onChanged: (v) => setState(() => _plannedRounds = v.round()),
           ),
@@ -430,8 +437,8 @@ class _WimHofScreenState extends State<WimHofScreen>
             },
             dense: true,
             controlAffinity: ListTileControlAffinity.leading,
-            activeColor: AppColors.teal,
-            checkColor: AppColors.background,
+            activeColor: Theme.of(context).colorScheme.primary,
+            checkColor: Theme.of(context).scaffoldBackgroundColor,
             title: Text(
               items[i],
               style: const TextStyle(
@@ -466,7 +473,7 @@ class _CentredContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: AppColors.teal, size: 52),
+        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 52),
         const SizedBox(height: 24),
         Text(title,
             style: Theme.of(context).textTheme.titleLarge,
@@ -480,7 +487,7 @@ class _CentredContent extends StatelessWidget {
           Text(
             timerDisplay!,
             style: TextStyle(
-              color: timerColor ?? AppColors.teal,
+              color: timerColor ?? Theme.of(context).colorScheme.primary,
               fontSize: 44,
               fontWeight: FontWeight.w200,
             ),
@@ -508,7 +515,7 @@ class _BigButton extends StatelessWidget {
         onPressed: onTap,
         style: FilledButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: AppColors.background,
+          foregroundColor: Theme.of(context).scaffoldBackgroundColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),

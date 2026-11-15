@@ -276,29 +276,26 @@ const crisisContacts = <CrisisContact>[
     description:
         'Integrated Helpline (Emergency Response Support System (ERSS) Police, Fire & Rescue, Health services etc).',
   ),
-    CrisisContact(
+  CrisisContact(
     country: indiaCountry,
     name: 'Emergency',
     number: '102',
     category: CrisisCategory.emergency,
-    description:
-        'National Ambulance Service (NAS).',
+    description: 'National Ambulance Service (NAS).',
   ),
-    CrisisContact(
+  CrisisContact(
     country: indiaCountry,
     name: 'Emergency',
     number: '101',
     category: CrisisCategory.emergency,
-    description:
-        'Fire Helpline.',
+    description: 'Fire Helpline.',
   ),
-    CrisisContact(
+  CrisisContact(
     country: indiaCountry,
     name: 'Helpline',
     number: '100',
     category: CrisisCategory.emergency,
-    description:
-        'Police Helpline.',
+    description: 'Police Helpline.',
   ),
   CrisisContact(
     country: internationalCountry,

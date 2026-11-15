@@ -73,138 +73,145 @@ class _ColdWaterScreenState extends State<ColdWaterScreen>
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-              // Explanation card
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.water_drop_rounded,
-                            color: AppColors.teal, size: 20),
-                        const SizedBox(width: 10),
-                        Text(
-                          l10n.coldHow,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
+            // Explanation card
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.water_drop_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        l10n.coldHow,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.coldBody,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.6,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Instructions
-              _InstructionRow(
-                icon: Icons.face_rounded,
-                text: l10n.coldFace,
-              ),
-              const SizedBox(height: 12),
-              _InstructionRow(
-                icon: Icons.back_hand_rounded,
-                text: l10n.coldWrists,
-              ),
-              const SizedBox(height: 12),
-              _InstructionRow(
-                icon: Icons.airline_seat_recline_extra_rounded,
-                text: l10n.coldNeck,
-              ),
-
-              const SizedBox(height: 32),
-
-              // Timer display
-              if (_running || _done) ...[
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _done
-                      ? Column(
-                          key: const ValueKey('done'),
-                          children: [
-                            const Icon(Icons.check_circle_outline_rounded,
-                                color: AppColors.teal, size: 52),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.good,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.alreadyResponding,
-                              style: const TextStyle(color: AppColors.textPrimary),
-                            ),
-                            const SizedBox(height: 24),
-                            const FeelingBetterPrompt(),
-                          ],
-                        )
-                      : Column(
-                          key: const ValueKey('timer'),
-                          children: [
-                            Text(
-                              '$_secondsLeft',
-                              style: const TextStyle(
-                                color: AppColors.teal,
-                                fontSize: 72,
-                                fontWeight: FontWeight.w200,
-                              ),
-                            ),
-                            Text(
-                              l10n.seconds,
-                              style: const TextStyle(
-                                color: AppColors.textMuted,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: FilledButton(
-                  onPressed: _done ? _reset : (_running ? null : _start),
-                  style: FilledButton.styleFrom(
-                    backgroundColor:
-                        _done ? AppColors.surfaceVariant : AppColors.teal,
-                    foregroundColor:
-                        _done ? AppColors.textPrimary : AppColors.background,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                    ],
                   ),
-                  child: Text(
-                    _done
-                        ? l10n.againLabel
-                        : (_running ? l10n.running : l10n.start30),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.coldBody,
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500),
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      height: 1.6,
+                    ),
                   ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Instructions
+            _InstructionRow(
+              icon: Icons.face_rounded,
+              text: l10n.coldFace,
+            ),
+            const SizedBox(height: 12),
+            _InstructionRow(
+              icon: Icons.back_hand_rounded,
+              text: l10n.coldWrists,
+            ),
+            const SizedBox(height: 12),
+            _InstructionRow(
+              icon: Icons.airline_seat_recline_extra_rounded,
+              text: l10n.coldNeck,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Timer display
+            if (_running || _done) ...[
+              AnimatedSwitcher(
+                duration: AppMotion.settle,
+                switchInCurve: AppMotion.arrive,
+                switchOutCurve: AppMotion.depart,
+                child: _done
+                    ? Column(
+                        key: const ValueKey('done'),
+                        children: [
+                          Icon(Icons.check_circle_outline_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 52),
+                          const SizedBox(height: 12),
+                          Text(
+                            l10n.good,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.alreadyResponding,
+                            style:
+                                const TextStyle(color: AppColors.textPrimary),
+                          ),
+                          const SizedBox(height: 24),
+                          const FeelingBetterPrompt(),
+                        ],
+                      )
+                    : Column(
+                        key: const ValueKey('timer'),
+                        children: [
+                          Text(
+                            '$_secondsLeft',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 72,
+                              fontWeight: FontWeight.w200,
+                            ),
+                          ),
+                          Text(
+                            l10n.seconds,
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: _done ? _reset : (_running ? null : _start),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _done
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
+                      : Theme.of(context).colorScheme.primary,
+                  foregroundColor: _done
+                      ? AppColors.textPrimary
+                      : Theme.of(context).scaffoldBackgroundColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: Text(
+                  _done
+                      ? l10n.againLabel
+                      : (_running ? l10n.running : l10n.start30),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
@@ -225,10 +232,12 @@ class _InstructionRow extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.teal.withValues(alpha: 0.12),
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.teal, size: 20),
+          child: Icon(icon,
+              color: Theme.of(context).colorScheme.primary, size: 20),
         ),
         const SizedBox(width: 14),
         Expanded(

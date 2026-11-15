@@ -104,9 +104,12 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
                   key: const Key('feeling-better-yes'),
                   onPressed: _busy ? null : _yes,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: const Color(0xFF1A140C),
-                    disabledBackgroundColor: AppColors.amberDim,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    disabledBackgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -127,7 +130,9 @@ class _FeelingBetterPromptState extends State<FeelingBetterPrompt> {
                   onPressed: _busy ? null : _notYetPressed,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
-                    side: const BorderSide(color: AppColors.amber),
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

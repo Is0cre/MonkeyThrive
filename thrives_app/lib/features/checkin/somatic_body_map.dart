@@ -239,8 +239,8 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
                   children: [
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 420),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
+                      switchInCurve: AppMotion.arrive,
+                      switchOutCurve: AppMotion.depart,
                       child: Image.asset(
                         SomaticBodyMap.assetFor(_silhouette),
                         key: ValueKey(_silhouette),
@@ -301,13 +301,17 @@ class _SomaticBodyMapState extends State<SomaticBodyMap>
         onTap: () => _select(type),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 280),
+          curve: AppMotion.arrive,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: selected ? AppColors.surfaceVariant : Colors.transparent,
+            color: selected
+                ? Theme.of(context).colorScheme.surfaceContainerHighest
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color:
-                  selected ? AppColors.textSecondary : AppColors.surfaceVariant,
+              color: selected
+                  ? AppColors.textSecondary
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
             ),
           ),
           child: Text(
@@ -379,7 +383,8 @@ class _MoodPainter extends CustomPainter {
     for (final zone in SomaticZone.values) {
       final color = _glowColor(marks[zone] ?? SomaticQuality.unmarked);
       if (color == null) continue;
-      final breath = 0.86 + 0.14 * pulses[zone]!.value;
+      final eased = AppMotion.breathe.transform(pulses[zone]!.value);
+      final breath = 0.86 + 0.14 * eased;
       final rect = _placed(regions[zone]!, size.width, size.height);
       final radius = rect.longestSide * 0.9 * breath;
       final paint = Paint()

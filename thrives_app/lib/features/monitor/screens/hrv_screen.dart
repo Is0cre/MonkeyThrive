@@ -450,8 +450,8 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           child: FilledButton(
             onPressed: _start,
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.teal,
-              foregroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).scaffoldBackgroundColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
               textStyle:
@@ -484,8 +484,11 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               child: CircularProgressIndicator(
                 value: progress,
                 strokeWidth: 6,
-                backgroundColor: AppColors.surfaceVariant,
-                color: _fingerDetected ? AppColors.teal : AppColors.amber,
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: _fingerDetected
+                    ? Theme.of(context).colorScheme.primary
+                    : AppColors.amber,
               ),
             ),
             Column(
@@ -512,17 +515,20 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
 
         // Signal quality indicator
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
+          duration: AppMotion.settle,
+          switchInCurve: AppMotion.arrive,
+          switchOutCurve: AppMotion.depart,
           child: _fingerDetected
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.favorite_rounded,
-                        color: AppColors.teal, size: 14),
+                    Icon(Icons.favorite_rounded,
+                        color: Theme.of(context).colorScheme.primary, size: 14),
                     const SizedBox(width: 6),
                     Text(context.l10n.signalDetected,
-                        style: const TextStyle(
-                            color: AppColors.teal, fontSize: 13)),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 13)),
                   ],
                 )
               : Row(
@@ -544,14 +550,17 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
         Container(
           height: 80,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
           ),
           child: waveData.length > 5
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: CustomPaint(
-                    painter: _WaveformPainter(data: waveData),
+                    painter: _WaveformPainter(
+                      data: waveData,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     size: Size.infinite,
                   ),
                 )
@@ -572,7 +581,9 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               onPressed: _finishMeasurement,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
-                side: const BorderSide(color: AppColors.surfaceVariant),
+                side: BorderSide(
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -614,7 +625,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           label: context.l10n.heartRate,
           value: '${r.hr.round()}',
           unit: context.l10n.bpm,
-          color: AppColors.teal,
+          color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(height: 12),
 
@@ -624,7 +635,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           value: r.rmssd.round().toString(),
           unit: context.l10n.msUnit,
           sub: hrvRecoveryLabel(context.l10n, r.rmssd),
-          color: const Color(0xFF7B68EE),
+          color: context.schemeShift(36),
         ),
         const SizedBox(height: 12),
 
@@ -634,7 +645,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           value: r.sdnn.round().toString(),
           unit: context.l10n.msUnit,
           sub: context.l10n.overallVariability,
-          color: const Color(0xFF4A9EDA),
+          color: context.schemeShift(72),
         ),
 
         const SizedBox(height: 24),
@@ -642,7 +653,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -664,7 +675,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
               _samples.clear();
             }),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.surface,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               foregroundColor: AppColors.textPrimary,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -698,7 +709,7 @@ class _HrvScreenState extends State<HrvScreen> with SessionTracking {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(context.l10n.goBack,
-                style: const TextStyle(color: AppColors.teal)),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -718,7 +729,7 @@ class _InstructionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -758,7 +769,7 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -806,14 +817,15 @@ class _MetricCard extends StatelessWidget {
 
 class _WaveformPainter extends CustomPainter {
   final List<double> data;
-  const _WaveformPainter({required this.data});
+  final Color color;
+  const _WaveformPainter({required this.data, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (data.length < 2) return;
 
     final paint = Paint()
-      ..color = AppColors.teal.withValues(alpha: 0.7)
+      ..color = color.withValues(alpha: 0.7)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -835,5 +847,6 @@ class _WaveformPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WaveformPainter old) => old.data != data;
+  bool shouldRepaint(_WaveformPainter old) =>
+      old.data != data || old.color != color;
 }

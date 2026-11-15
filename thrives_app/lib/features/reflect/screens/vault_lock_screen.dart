@@ -111,7 +111,7 @@ class _VaultLockScreenState extends State<VaultLockScreen> {
         final vault = VaultService.instance;
         final l10n = context.l10n;
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: !vault.isReady
                 ? const SizedBox.shrink()
@@ -229,13 +229,13 @@ class _Pad extends StatelessWidget {
             SizedBox(
               height: 36,
               child: busy
-                  ? const Center(
+                  ? Center(
                       child: SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.teal,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     )
@@ -309,11 +309,13 @@ class _Pad extends StatelessWidget {
                         child: _Key(
                           onTap: onSubmit,
                           key: const Key('vault-ok'),
-                          color: ready ? AppColors.teal : AppColors.surface,
+                          color: ready
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.surface,
                           child: Icon(
                             Icons.check_rounded,
                             color: ready
-                                ? AppColors.background
+                                ? Theme.of(context).scaffoldBackgroundColor
                                 : AppColors.textMuted,
                             semanticLabel: l10n.continueAction,
                           ),
@@ -360,13 +362,13 @@ class _Dots extends StatelessWidget {
 class _Key extends StatelessWidget {
   final Widget child;
   final VoidCallback onTap;
-  final Color color;
+  final Color? color;
 
   const _Key({
     super.key,
     required this.child,
     required this.onTap,
-    this.color = AppColors.surface,
+    this.color,
   });
 
   @override
@@ -374,7 +376,7 @@ class _Key extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Material(
-        color: color,
+        color: color ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onTap,

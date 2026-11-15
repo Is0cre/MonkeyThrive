@@ -36,15 +36,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _showPage(int page) {
     _pageController.animateToPage(
       page,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOut,
+      duration: AppMotion.settle,
+      curve: AppMotion.arrive,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
@@ -66,18 +66,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     controller: _pageController,
                     onPageChanged: (index) => setState(() => _page = index),
                     children: [
-                    _IntroPage(
-                      kicker: context.l10n.onboardingKicker1,
-                      title: context.l10n.onboardingTitle1,
-                      body: context.l10n.onboardingBody1,
-                      figureAsset: 'assets/brand/monkey_king.png',
-                    ),
-                    _IntroPage(
-                      kicker: context.l10n.onboardingKicker2,
-                      title: context.l10n.onboardingTitle2,
-                      body: context.l10n.onboardingBody2,
-                      footnote: context.l10n.onboardingCare,
-                    ),
+                      _IntroPage(
+                        kicker: context.l10n.onboardingKicker1,
+                        title: context.l10n.onboardingTitle1,
+                        body: context.l10n.onboardingBody1,
+                        figureAsset: 'assets/brand/monkey_king.png',
+                      ),
+                      _IntroPage(
+                        kicker: context.l10n.onboardingKicker2,
+                        title: context.l10n.onboardingTitle2,
+                        body: context.l10n.onboardingBody2,
+                        footnote: context.l10n.onboardingCare,
+                      ),
                     ],
                   ),
                 ),
@@ -99,10 +99,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ? _anchorBaseline
                           : () => _showPage(1),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: AppColors.background,
-                    disabledBackgroundColor:
-                        AppColors.amber.withValues(alpha: 0.4),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    disabledBackgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -167,8 +169,8 @@ class _IntroPage extends StatelessWidget {
           ),
         Text(
           kicker.toUpperCase(),
-          style: const TextStyle(
-            color: AppColors.amber,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.6,
@@ -234,12 +236,14 @@ class _PageDots extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppMotion.press,
+                  curve: AppMotion.arrive,
                   width: i == index ? 18 : 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color:
-                        i == index ? AppColors.amber : AppColors.surfaceVariant,
+                    color: i == index
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),

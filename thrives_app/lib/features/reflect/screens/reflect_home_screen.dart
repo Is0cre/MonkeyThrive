@@ -29,7 +29,7 @@ class _ReflectGateState extends State<ReflectHomeScreen> {
       builder: (context, _) {
         final vault = VaultService.instance;
         if (!vault.isReady) {
-          return const ColoredBox(color: AppColors.background);
+          return ColoredBox(color: Theme.of(context).scaffoldBackgroundColor);
         }
         if (!vault.isUnlocked || vault.storageBroken) {
           return const VaultLockScreen();
@@ -120,8 +120,10 @@ class _ReflectHomeScreenState extends State<_ReflectRecord> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: AppColors.teal)),
+      return Scaffold(
+        body: Center(
+            child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary)),
       );
     }
 
@@ -225,18 +227,18 @@ class _StateMap extends StatelessWidget {
   final Map<String, String?> stateMap;
   const _StateMap({required this.stateMap});
 
-  Color _colorFor(String? state) {
+  Color _colorFor(BuildContext context, String? state) {
     switch (state) {
       case 'hyperaroused':
       case 'hyper':
         return const Color(0xFFDA6433);
       case 'regulated':
-        return AppColors.teal;
+        return Theme.of(context).colorScheme.primary;
       case 'hypoaroused':
       case 'hypo':
         return const Color(0xFF6B7ADA);
       default:
-        return AppColors.surfaceVariant;
+        return Theme.of(context).colorScheme.surfaceContainerHighest;
     }
   }
 
@@ -248,7 +250,7 @@ class _StateMap extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -277,7 +279,7 @@ class _StateMap extends StatelessWidget {
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: _colorFor(state),
+                    color: _colorFor(context, state),
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
@@ -289,9 +291,15 @@ class _StateMap extends StatelessWidget {
             children: [
               for (final item in [
                 (context.l10n.stateOverwhelmed, const Color(0xFFDA6433)),
-                (context.l10n.statePresent, AppColors.teal),
+                (
+                  context.l10n.statePresent,
+                  Theme.of(context).colorScheme.primary
+                ),
                 (context.l10n.flatShort, const Color(0xFF6B7ADA)),
-                (context.l10n.noData, AppColors.surfaceVariant),
+                (
+                  context.l10n.noData,
+                  Theme.of(context).colorScheme.surfaceContainerHighest
+                ),
               ]) ...[
                 Container(
                   width: 8,
@@ -325,15 +333,15 @@ class _CategoryBars extends StatelessWidget {
   final Map<String, int> totals;
   const _CategoryBars({required this.totals});
 
-  static const _colors = {
-    'Regulate': AppColors.teal,
-    'Process': Color(0xFF4A9EDA),
-    'Attune': Color(0xFF7B68EE),
-    'General': AppColors.amber,
-  };
-
   @override
   Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
+    final colors = {
+      'Regulate': accent,
+      'Process': context.schemeShift(32),
+      'Attune': context.schemeShift(64),
+      'General': context.schemeShift(96),
+    };
     final maxSeconds =
         totals.values.fold(0, (a, b) => a > b ? a : b).toDouble();
     if (maxSeconds == 0) return const SizedBox.shrink();
@@ -343,7 +351,7 @@ class _CategoryBars extends StatelessWidget {
 
     return Column(
       children: sorted.map((e) {
-        final color = _colors[e.key] ?? AppColors.textMuted;
+        final color = colors[e.key] ?? AppColors.textMuted;
         final fraction = e.value / maxSeconds;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -363,7 +371,9 @@ class _CategoryBars extends StatelessWidget {
                     Container(
                       height: 6,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -416,7 +426,7 @@ class _ToolList extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

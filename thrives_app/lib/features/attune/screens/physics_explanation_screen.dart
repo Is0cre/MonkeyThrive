@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/l10n.dart';
-import '../widgets/attune_listening.dart';
 
 /// What the two tones are, and what they do not do to the nervous system.
 class PhysicsExplanationScreen extends StatelessWidget {
@@ -12,9 +11,9 @@ class PhysicsExplanationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         title: Text(l10n.physicsTitle),
@@ -70,7 +69,7 @@ class PhysicsExplanationScreen extends StatelessWidget {
               child: FilledButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 style: FilledButton.styleFrom(
-                  backgroundColor: attuneViolet,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -108,9 +107,10 @@ class _PhysicsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.28),
@@ -174,11 +174,13 @@ class _IconWell extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: attuneViolet.withValues(alpha: 0.14),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: attuneViolet.withValues(alpha: 0.35)),
+        border: Border.all(
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.35)),
       ),
-      child: Icon(icon, color: attuneViolet, size: 22),
+      child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 22),
     );
   }
 }

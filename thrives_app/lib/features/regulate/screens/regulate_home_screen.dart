@@ -51,7 +51,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.air_rounded,
                         title: l10n.boxBreathingTitle,
                         subtitle: l10n.boxBreathingSubtitle,
-                        color: AppColors.teal,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: false,
                         onTap: () => Navigator.push(
                           context,
@@ -67,7 +67,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.air_rounded,
                         title: l10n.sighTitle,
                         subtitle: l10n.sighSubtitle,
-                        color: AppColors.teal,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: false,
                         onTap: () => Navigator.push(
                           context,
@@ -81,7 +81,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.nights_stay_rounded,
                         title: l10n.breathing478Title,
                         subtitle: l10n.breathing478Subtitle,
-                        color: AppColors.teal,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: wot != null && !wot.can4_7_8,
                         lockedReason: lockReason,
                         onTap: () => Navigator.push(
@@ -98,7 +98,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.waves_rounded,
                         title: l10n.wimHofTitle,
                         subtitle: l10n.wimHofSubtitle,
-                        color: AppColors.teal,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: wot != null && !wot.canWimHof,
                         lockedReason: lockReason,
                         onTap: () => Navigator.push(
@@ -117,7 +117,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.filter_5_rounded,
                         title: l10n.groundingTitle,
                         subtitle: l10n.groundingSubtitle,
-                        color: AppColors.amber,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: false,
                         onTap: () => Navigator.push(
                           context,
@@ -131,7 +131,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.water_drop_rounded,
                         title: l10n.coldWaterTitle,
                         subtitle: l10n.coldWaterSubtitle,
-                        color: AppColors.amber,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: false,
                         onTap: () => Navigator.push(
                           context,
@@ -145,7 +145,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.landscape_rounded,
                         title: l10n.safePlaceTitle,
                         subtitle: l10n.safePlaceSubtitle,
-                        color: AppColors.amber,
+                        color: Theme.of(context).colorScheme.primary,
                         locked: wot != null && !wot.canSafePlace,
                         lockedReason: lockReason,
                         onTap: () => Navigator.push(
@@ -165,7 +165,7 @@ class RegulateHomeScreen extends StatelessWidget {
                         icon: Icons.self_improvement_rounded,
                         title: l10n.vagalTitle,
                         subtitle: l10n.vagalSubtitle,
-                        color: const Color(0xFF8B6FD4),
+                        color: Theme.of(context).colorScheme.primary,
                         locked: false,
                         onTap: () => Navigator.push(
                           context,
@@ -256,8 +256,7 @@ class _ToolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final baseColor = color == AppColors.teal ? colors.primary : color;
+    final baseColor = color;
     final effectiveColor = locked ? AppColors.textMuted : baseColor;
     return AppTile(
       icon: icon,

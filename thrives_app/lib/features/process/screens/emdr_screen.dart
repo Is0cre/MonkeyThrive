@@ -56,6 +56,7 @@ class _EmdrScreenState extends State<EmdrScreen>
   int _sessionMinutes = 0;
   double _dotSize = 28;
   Color _dotColor = AppColors.teal;
+  bool _dotFollowsScheme = true;
 
   // ── state ─────────────────────────────────────────────────────────────────
   bool _running = false;
@@ -77,13 +78,25 @@ class _EmdrScreenState extends State<EmdrScreen>
   bool _canVibrate = false;
 
   // ── colour presets ────────────────────────────────────────────────────────
-  final _colorOptions = const [
-    AppColors.teal,
-    AppColors.amber,
-    Color(0xFF8B6FD4),
-    Color(0xFF4A9EDA),
-    Colors.white,
-  ];
+  List<Color> _colorOptions(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
+    return [
+      accent,
+      context.schemeShift(36),
+      context.schemeShift(72),
+      AppColors.amber,
+      Colors.white,
+    ];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_dotFollowsScheme) return;
+    final next = Theme.of(context).colorScheme.primary;
+    if (next == _dotColor) return;
+    _dotColor = next;
+  }
 
   int get _durationMs {
     switch (_speed) {
@@ -234,7 +247,7 @@ class _EmdrScreenState extends State<EmdrScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.bilateralOnlyWhenPresent),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -293,7 +306,7 @@ class _EmdrScreenState extends State<EmdrScreen>
       context: context,
       barrierDismissible: true,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(context.l10n.sessionComplete,
             style: const TextStyle(color: AppColors.textPrimary)),
@@ -314,7 +327,7 @@ class _EmdrScreenState extends State<EmdrScreen>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(context.l10n.close,
-                style: const TextStyle(color: AppColors.teal)),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary)),
           ),
         ],
       ),
@@ -368,17 +381,18 @@ class _EmdrScreenState extends State<EmdrScreen>
           padding: const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 24),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: const Color(0xFF4A9EDA).withValues(alpha: 0.3),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline_rounded,
-                  color: Color(0xFF4A9EDA), size: 18),
+              Icon(Icons.info_outline_rounded,
+                  color: Theme.of(context).colorScheme.primary, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -419,9 +433,12 @@ class _EmdrScreenState extends State<EmdrScreen>
           const SizedBox(height: 24),
           _SettingsSection(context.l10n.dotColour),
           _ColorPicker(
-            colors: _colorOptions,
+            colors: _colorOptions(context),
             selected: _dotColor,
-            onSelect: (c) => setState(() => _dotColor = c),
+            onSelect: (c) => setState(() {
+              _dotFollowsScheme = false;
+              _dotColor = c;
+            }),
           ),
           const SizedBox(height: 24),
         ],
@@ -431,8 +448,8 @@ class _EmdrScreenState extends State<EmdrScreen>
           child: FilledButton(
             onPressed: _start,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF4A9EDA),
-              foregroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).scaffoldBackgroundColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
               textStyle:
@@ -480,7 +497,8 @@ class _EmdrScreenState extends State<EmdrScreen>
                       animation: _dotAnimation,
                       dotSize: _dotSize,
                       dotColor: _dotColor,
-                      trackColor: AppColors.surfaceVariant,
+                      trackColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                     ),
                     size: Size.infinite,
                   )
@@ -494,9 +512,9 @@ class _EmdrScreenState extends State<EmdrScreen>
                           child: child,
                         );
                       },
-                      child: const Icon(
+                      child: Icon(
                         Icons.swap_horiz_rounded,
-                        color: Color(0xFF4A9EDA),
+                        color: Theme.of(context).colorScheme.primary,
                         size: 64,
                       ),
                     ),
@@ -515,7 +533,7 @@ class _EmdrScreenState extends State<EmdrScreen>
                 children: [
                   _ModeChip(
                       label: _modeName(context.l10n),
-                      color: const Color(0xFF4A9EDA)),
+                      color: Theme.of(context).colorScheme.primary),
                   _ModeChip(
                       label: _speedName(context.l10n),
                       color: AppColors.textMuted),
@@ -533,10 +551,11 @@ class _EmdrScreenState extends State<EmdrScreen>
                   onPressed: _running ? _stop : _start,
                   style: FilledButton.styleFrom(
                     backgroundColor: _running
-                        ? AppColors.surfaceVariant
-                        : const Color(0xFF4A9EDA),
-                    foregroundColor:
-                        _running ? AppColors.textPrimary : AppColors.background,
+                        ? Theme.of(context).colorScheme.surfaceContainerHighest
+                        : Theme.of(context).colorScheme.primary,
+                    foregroundColor: _running
+                        ? AppColors.textPrimary
+                        : Theme.of(context).scaffoldBackgroundColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                     textStyle: const TextStyle(
@@ -727,22 +746,25 @@ class _ModeTile extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: AppMotion.press,
+          curve: AppMotion.arrive,
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           decoration: BoxDecoration(
             color: highlighted
-                ? const Color(0xFF4A9EDA).withValues(alpha: 0.12)
-                : AppColors.surface,
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12)
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: highlighted ? const Color(0xFF4A9EDA) : Colors.transparent,
+              color: highlighted
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.transparent,
             ),
           ),
           child: Row(
             children: [
               Icon(icon,
                   color: highlighted
-                      ? const Color(0xFF4A9EDA)
+                      ? Theme.of(context).colorScheme.primary
                       : AppColors.textMuted,
                   size: 18),
               const SizedBox(width: 12),
@@ -773,8 +795,8 @@ class _ModeTile extends StatelessWidget {
                 const Icon(Icons.lock_outline_rounded,
                     color: AppColors.textMuted, size: 16)
               else if (highlighted)
-                const Icon(Icons.check_rounded,
-                    color: Color(0xFF4A9EDA), size: 16),
+                Icon(Icons.check_rounded,
+                    color: Theme.of(context).colorScheme.primary, size: 16),
             ],
           ),
         ),
@@ -809,16 +831,20 @@ class _SpeedSelector extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onSelect(s),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: AppMotion.press,
+                curve: AppMotion.arrive,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: selected == s
-                      ? const Color(0xFF4A9EDA).withValues(alpha: 0.15)
-                      : AppColors.surface,
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.15)
+                      : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: selected == s
-                        ? const Color(0xFF4A9EDA)
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.transparent,
                   ),
                 ),
@@ -827,7 +853,7 @@ class _SpeedSelector extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: selected == s
-                        ? const Color(0xFF4A9EDA)
+                        ? Theme.of(context).colorScheme.primary
                         : AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
@@ -859,16 +885,20 @@ class _SessionSelector extends StatelessWidget {
           GestureDetector(
             onTap: () => onSelect(m),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: AppMotion.press,
+              curve: AppMotion.arrive,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: selected == m
-                    ? const Color(0xFF4A9EDA).withValues(alpha: 0.15)
-                    : AppColors.surface,
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.15)
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: selected == m
-                      ? const Color(0xFF4A9EDA)
+                      ? Theme.of(context).colorScheme.primary
                       : Colors.transparent,
                 ),
               ),
@@ -876,7 +906,7 @@ class _SessionSelector extends StatelessWidget {
                 m == 0 ? context.l10n.open : context.l10n.minutesShort(m),
                 style: TextStyle(
                   color: selected == m
-                      ? const Color(0xFF4A9EDA)
+                      ? Theme.of(context).colorScheme.primary
                       : AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
@@ -905,8 +935,9 @@ class _SizeSlider extends StatelessWidget {
             min: 16,
             max: 52,
             divisions: 9,
-            activeColor: const Color(0xFF4A9EDA),
-            inactiveColor: AppColors.surfaceVariant,
+            activeColor: Theme.of(context).colorScheme.primary,
+            inactiveColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             onChanged: onChanged,
           ),
         ),
@@ -932,7 +963,8 @@ class _ColorPicker extends StatelessWidget {
           GestureDetector(
             onTap: () => onSelect(c),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: AppMotion.press,
+              curve: AppMotion.arrive,
               width: 36,
               height: 36,
               margin: const EdgeInsets.only(right: 10),

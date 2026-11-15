@@ -14,7 +14,7 @@ class AcousticComingSoon {
       barrierDismissible: true,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
@@ -33,7 +33,8 @@ class AcousticComingSoon {
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(dialogContext.l10n.ok,
-                  style: const TextStyle(color: AppColors.teal)),
+                  style:
+                      TextStyle(color: Theme.of(context).colorScheme.primary)),
             ),
           ],
         );
@@ -51,16 +52,17 @@ class AcousticSynthesisNotice extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.amber.withValues(alpha: 0.28),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.28),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.schedule_rounded, color: AppColors.amber, size: 18),
+          Icon(Icons.schedule_rounded,
+              color: Theme.of(context).colorScheme.primary, size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -96,7 +98,7 @@ class AcousticUnavailableCard extends StatelessWidget {
     return Opacity(
       opacity: 0.55,
       child: Material(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: () => AcousticComingSoon.show(context),

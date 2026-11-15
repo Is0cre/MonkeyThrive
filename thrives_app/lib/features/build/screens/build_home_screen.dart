@@ -111,7 +111,7 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(context.l10n.deleteEntryTitle,
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 17)),
@@ -151,7 +151,7 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
             child: FloatingActionButton(
               heroTag: 'new_journal_entry',
               onPressed: _locked ? _unlock : _newEntry,
-              backgroundColor: AppColors.surface,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               foregroundColor: AppColors.textPrimary,
               tooltip:
                   _locked ? context.l10n.vaultUnlock : context.l10n.newEntry,
@@ -187,10 +187,11 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
               ),
             ),
             if (_loading)
-              const SliverFillRemaining(
+              SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.teal),
+                  child: CircularProgressIndicator(
+                      color: Theme.of(context).colorScheme.primary),
                 ),
               )
             else if (_locked)
@@ -332,7 +333,7 @@ class _EntryCard extends StatelessWidget {
     final m = entry.timestamp.minute.toString().padLeft(2, '0');
 
     return Material(
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,

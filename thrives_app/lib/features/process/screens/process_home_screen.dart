@@ -46,7 +46,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -73,7 +73,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         subtitle: bilateralLocked && lockedReason.isNotEmpty
                             ? lockedReason
                             : context.l10n.bilateralSupport,
-                        color: const Color(0xFF4A9EDA),
+                        color: Theme.of(context).colorScheme.primary,
                         enabled: !bilateralLocked,
                         onTap: () => Navigator.push(
                           context,
@@ -85,7 +85,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         icon: Icons.accessibility_new_rounded,
                         title: context.l10n.eftTapping,
                         subtitle: context.l10n.comingSoon,
-                        color: const Color(0xFF4A9EDA),
+                        color: Theme.of(context).colorScheme.primary,
                         enabled: false,
                         onTap: () {},
                       ),
@@ -94,7 +94,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         icon: Icons.self_improvement_rounded,
                         title: context.l10n.somaticScan,
                         subtitle: context.l10n.comingSoon,
-                        color: const Color(0xFF4A9EDA),
+                        color: Theme.of(context).colorScheme.primary,
                         enabled: false,
                         onTap: () {},
                       ),
@@ -103,7 +103,7 @@ class ProcessHomeScreen extends StatelessWidget {
                         icon: Icons.edit_note_rounded,
                         title: context.l10n.traumaJournal,
                         subtitle: context.l10n.comingSoon,
-                        color: const Color(0xFF4A9EDA),
+                        color: Theme.of(context).colorScheme.primary,
                         enabled: false,
                         onTap: () {},
                       ),
@@ -142,7 +142,7 @@ class _ProcessCard extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1.0 : 0.45,
       child: Material(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: enabled ? onTap : null,

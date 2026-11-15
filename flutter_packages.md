@@ -16,6 +16,7 @@ Check for: hidden telemetry, Google dependencies, network calls, proprietary com
 | flutter_secure_storage | Encrypted local storage | Pending | AES-256 |
 | hive / isar | Local database | Pending | Prefer isar for performance |
 | vibration | Tactile bilateral stimulation | Pending | Simple, likely clean |
+| file_selector | System file dialog for an expansion zip already on the device | 2026-11-15 | Flutter team package. Android uses `ACTION_OPEN_DOCUMENT` and adds no permission. The app manifest still removes `INTERNET` and storage. No network calls in the plugin. |
 
 ---
 
@@ -50,6 +51,12 @@ Check for: hidden telemetry, Google dependencies, network calls, proprietary com
 - Checked by: —
 - Network calls found: —
 - Decision: —
+
+### file_selector
+- Status: Accepted for expansion packs
+- Checked by: review of `file_selector` 1.1.0 and `file_selector_android` 0.5.2+11
+- Network calls found: none. The Android manifest is empty. The dialog is `ACTION_OPEN_DOCUMENT`.
+- Decision: Use it so a person can hand the app a zip they already saved. Do not use it to browse the network.
 
 ### flutter_secure_storage
 - Status: Pending

@@ -103,7 +103,7 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -118,7 +118,7 @@ class _CrisisDirectoryScreenState extends State<CrisisDirectoryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.numberCopied),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -404,7 +404,8 @@ class _ContactCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              _crisisCategoryLabel(context.l10n, contact.category).toUpperCase(),
+              _crisisCategoryLabel(context.l10n, contact.category)
+                  .toUpperCase(),
               style: TextStyle(
                 color: accent,
                 fontSize: 11,

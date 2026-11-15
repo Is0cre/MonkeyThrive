@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/l10n.dart';
 
-const _attuneViolet = Color(0xFF7B68EE);
-
 /// Two pages before a binaural or isochronic tone can play.
 ///
 /// The first visit has no skip. A later visit can close and return to Attune.
@@ -39,8 +37,8 @@ class _AttuneFrequencyIntroState extends State<AttuneFrequencyIntro> {
   void _showPage(int page) {
     _pageController.animateToPage(
       page,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOut,
+      duration: AppMotion.settle,
+      curve: AppMotion.arrive,
     );
   }
 
@@ -112,9 +110,12 @@ class _AttuneFrequencyIntroState extends State<AttuneFrequencyIntro> {
                         ? () => _showPage(1)
                         : _finish,
                 style: FilledButton.styleFrom(
-                  backgroundColor: _attuneViolet,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: _attuneViolet.withValues(alpha: 0.4),
+                  disabledBackgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -157,8 +158,8 @@ class _FrequencyPage extends StatelessWidget {
         children: [
           Text(
             kicker.toUpperCase(),
-            style: const TextStyle(
-              color: _attuneViolet,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.6,
@@ -221,12 +222,14 @@ class _PageDots extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppMotion.press,
+                  curve: AppMotion.arrive,
                   width: i == index ? 18 : 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color:
-                        i == index ? _attuneViolet : AppColors.surfaceVariant,
+                    color: i == index
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),

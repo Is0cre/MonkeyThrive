@@ -141,7 +141,7 @@ class _BaselinePrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.background.withValues(alpha: 0.96),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.96),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
@@ -188,13 +188,14 @@ class _BaselinePrompt extends StatelessWidget {
                   children: [
                     _LargeButton(
                       label: context.l10n.imOkay,
-                      color: AppColors.teal,
+                      color: Theme.of(context).colorScheme.primary,
                       onTap: onOkay,
                     ),
                     const SizedBox(height: 12),
                     _LargeButton(
                       label: context.l10n.notReally,
-                      color: AppColors.surfaceVariant,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       foreground: AppColors.textPrimary,
                       onTap: onNotReally,
                     ),
@@ -273,14 +274,14 @@ class _TierOneTools extends StatelessWidget {
 class _LargeButton extends StatelessWidget {
   final String label;
   final Color color;
-  final Color foreground;
+  final Color? foreground;
   final VoidCallback onTap;
 
   const _LargeButton({
     required this.label,
     required this.color,
     required this.onTap,
-    this.foreground = AppColors.background,
+    this.foreground,
   });
 
   @override
@@ -292,7 +293,8 @@ class _LargeButton extends StatelessWidget {
         onPressed: onTap,
         style: FilledButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: foreground,
+          foregroundColor:
+              foreground ?? Theme.of(context).scaffoldBackgroundColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -327,7 +329,7 @@ class _ToolButton extends StatelessWidget {
         icon: Icon(icon, size: 18),
         label: Text(label),
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           foregroundColor: AppColors.textPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -355,27 +357,35 @@ class ThrivesFrogMascot extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size.square(size),
-      painter: _FrogPainter(expression),
+      painter: _FrogPainter(
+        expression,
+        accent: Theme.of(context).colorScheme.primary,
+        pupilColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
     );
   }
 }
 
 class _FrogPainter extends CustomPainter {
   final FrogExpression expression;
+  final Color accent;
+  final Color pupilColor;
 
-  _FrogPainter(this.expression);
+  _FrogPainter(this.expression,
+      {required this.accent, required this.pupilColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final body = Paint()..color = const Color(0xFF6FCF97);
-    final shadow = Paint()..color = const Color(0xFF245C49);
+    final body = Paint()..color = accent;
+    final shadow = Paint()
+      ..color = Color.lerp(accent, const Color(0xFF000000), 0.55)!;
     final eye = Paint()..color = AppColors.textPrimary;
-    final pupil = Paint()..color = AppColors.background;
-    final cheek = Paint()..color = const Color(0x66E8A645);
+    final pupil = Paint()..color = pupilColor;
+    final cheek = Paint()..color = accent.withValues(alpha: 0.40);
     final line = Paint()
-      ..color = const Color(0xFF174238)
+      ..color = Color.lerp(accent, const Color(0xFF000000), 0.72)!
       ..strokeWidth = w * 0.035
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -421,11 +431,13 @@ class _FrogPainter extends CustomPainter {
     }
     canvas.drawPath(mouth, line);
 
-    final nostril = Paint()..color = const Color(0xFF174238);
+    final nostril = Paint()
+      ..color = Color.lerp(accent, const Color(0xFF000000), 0.72)!;
     canvas.drawCircle(Offset(w * 0.44, h * 0.5), w * 0.014, nostril);
     canvas.drawCircle(Offset(w * 0.56, h * 0.5), w * 0.014, nostril);
 
-    final foot = Paint()..color = const Color(0xFF58B883);
+    final foot = Paint()
+      ..color = Color.lerp(accent, const Color(0xFFFFFFFF), 0.18)!;
     for (final x in [0.28, 0.72]) {
       canvas.drawArc(
         Rect.fromCenter(
@@ -443,6 +455,8 @@ class _FrogPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _FrogPainter oldDelegate) {
-    return oldDelegate.expression != expression;
+    return oldDelegate.expression != expression ||
+        oldDelegate.accent != accent ||
+        oldDelegate.pupilColor != pupilColor;
   }
 }

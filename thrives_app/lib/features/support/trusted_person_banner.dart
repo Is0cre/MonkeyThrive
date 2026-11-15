@@ -66,13 +66,12 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
       opened = false;
     }
     if (!mounted || opened) return;
-    final message = text
-        ? context.l10n.messagesDidNotOpen
-        : context.l10n.phoneDidNotOpen;
+    final message =
+        text ? context.l10n.messagesDidNotOpen : context.l10n.phoneDidNotOpen;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -93,7 +92,9 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
             ?.notifier
             ?.value ==
         ToleranceState.regulated;
-    final ink = widget.onBlack ? const Color(0xFF1A140C) : AppColors.background;
+    final ink = widget.onBlack
+        ? const Color(0xFF1A140C)
+        : Theme.of(context).scaffoldBackgroundColor;
 
     final rows = <Widget>[];
     for (var i = 0; i < _people.length; i++) {
@@ -134,7 +135,7 @@ class _TrustedPersonBannerState extends State<TrustedPersonBanner> {
             key: Key(_people.isEmpty ? 'trusted-setup' : 'trusted-edit'),
             onPressed: _edit,
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.amber,
+              foregroundColor: Theme.of(context).colorScheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
               minimumSize: const Size(48, 48),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -212,7 +213,7 @@ class _ActionButton extends StatelessWidget {
       return FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.amber,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: ink,
           minimumSize: const Size.fromHeight(48),
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -223,8 +224,8 @@ class _ActionButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.amber,
-        side: const BorderSide(color: AppColors.amber),
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
         minimumSize: const Size.fromHeight(48),
         padding: const EdgeInsets.symmetric(horizontal: 12),
       ),

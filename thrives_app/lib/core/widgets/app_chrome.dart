@@ -19,7 +19,7 @@ class AppBackdrop extends StatelessWidget {
           colors: [
             colors.primary.withValues(alpha: 0.10),
             colors.surface.withValues(alpha: 0.48),
-            AppColors.background,
+            Theme.of(context).scaffoldBackgroundColor,
           ],
           stops: const [0, 0.34, 1],
         ),

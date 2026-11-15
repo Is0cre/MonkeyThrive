@@ -127,7 +127,7 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.savedOnDevice),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -155,7 +155,7 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             context.l10n.removeThisPerson,
             style: const TextStyle(color: AppColors.textPrimary),
@@ -207,7 +207,7 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
             ?.value ==
         ToleranceState.regulated;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           context.l10n.trustedPerson,
@@ -263,7 +263,8 @@ class _TrustedPeopleScreenState extends State<TrustedPeopleScreen> {
                             key: const Key('trusted-add'),
                             onPressed: _add,
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColors.amber,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.primary,
                               minimumSize: const Size(48, 48),
                             ),
                             child: Text(context.l10n.addAnotherPerson),
@@ -372,8 +373,8 @@ class _PersonForm extends StatelessWidget {
                   key: Key('trusted-save-$index'),
                   onPressed: onSave,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.amber,
-                    foregroundColor: const Color(0xFF1A140C),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).scaffoldBackgroundColor,
                     minimumSize: const Size(48, 48),
                   ),
                   child: Text(context.l10n.save),
@@ -440,7 +441,7 @@ class _Field extends StatelessWidget {
           decoration: InputDecoration(
             counterStyle: const TextStyle(color: AppColors.textSecondary),
             filled: true,
-            fillColor: AppColors.background,
+            fillColor: Theme.of(context).scaffoldBackgroundColor,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 14,

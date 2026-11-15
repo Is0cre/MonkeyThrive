@@ -77,7 +77,7 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
     )..forward();
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
-      curve: Curves.easeOut,
+      curve: AppMotion.arrive,
     );
   }
 
@@ -140,12 +140,13 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                 children: [
                   for (int i = 0; i < steps.length; i++) ...[
                     AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
+                      duration: AppMotion.settle,
+                      curve: AppMotion.arrive,
                       width: i == _stepIndex && !_finished ? 24 : 8,
                       height: 8,
                       decoration: BoxDecoration(
                         color: i <= _stepIndex || _finished
-                            ? AppColors.amber
+                            ? Theme.of(context).colorScheme.primary
                             : AppColors.textMuted.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -184,8 +185,10 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                       child: FilledButton(
                         onPressed: () => Navigator.pop(context),
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.amber,
-                          foregroundColor: const Color(0xFF1A140C),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).scaffoldBackgroundColor,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
                         ),
@@ -205,8 +208,10 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                                 onPressed: _prev,
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.textSecondary,
-                                  side: const BorderSide(
-                                      color: AppColors.surfaceVariant),
+                                  side: BorderSide(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainerHighest),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14)),
                                 ),
@@ -222,8 +227,10 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
                             child: FilledButton(
                               onPressed: _next,
                               style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.amber,
-                                foregroundColor: AppColors.background,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).scaffoldBackgroundColor,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14)),
                               ),
@@ -255,10 +262,12 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: AppColors.amber.withValues(alpha: 0.12),
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: Icon(step.icon, color: AppColors.amber, size: 36),
+          child: Icon(step.icon,
+              color: Theme.of(context).colorScheme.primary, size: 36),
         ),
         const SizedBox(height: 24),
         Text(
@@ -280,8 +289,8 @@ class _Grounding521ScreenState extends State<Grounding521Screen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_outline_rounded,
-            color: AppColors.amber, size: 64),
+        Icon(Icons.check_circle_outline_rounded,
+            color: Theme.of(context).colorScheme.primary, size: 64),
         const SizedBox(height: 24),
         Text(context.l10n.youAreHereSentence,
             style: Theme.of(context).textTheme.titleLarge,

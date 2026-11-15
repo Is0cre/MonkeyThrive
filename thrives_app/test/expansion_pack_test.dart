@@ -6,7 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:monkeythrive/features/attune/attune_mask_playlist.dart';
 import 'package:monkeythrive/features/attune/expansions/attune_track.dart';
+import 'package:monkeythrive/features/attune/expansions/expansion_archive_pick.dart';
 import 'package:monkeythrive/features/attune/expansions/expansion_pack_service.dart';
+import 'package:monkeythrive/features/attune/expansions/ogg_duration.dart';
 
 void main() {
   late Directory root;
@@ -59,6 +61,35 @@ void main() {
     expect(satie.source, isA<AudioSource>());
     expect(satie.composer, isEmpty);
     expect(satie.title, isEmpty);
+    expect(satie.durationSeconds, isNull);
+  });
+
+  test('a zip name becomes the pack directory', () {
+    expect(
+      expansionPackNameFromFilename('satie_expansion.zip'),
+      'satie_expansion',
+    );
+    expect(
+      expansionPackNameFromFilename(r'C:\Downloads\beethoven_expansion.ZIP'),
+      'beethoven_expansion',
+    );
+    expect(expansionPackNameFromFilename('My Pack.zip'), isNull);
+    expect(expansionPackNameFromFilename('notes.txt'), isNull);
+    expect(expansionPackNameFromFilename('.zip'), isNull);
+  });
+
+  test('the bundled seasons report the session lengths', () {
+    const expected = <int>[650, 629, 733, 548];
+    for (var i = 0; i < attuneMaskAssets.length; i++) {
+      final name = attuneMaskAssets[i].split('/').last;
+      final bytes = File('assets/audio/$name').readAsBytesSync();
+      expect(
+        oggVorbisDurationOf(bytes),
+        expected[i],
+        reason: name,
+      );
+    }
+    expect(oggVorbisDurationSeconds(const <int>[1, 2, 3, 4]), isNull);
   });
 
   test('a catalog list keeps composer, title, and movement', () async {

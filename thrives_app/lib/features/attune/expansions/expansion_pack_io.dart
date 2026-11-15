@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'attune_track.dart';
+import 'ogg_duration.dart';
 
 /// Local expansion packs on Android, desktop, and tests.
 ///
@@ -105,7 +106,7 @@ class ExpansionStore {
     try {
       for (final item in files.entries) {
         final file = File(_join(staging.path, item.key));
-        await file.writeAsBytes(item.value, flush: true);
+        file.writeAsBytesSync(item.value, flush: true);
       }
       if (packDir.existsSync()) packDir.deleteSync(recursive: true);
       staging.renameSync(packDir.path);
@@ -114,7 +115,7 @@ class ExpansionStore {
       return const ExpansionInstallResult.failed(ExpansionFailure.unreachable);
     }
 
-    final tracks = await _tracksIn(packDir, packName);
+    final tracks = _tracksIn(packDir, packName);
     return ExpansionInstallResult.installed(tracks.length);
   }
 
@@ -129,17 +130,17 @@ class ExpansionStore {
     for (final pack in packs) {
       final name = pack.path.split('/').last;
       if (name.endsWith('.partial') || !_usableName(name)) continue;
-      tracks.addAll(await _tracksIn(pack, name));
+      tracks.addAll(_tracksIn(pack, name));
     }
     return tracks;
   }
 
-  Future<List<AttuneTrack>> _tracksIn(Directory pack, String packName) async {
+  List<AttuneTrack> _tracksIn(Directory pack, String packName) {
     final manifestFile = File(_join(pack.path, 'manifest.json'));
     if (!manifestFile.existsSync()) return const [];
     final Object? decoded;
     try {
-      decoded = jsonDecode(await manifestFile.readAsString());
+      decoded = jsonDecode(manifestFile.readAsStringSync());
     } catch (_) {
       return const [];
     }
@@ -185,7 +186,30 @@ class ExpansionStore {
       title: title,
       movement: movement,
       filePath: audio.path,
+      durationSeconds: _durationOf(audio),
     );
+  }
+
+  int? _durationOf(File audio) {
+    RandomAccessFile? handle;
+    try {
+      final length = audio.lengthSync();
+      if (length < 64) return null;
+      handle = audio.openSync();
+      final headLength = length < 65536 ? length : 65536;
+      final head = handle.readSync(headLength);
+      List<int>? tail;
+      if (length > headLength) {
+        final tailLength = length < 80000 ? length : 80000;
+        handle.setPositionSync(length - tailLength);
+        tail = handle.readSync(tailLength);
+      }
+      return oggVorbisDurationSeconds(head, tail: tail);
+    } catch (_) {
+      return null;
+    } finally {
+      handle?.closeSync();
+    }
   }
 
   Future<String> _documentsRoot() async {

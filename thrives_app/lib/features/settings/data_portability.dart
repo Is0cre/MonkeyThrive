@@ -92,7 +92,7 @@ class _ExportDialogState extends State<_ExportDialog> {
   Widget build(BuildContext context) {
     final token = _token;
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
         context.l10n.export,
@@ -169,7 +169,7 @@ class _ExportDialogState extends State<_ExportDialog> {
             onPressed: _working ? null : _create,
             child: Text(
               _working ? context.l10n.sealing : context.l10n.createCopy,
-              style: const TextStyle(color: AppColors.teal),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           )
         else
@@ -177,7 +177,7 @@ class _ExportDialogState extends State<_ExportDialog> {
             onPressed: _save,
             child: Text(
               context.l10n.saveFileAndCopy,
-              style: const TextStyle(color: AppColors.teal),
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
             ),
           ),
       ],
@@ -219,7 +219,7 @@ class _ImportDialogState extends State<_ImportDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.copyRestored),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -247,7 +247,7 @@ class _ImportDialogState extends State<_ImportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
         context.l10n.import,
@@ -276,7 +276,7 @@ class _ImportDialogState extends State<_ImportDialog> {
               maxLines: 6,
               style:
                   const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-              decoration: _fieldDecoration(context.l10n.pasteTheCopy),
+              decoration: _fieldDecoration(context, context.l10n.pasteTheCopy),
             ),
             if (_error != null) _ErrorText(_error!),
           ],
@@ -294,7 +294,7 @@ class _ImportDialogState extends State<_ImportDialog> {
           onPressed: _working ? null : _restore,
           child: Text(
             _working ? context.l10n.restoring : context.l10n.restore,
-            style: const TextStyle(color: AppColors.teal),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ),
       ],
@@ -316,7 +316,7 @@ class _PassphraseField extends StatelessWidget {
       autocorrect: false,
       enableSuggestions: false,
       style: const TextStyle(color: AppColors.textPrimary),
-      decoration: _fieldDecoration(label),
+      decoration: _fieldDecoration(context, label),
     );
   }
 }
@@ -358,15 +358,17 @@ String _archiveErrorText(AppLocalizations l10n, String message) {
   }
 }
 
-InputDecoration _fieldDecoration(String label) {
+InputDecoration _fieldDecoration(BuildContext context, String label) {
   return InputDecoration(
     labelText: label,
     labelStyle: const TextStyle(color: AppColors.textSecondary),
-    enabledBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.surfaceVariant),
+    enabledBorder: UnderlineInputBorder(
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
     ),
-    focusedBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.teal),
+    focusedBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
     ),
   );
 }

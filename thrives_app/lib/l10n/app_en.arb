@@ -815,6 +815,23 @@
   "attuneMaskTrackAutumn": "Vivaldi, Autumn",
   "attuneMaskTrackWinter": "Vivaldi, Winter",
   "attuneMaskCredit": "Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.",
+  "attunePickMusic": "Choose music",
+  "attuneAddPack": "Add a pack from this device",
+  "attuneIncluded": "Included",
+  "attunePackOnDevice": "This recording stays on this device.",
+  "attunePackAdded": "{count, plural, =1{1 track added on this device} other{{count} tracks added on this device}}",
+  "@attunePackAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attunePackUnusable": "Name the zip with letters and numbers, then try again.",
+  "attunePackNotAPack": "That file is not a music pack.",
+  "attunePackTooLarge": "That pack is too large for this device.",
+  "attunePackUnavailable": "Packs can be added in the Android app.",
+  "attunePackSaveFailed": "That file could not be saved on this device.",
   "attuneFocus": "Slow shape",
   "attuneDosageTitle": "Daily limit",
   "attuneDosageBody": "Do not use this while driving or operating heavy machinery. A long listen can leave you drowsy. Recommended limit: 45 minutes a day.",

@@ -10,6 +10,10 @@ import '../../../core/audio/noise_generator.dart';
 import '../../../core/audio/tone_generator.dart';
 import '../attune_dosage.dart';
 import '../attune_mask_playlist.dart';
+import '../expansions/attune_track.dart';
+import '../expansions/expansion_archive_pick.dart';
+import '../expansions/expansion_archive_picker.dart';
+import '../expansions/expansion_pack_service.dart';
 import '../../../core/storage/prefs_service.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
@@ -17,6 +21,7 @@ import '../../../core/widgets/acoustic_coming_soon.dart';
 import '../../../core/widgets/app_chrome.dart';
 import '../../../core/widgets/count_slider.dart';
 import '../widgets/attune_listening.dart';
+import '../widgets/attune_pack_sheet.dart';
 import 'attune_frequency_intro.dart';
 import 'attune_onboarding_carousel.dart';
 import 'physics_explanation_screen.dart';
@@ -40,14 +45,21 @@ class AttuneScreen extends StatelessWidget {
 }
 
 class AttuneHomeScreen extends StatelessWidget {
-  const AttuneHomeScreen({super.key});
+  const AttuneHomeScreen({super.key, this.packs, this.pickArchive});
+
+  /// On-device packs. Tests pass a directory. The release app uses its
+  /// own documents folder. Neither call downloads a pack.
+  final ExpansionPackService? packs;
+
+  /// System file dialog. Tests pass a zip they already built.
+  final ExpansionArchivePicker? pickArchive;
 
   @override
   Widget build(BuildContext context) {
     if (!AcousticSynthesisGate.tonesEnabled) {
       return const _AttuneUnavailableScreen();
     }
-    return const _AttunePlayerScreen();
+    return _AttunePlayerScreen(packs: packs, pickArchive: pickArchive);
   }
 }
 
@@ -105,7 +117,10 @@ class _AttuneUnavailableScreen extends StatelessWidget {
 // What happens if removed or modified: Play can start on an unexplained tone.
 // Informed by: the acoustic safety gate for this tool.
 class _AttunePlayerScreen extends StatefulWidget {
-  const _AttunePlayerScreen();
+  const _AttunePlayerScreen({this.packs, this.pickArchive});
+
+  final ExpansionPackService? packs;
+  final ExpansionArchivePicker? pickArchive;
 
   @override
   State<_AttunePlayerScreen> createState() => _AttunePlayerScreenState();
@@ -150,6 +165,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   /// gate stays closed.
   AudioPlayer? _maskPlayer;
   StreamSubscription<PlayerState>? _maskStateSub;
+  List<AttuneTrack> _tracks = bundledAttuneTracks();
   int _maskIndex = 0;
   int _maskFade = 0;
 
@@ -176,8 +192,25 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     return player;
   }
 
-  /// Whole minutes the person can choose for the season now selected.
-  int get _sessionMaxMinutes => attuneMaskDurationMinutes(_maskIndex);
+  AttuneTrack get _current {
+    if (_tracks.isEmpty) return bundledAttuneTracks().first;
+    final index = _maskIndex < 0
+        ? 0
+        : (_maskIndex >= _tracks.length ? _tracks.length - 1 : _maskIndex);
+    return _tracks[index];
+  }
+
+  /// Whole minutes of this recording. An unread length stays at the floor
+  /// so the tone still has an end, and playback also stops when the file ends.
+  int _wholeMinutes(AttuneTrack track) {
+    final seconds = track.durationSeconds;
+    if (seconds == null) return _minSessionMinutes;
+    final minutes = seconds ~/ 60;
+    return minutes < 1 ? 1 : minutes;
+  }
+
+  /// Whole minutes the person can choose for the recording now selected.
+  int get _sessionMaxMinutes => _wholeMinutes(_current);
 
   int get _sessionMinMinutes {
     final maxMinutes = _sessionMaxMinutes;
@@ -186,10 +219,12 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   }
 
   void _selectMask(int index) {
-    final previousMax = attuneMaskDurationMinutes(_maskIndex);
+    if (index < 0 || index >= _tracks.length) return;
+    final previousMax = _wholeMinutes(_tracks[_maskIndex]);
     final wasFullPiece = _sessionMinutes >= previousMax;
     _maskIndex = index;
-    final maxMinutes = attuneMaskDurationMinutes(index);
+    final track = _tracks[index];
+    final maxMinutes = _wholeMinutes(track);
     final minMinutes =
         maxMinutes < _minSessionMinutes ? maxMinutes : _minSessionMinutes;
     if (wasFullPiece || _sessionMinutes > maxMinutes) {
@@ -197,9 +232,10 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     } else if (_sessionMinutes < minMinutes) {
       _sessionMinutes = minMinutes;
     }
-    final cap = attuneMaskDurationSeconds[index];
-    if (_tonePlaying && _secondsLeft > cap) _secondsLeft = cap;
-    _carrierHz = attuneMaskCarrierHz(index);
+    final cap = track.durationSeconds;
+    if (cap != null && _tonePlaying && _secondsLeft > cap) _secondsLeft = cap;
+    final hz = track.carrierHz;
+    if (hz != null) _carrierHz = hz.clamp(100.0, 400.0).toDouble();
   }
 
   void _onMaskPlayback(PlayerState state) {
@@ -224,25 +260,115 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   bool get _isSessionActive => _tonePlaying;
 
   String _maskTitle(BuildContext context) {
-    final l10n = context.l10n;
-    switch (_maskIndex) {
-      case 0:
-        return l10n.attuneMaskTrackSpring;
-      case 1:
-        return l10n.attuneMaskTrackSummer;
-      case 2:
-        return l10n.attuneMaskTrackAutumn;
-      case 3:
-        return l10n.attuneMaskTrackWinter;
-      default:
-        return l10n.attuneMaskTrackSpring;
-    }
+    return attuneTrackTitle(_current, context.l10n);
+  }
+
+  String _maskCredit(BuildContext context) {
+    if (_current.isBundled) return context.l10n.attuneMaskCredit;
+    return context.l10n.attunePackOnDevice;
   }
 
   @override
   void initState() {
     super.initState();
     _loadIntro();
+    unawaited(_reloadTracks());
+  }
+
+  ExpansionPackService get _packs => widget.packs ?? ExpansionPackService();
+
+  Future<void> _reloadTracks() async {
+    final List<AttuneTrack> loaded;
+    try {
+      loaded = await _packs.loadTracks();
+    } catch (_) {
+      return;
+    }
+    if (!mounted || loaded.isEmpty) return;
+    final id = _current.id;
+    var index = loaded.indexWhere((track) => track.id == id);
+    if (index < 0) index = 0;
+    setState(() {
+      _tracks = loaded;
+      _maskIndex = index;
+      final maxMinutes = _wholeMinutes(loaded[index]);
+      final minMinutes =
+          maxMinutes < _minSessionMinutes ? maxMinutes : _minSessionMinutes;
+      if (_sessionMinutes > maxMinutes) _sessionMinutes = maxMinutes;
+      if (_sessionMinutes < minMinutes) _sessionMinutes = minMinutes;
+    });
+  }
+
+  Future<void> _openMusicPicker() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheet) {
+            return AttunePackSheet(
+              tracks: _tracks,
+              selectedIndex: _maskIndex,
+              onSelect: (index) {
+                Navigator.of(sheetContext).pop();
+                unawaited(_chooseMask(index));
+              },
+              onAdd: kIsWeb ? null : () => unawaited(_addPack(setSheet)),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _addPack(StateSetter setSheet) async {
+    final picker = widget.pickArchive ?? pickExpansionArchive;
+    final picked = await picker();
+    if (picked == null || !mounted) return;
+    final l10n = context.l10n;
+    final name = expansionPackNameFromFilename(picked.name);
+    if (name == null) {
+      _reportPack(l10n.attunePackUnusable);
+      return;
+    }
+    final result = await _packs.installArchive(picked.bytes, packName: name);
+    if (!mounted) return;
+    if (!result.installed) {
+      _reportPack(_packFailure(l10n, result.failure));
+      return;
+    }
+    await _reloadTracks();
+    if (!mounted) return;
+    setSheet(() {});
+    _reportPack(l10n.attunePackAdded(result.trackCount));
+  }
+
+  void _reportPack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  String _packFailure(AppLocalizations l10n, ExpansionFailure? failure) {
+    switch (failure) {
+      case ExpansionFailure.notAZip:
+      case ExpansionFailure.unsafeArchive:
+        return l10n.attunePackNotAPack;
+      case ExpansionFailure.tooLarge:
+        return l10n.attunePackTooLarge;
+      case ExpansionFailure.unusableName:
+        return l10n.attunePackUnusable;
+      case ExpansionFailure.unavailable:
+        return l10n.attunePackUnavailable;
+      case ExpansionFailure.unreachable:
+      case ExpansionFailure.badResponse:
+      case null:
+        return l10n.attunePackSaveFailed;
+    }
   }
 
   Future<void> _loadIntro() async {
@@ -488,15 +614,12 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   }
 
   Future<void> _startMask() async {
-    if (!_mayPlayTone || attuneMaskAssets.isEmpty) return;
+    if (!_mayPlayTone || _tracks.isEmpty) return;
     try {
       await AttuneAudioSession.configureForMix();
       final player = _ensureMaskPlayer();
       _maskHeardPlayback = false;
-      await player.setAudioSource(
-        AudioSource.asset(attuneMaskAssets[_maskIndex]),
-        preload: true,
-      );
+      await player.setAudioSource(_current.source, preload: true);
       await player.setLoopMode(LoopMode.off);
       try {
         await player.setVolume(0);
@@ -530,11 +653,16 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   }
 
   Future<void> _nextMaskTrack() async {
-    final next = (_maskIndex + 1) % attuneMaskAssets.length;
+    if (_tracks.isEmpty) return;
+    await _chooseMask((_maskIndex + 1) % _tracks.length);
+  }
+
+  Future<void> _chooseMask(int index) async {
+    if (index < 0 || index >= _tracks.length || index == _maskIndex) return;
     final inSession = _tonePlaying;
     setState(() {
-      _selectMask(next);
-      if (inSession) _sessionMinutes = attuneMaskDurationMinutes(next);
+      _selectMask(index);
+      if (inSession) _sessionMinutes = _wholeMinutes(_tracks[index]);
     });
     if (!inSession) return;
 
@@ -548,10 +676,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
       final player = _ensureMaskPlayer();
       _maskFade++;
       _maskHeardPlayback = false;
-      await player.setAudioSource(
-        AudioSource.asset(attuneMaskAssets[next]),
-        preload: true,
-      );
+      await player.setAudioSource(_tracks[index].source, preload: true);
       await player.setLoopMode(LoopMode.off);
       await player.setVolume(_maskVolume);
       // play() stays pending until this recording ends. Starting it is enough.
@@ -785,7 +910,8 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                               TextButton(
                                 onPressed: _openIntroAgain,
                                 style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF7B68EE),
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.primary,
                                   alignment: Alignment.centerLeft,
                                 ),
                                 child: Text(context.l10n.attuneIntroAgain),
@@ -793,7 +919,8 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                               TextButton(
                                 onPressed: _openPhysics,
                                 style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF7B68EE),
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.primary,
                                   alignment: Alignment.centerLeft,
                                 ),
                                 child: Text(context.l10n.physicsOpen),
@@ -890,8 +1017,11 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                                   value: _carrierHz,
                                   min: 100,
                                   max: 400,
-                                  activeColor: const Color(0xFF7B68EE),
-                                  inactiveColor: AppColors.surfaceVariant,
+                                  activeColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  inactiveColor: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
                                   onChanged: (v) {
                                     setState(() => _carrierHz = v);
                                   },
@@ -981,17 +1111,31 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                     const SizedBox(height: 4),
                     const AttuneMaskMusicNote(),
                     const SizedBox(height: 8),
-                    Text(
-                      _maskTitle(context),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                        height: 1.4,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        key: const Key('attune-mask-pick'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          minimumSize: const Size(48, 48),
+                          alignment: Alignment.centerLeft,
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                        onPressed: _toneLoading
+                            ? null
+                            : () => unawaited(_openMusicPicker()),
+                        icon:
+                            const Icon(Icons.library_music_outlined, size: 16),
+                        label: Text(_maskTitle(context)),
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      context.l10n.attuneMaskCredit,
+                      _maskCredit(context),
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 11,
@@ -1017,7 +1161,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                               ? null
                               : _sessionMaxMinutes - _sessionMinMinutes,
                           enabled: !_tonePlaying && !_toneLoading,
-                          activeColor: const Color(0xFF7B68EE),
+                          activeColor: Theme.of(context).colorScheme.primary,
                           sliderKey: const Key('attune-session-slider'),
                           onChanged: (v) => setState(
                             () => _sessionMinutes = v.round(),
@@ -1064,12 +1208,13 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                             ? null
                             : (_tonePlaying ? _stopTone : _onPlayPressed),
                         icon: _toneLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.background,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                 ),
                               )
                             : Icon(_tonePlaying
@@ -1084,8 +1229,10 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: _tonePlaying
-                              ? AppColors.surfaceVariant
-                              : const Color(0xFF7B68EE),
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                              : Theme.of(context).colorScheme.primary,
                           foregroundColor: _tonePlaying
                               ? AppColors.textPrimary
                               : Colors.white,
@@ -1239,11 +1386,15 @@ class _ModeRow extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onSelect(entry.$1),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: AppMotion.press,
+                curve: AppMotion.arrive,
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 decoration: BoxDecoration(
                   color: selected == entry.$1
-                      ? const Color(0xFF7B68EE).withValues(alpha: 0.15)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.15)
                       : Theme.of(context)
                           .colorScheme
                           .surface
@@ -1251,7 +1402,7 @@ class _ModeRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: selected == entry.$1
-                        ? const Color(0xFF7B68EE)
+                        ? Theme.of(context).colorScheme.primary
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                 ),
@@ -1259,7 +1410,7 @@ class _ModeRow extends StatelessWidget {
                   children: [
                     Icon(entry.$3,
                         color: selected == entry.$1
-                            ? const Color(0xFF7B68EE)
+                            ? Theme.of(context).colorScheme.primary
                             : AppColors.textMuted,
                         size: 20),
                     const SizedBox(height: 4),
@@ -1267,7 +1418,7 @@ class _ModeRow extends StatelessWidget {
                       entry.$2,
                       style: TextStyle(
                         color: selected == entry.$1
-                            ? const Color(0xFF7B68EE)
+                            ? Theme.of(context).colorScheme.primary
                             : AppColors.textSecondary,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -1299,16 +1450,20 @@ class _BandGrid extends StatelessWidget {
           GestureDetector(
             onTap: () => onSelect(band),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: AppMotion.press,
+              curve: AppMotion.arrive,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: selected == band
-                    ? const Color(0xFF7B68EE).withValues(alpha: 0.12)
-                    : AppColors.surface,
+                    ? Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.12)
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: selected == band
-                      ? const Color(0xFF7B68EE)
+                      ? Theme.of(context).colorScheme.primary
                       : Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
               ),
@@ -1343,15 +1498,15 @@ class _BandGrid extends StatelessWidget {
                     ),
                     style: TextStyle(
                       color: selected == band
-                          ? const Color(0xFF7B68EE)
+                          ? Theme.of(context).colorScheme.primary
                           : AppColors.textMuted,
                       fontSize: 11,
                     ),
                   ),
                   const SizedBox(width: 8),
                   if (selected == band)
-                    const Icon(Icons.check_rounded,
-                        color: Color(0xFF7B68EE), size: 16),
+                    Icon(Icons.check_rounded,
+                        color: Theme.of(context).colorScheme.primary, size: 16),
                 ],
               ),
             ),
@@ -1383,10 +1538,14 @@ class _NoiseSoundGrid extends StatelessWidget {
         return GestureDetector(
           onTap: () => onTap(type),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: AppMotion.press,
+            curve: AppMotion.arrive,
             decoration: BoxDecoration(
               color: isActive
-                  ? AppColors.teal.withValues(alpha: 0.15)
+                  ? Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.15)
                   : Theme.of(context)
                       .colorScheme
                       .surface
@@ -1394,7 +1553,7 @@ class _NoiseSoundGrid extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isActive
-                    ? AppColors.teal
+                    ? Theme.of(context).colorScheme.primary
                     : Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
             ),
@@ -1403,14 +1562,18 @@ class _NoiseSoundGrid extends StatelessWidget {
               children: [
                 Icon(
                   _noiseIcons[type]!,
-                  color: isActive ? AppColors.teal : AppColors.textSecondary,
+                  color: isActive
+                      ? Theme.of(context).colorScheme.primary
+                      : AppColors.textSecondary,
                   size: 24,
                 ),
                 const SizedBox(height: 6),
                 Text(
                   _noiseName(context.l10n, type),
                   style: TextStyle(
-                    color: isActive ? AppColors.teal : AppColors.textSecondary,
+                    color: isActive
+                        ? Theme.of(context).colorScheme.primary
+                        : AppColors.textSecondary,
                     fontSize: 11,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),

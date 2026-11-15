@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(context.l10n.clearAllDataTitle,
             style: const TextStyle(color: AppColors.textPrimary)),
@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.allDataCleared),
-            backgroundColor: AppColors.surface,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.checkinAlreadyOpen),
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -137,10 +137,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'MONKEYTHRIVE',
                         style: TextStyle(
-                          color: AppColors.teal,
+                          color: Theme.of(context).colorScheme.primary,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 2.5,
@@ -151,7 +151,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceVariant,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
@@ -217,7 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.person_outline,
-              iconColor: AppColors.amber,
+              iconColor: Theme.of(context).colorScheme.primary,
               label: context.l10n.trustedPerson,
               subtitle: _readingIsPresent(context)
                   ? context.l10n.savedTextOnDevice
@@ -229,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       content: Text(
                         context.l10n.trustedSavedWhenPresent,
                       ),
-                      backgroundColor: AppColors.surface,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -246,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.forum_outlined,
-              iconColor: AppColors.teal,
+              iconColor: Theme.of(context).colorScheme.primary,
               label: context.l10n.showBaseline,
               subtitle: context.l10n.showBaselineSubtitle,
               onTap: () => _showBaselinePromptPreview(context),
@@ -318,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _Section(context.l10n.yourData),
             _TileButton(
               icon: Icons.file_download_outlined,
-              iconColor: AppColors.teal,
+              iconColor: Theme.of(context).colorScheme.primary,
               label: context.l10n.export,
               subtitle: context.l10n.exportSubtitle,
               onTap: () => showLocalExportDialog(context),
@@ -326,7 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
             _TileButton(
               icon: Icons.file_upload_outlined,
-              iconColor: AppColors.teal,
+              iconColor: Theme.of(context).colorScheme.primary,
               label: context.l10n.import,
               subtitle: context.l10n.importSubtitle,
               onTap: () => showLocalImportDialog(context),
@@ -349,7 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (_) => AlertDialog(
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
                     title: Text(context.l10n.redoOnboardingTitle,
@@ -371,7 +373,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
                         child: Text(context.l10n.reset,
-                            style: const TextStyle(color: AppColors.teal)),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary)),
                       ),
                     ],
                   ),
@@ -508,7 +511,8 @@ class _AccentSwatch extends StatelessWidget {
       child: GestureDetector(
         onTap: () => AppAppearanceController.instance.setAccent(accent),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+          duration: AppMotion.press,
+          curve: AppMotion.arrive,
           height: 48,
           decoration: BoxDecoration(
             color: color.withValues(alpha: selected ? 0.22 : 0.12),
@@ -527,9 +531,9 @@ class _AccentSwatch extends StatelessWidget {
                 color: color,
               ),
               child: selected
-                  ? const Icon(
+                  ? Icon(
                       Icons.check_rounded,
-                      color: AppColors.background,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       size: 14,
                     )
                   : null,
@@ -584,7 +588,8 @@ class _ContrastChip extends StatelessWidget {
     return GestureDetector(
       onTap: () => AppAppearanceController.instance.setContrast(contrast),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+        duration: AppMotion.press,
+        curve: AppMotion.arrive,
         height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(

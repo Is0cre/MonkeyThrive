@@ -126,9 +126,9 @@ class _VagalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF8B6FD4);
+    final color = Theme.of(context).colorScheme.primary;
     return Material(
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -240,167 +240,170 @@ class _VagalToolDetailState extends State<_VagalToolDetail>
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF8B6FD4);
+    final color = Theme.of(context).colorScheme.primary;
 
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-          GestureDetector(
-            onTap: () {
-              _reset();
-              widget.onBack();
-            },
-            child: Row(
-              children: [
-                const Icon(Icons.arrow_back_rounded,
-                    color: AppColors.textSecondary, size: 18),
-                const SizedBox(width: 6),
-                Text(context.l10n.back,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 14)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          Row(
+        GestureDetector(
+          onTap: () {
+            _reset();
+            widget.onBack();
+          },
+          child: Row(
             children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(widget.tool.icon, color: color, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                widget.tool.title,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Why it works
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.whyThisWorks,
+              const Icon(Icons.arrow_back_rounded,
+                  color: AppColors.textSecondary, size: 18),
+              const SizedBox(width: 6),
+              Text(context.l10n.back,
                   style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.tool.why,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.6,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          Text(
-            widget.tool.instructions,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              height: 1.7,
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          if (_hasTimer) ...[
-            if (_running || _done) ...[
-              Center(
-                child: _done
-                    ? const Icon(Icons.check_circle_outline_rounded,
-                        color: color, size: 52)
-                    : Text(
-                        '$_secondsLeft',
-                        style: const TextStyle(
-                          color: color,
-                          fontSize: 72,
-                          fontWeight: FontWeight.w200,
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 20),
+                      color: AppColors.textSecondary, fontSize: 14)),
             ],
-            if (_done) ...[
-              const FeelingBetterPrompt(),
-              const SizedBox(height: 16),
-            ],
-            SizedBox(
-              width: double.infinity,
+          ),
+        ),
+        const SizedBox(height: 28),
+
+        Row(
+          children: [
+            Container(
+              width: 52,
               height: 52,
-              child: FilledButton(
-                onPressed: _done ? _reset : (_running ? null : _startTimer),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _done ? AppColors.surfaceVariant : color,
-                  foregroundColor:
-                      _done ? AppColors.textPrimary : AppColors.background,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(
-                  _done
-                      ? context.l10n.againLabel
-                      : (_running
-                          ? context.l10n.running
-                          : context.l10n
-                              .startSecondsTimer(widget.tool.timerSeconds!)),
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500),
-                ),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
               ),
+              child: Icon(widget.tool.icon, color: color, size: 26),
             ),
-          ] else ...[
-            if (_done) ...[
-              const FeelingBetterPrompt(),
-              const SizedBox(height: 16),
-            ],
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () {
-                  if (!_done) {
-                    setState(() => _done = true);
-                    return;
-                  }
-                  _reset();
-                  widget.onBack();
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  side: const BorderSide(color: AppColors.amber),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(_done ? context.l10n.back : context.l10n.done),
-              ),
+            const SizedBox(width: 16),
+            Text(
+              widget.tool.title,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ],
-          const SizedBox(height: 16),
+        ),
+        const SizedBox(height: 24),
+
+        // Why it works
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.whyThisWorks,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.tool.why,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        Text(
+          widget.tool.instructions,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+            height: 1.7,
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        if (_hasTimer) ...[
+          if (_running || _done) ...[
+            Center(
+              child: _done
+                  ? Icon(Icons.check_circle_outline_rounded,
+                      color: color, size: 52)
+                  : Text(
+                      '$_secondsLeft',
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 72,
+                        fontWeight: FontWeight.w200,
+                      ),
+                    ),
+            ),
+            const SizedBox(height: 20),
+          ],
+          if (_done) ...[
+            const FeelingBetterPrompt(),
+            const SizedBox(height: 16),
+          ],
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: FilledButton(
+              onPressed: _done ? _reset : (_running ? null : _startTimer),
+              style: FilledButton.styleFrom(
+                backgroundColor: _done
+                    ? Theme.of(context).colorScheme.surfaceContainerHighest
+                    : color,
+                foregroundColor: _done
+                    ? AppColors.textPrimary
+                    : Theme.of(context).scaffoldBackgroundColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(
+                _done
+                    ? context.l10n.againLabel
+                    : (_running
+                        ? context.l10n.running
+                        : context.l10n
+                            .startSecondsTimer(widget.tool.timerSeconds!)),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+        ] else ...[
+          if (_done) ...[
+            const FeelingBetterPrompt(),
+            const SizedBox(height: 16),
+          ],
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () {
+                if (!_done) {
+                  setState(() => _done = true);
+                  return;
+                }
+                _reset();
+                widget.onBack();
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.textPrimary,
+                side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(_done ? context.l10n.back : context.l10n.done),
+            ),
+          ),
         ],
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

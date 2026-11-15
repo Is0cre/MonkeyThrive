@@ -320,43 +320,47 @@ class _NavItem extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
-            decoration: BoxDecoration(
-              color: selected
-                  ? colors.primary.withValues(alpha: 0.18)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: selected
-                    ? colors.primary.withValues(alpha: 0.34)
-                    : Colors.transparent,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  tab.icon,
-                  color: selected ? colors.primary : AppColors.textMuted,
-                  size: 21,
-                ),
-                const SizedBox(height: 3),
-                Flexible(
-                  child: Text(
-                    _navLabel(context.l10n, tab.label),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: selected ? colors.primary : AppColors.textMuted,
-                      fontSize: 9,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    ),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: selected ? 1 : 0),
+            duration: AppMotion.press,
+            curve: AppMotion.arrive,
+            builder: (context, t, _) {
+              final color = Color.lerp(AppColors.textMuted, colors.primary, t)!;
+              return AnimatedContainer(
+                duration: AppMotion.press,
+                curve: AppMotion.arrive,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.18 * t),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.34 * t),
                   ),
                 ),
-              ],
-            ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(tab.icon, color: color, size: 21),
+                    const SizedBox(height: 3),
+                    Flexible(
+                      child: Text(
+                        _navLabel(context.l10n, tab.label),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 9,
+                          fontWeight: FontWeight.lerp(
+                            FontWeight.w500,
+                            FontWeight.w700,
+                            t,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),

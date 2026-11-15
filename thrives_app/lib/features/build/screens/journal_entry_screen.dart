@@ -161,9 +161,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                       margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                       padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.surfaceVariant),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest),
                       ),
                       child: Row(
                         children: [
@@ -233,7 +236,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(

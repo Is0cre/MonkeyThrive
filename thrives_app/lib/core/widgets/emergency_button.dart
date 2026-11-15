@@ -42,12 +42,11 @@ class EmergencyButton extends StatelessWidget {
       PageRouteBuilder(
         opaque: true,
         pageBuilder: (_, __, ___) => const PanicScreen(),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 80),
-        reverseTransitionDuration: const Duration(milliseconds: 120),
+        transitionsBuilder: (_, animation, __, child) {
+          return CalmFade(animation: animation, slide: false, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 140),
+        reverseTransitionDuration: const Duration(milliseconds: 160),
       ),
     )
         .whenComplete(() {

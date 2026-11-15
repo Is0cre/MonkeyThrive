@@ -38,7 +38,8 @@ class PassphraseSeal {
       enc.AES(enc.Key(derived.sublist(0, 32)), mode: enc.AESMode.cbc),
     );
     final cipher = aes.encrypt(plaintext, iv: iv).bytes;
-    final mac = Hmac(sha256, derived.sublist(32)).convert([...iv.bytes, ...cipher]);
+    final mac =
+        Hmac(sha256, derived.sublist(32)).convert([...iv.bytes, ...cipher]);
     final envelope = jsonEncode({
       'v': 1,
       'alg': 'AES-256-CBC+HMAC-SHA256',
@@ -85,8 +86,8 @@ class PassphraseSeal {
       iterations: iterations,
       length: 64,
     );
-    final actualMac =
-        Hmac(sha256, derived.sublist(32)).convert([...ivBytes, ...cipher]).bytes;
+    final actualMac = Hmac(sha256, derived.sublist(32))
+        .convert([...ivBytes, ...cipher]).bytes;
     if (!_constantTimeEquals(expectedMac, actualMac)) {
       throw const FormatException('That passphrase did not open this copy.');
     }

@@ -132,6 +132,7 @@ class _ThrivesAppState extends State<ThrivesApp> {
             theme: AppTheme.dark(appearance),
             darkTheme: AppTheme.dark(appearance),
             themeMode: ThemeMode.dark,
+            scrollBehavior: const AppScrollBehavior(),
             home: _buildHome(),
           );
         },

@@ -74,7 +74,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   Widget build(BuildContext context) {
     final reading = _reading;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(28, 36, 28, 24),
@@ -116,7 +116,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                 context.l10n.nothingStandsOut,
                 style: TextStyle(
                   color: _explicitPresent
-                      ? AppColors.teal
+                      ? Theme.of(context).colorScheme.primary
                       : AppColors.textSecondary,
                   fontSize: 14,
                 ),
@@ -125,25 +125,29 @@ class _CheckInScreenState extends State<CheckInScreen> {
             const SizedBox(height: 8),
             AnimatedOpacity(
               opacity: reading != null ? 1 : 0,
-              duration: const Duration(milliseconds: 200),
+              duration: AppMotion.press,
+              curve: AppMotion.arrive,
               child: GestureDetector(
                 onTap: reading == null ? null : _confirm,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.surfaceVariant),
+                    border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest),
                   ),
                   child: Center(
                     child: _confirming
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: AppColors.teal,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           )
                         : Text(

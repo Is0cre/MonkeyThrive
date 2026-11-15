@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:just_audio/just_audio.dart';
 
+import '../../../l10n/l10n.dart';
 import '../attune_mask_playlist.dart';
 
 /// One mask the Attune player can open with no network.
@@ -40,6 +41,16 @@ class AttuneTrack {
 
   bool get isBundled => assetPath != null;
 
+  /// Composer and title, with the movement after a middle dot.
+  String get choiceLabel {
+    final piece = composer.isNotEmpty && title.isNotEmpty
+        ? '$composer, $title'
+        : (title.isNotEmpty ? title : composer);
+    if (movement.isEmpty) return piece.isEmpty ? label : piece;
+    if (piece.isEmpty) return movement;
+    return '$piece · $movement';
+  }
+
   /// Carrier root in hertz. Null when the manifest key is empty or unknown.
   double? get carrierHz => carrierHzForKey(keyName);
 
@@ -52,6 +63,29 @@ class AttuneTrack {
     }
     return AudioSource.file(file);
   }
+}
+
+/// Season name for a bundled mask, or [AttuneTrack.choiceLabel] for a pack.
+String attuneTrackTitle(AttuneTrack track, AppLocalizations l10n) {
+  switch (track.assetPath) {
+    case 'assets/audio/01_vivaldi_spring.ogg':
+      return l10n.attuneMaskTrackSpring;
+    case 'assets/audio/02_vivaldi_summer.ogg':
+      return l10n.attuneMaskTrackSummer;
+    case 'assets/audio/03_vivaldi_autumn.ogg':
+      return l10n.attuneMaskTrackAutumn;
+    case 'assets/audio/04_vivaldi_winter.ogg':
+      return l10n.attuneMaskTrackWinter;
+    default:
+      return track.choiceLabel;
+  }
+}
+
+/// Group heading in the music list. A pack uses its composer when it has one.
+String attunePackHeading(AttuneTrack track, AppLocalizations l10n) {
+  if (track.isBundled) return l10n.attuneIncluded;
+  if (track.composer.isNotEmpty) return track.composer;
+  return track.packName;
 }
 
 /// The four seasons that ship inside the app, in playlist order.

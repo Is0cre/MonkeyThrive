@@ -33,7 +33,6 @@ class BreathingScreen extends StatefulWidget {
 class _BreathingScreenState extends State<BreathingScreen>
     with TickerProviderStateMixin, SessionTracking {
   late AnimationController _circleController;
-  late Animation<double> _circleAnimation;
 
   static const int _boxSideSeconds = 4;
 
@@ -78,10 +77,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   void initState() {
     super.initState();
     _haptics = widget.haptics ?? BreathHapticsController();
-    _circleController = AnimationController(vsync: this);
-    _circleAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _circleController, curve: Curves.easeInOut),
-    );
+    _circleController = AnimationController(vsync: this, value: 0.4);
   }
 
   @override
@@ -134,7 +130,7 @@ class _BreathingScreenState extends State<BreathingScreen>
               : context.l10n
                   .breathing478Locked(toleranceLock(context.l10n, wot)),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -197,11 +193,17 @@ class _BreathingScreenState extends State<BreathingScreen>
     final duration = Duration(seconds: _currentPhase.durationSeconds);
 
     if (phaseName == 'Inhale') {
-      _circleController.animateTo(1.0,
-          duration: duration, curve: Curves.easeInOut);
+      _circleController.animateTo(
+        1.0,
+        duration: duration,
+        curve: AppMotion.breathe,
+      );
     } else if (phaseName == 'Exhale') {
-      _circleController.animateTo(0.4,
-          duration: duration, curve: Curves.easeInOut);
+      _circleController.animateTo(
+        0.4,
+        duration: duration,
+        curve: AppMotion.breathe,
+      );
     }
     // Hold phases — circle stays still
   }
@@ -285,7 +287,9 @@ class _BreathingScreenState extends State<BreathingScreen>
             onPressed: _toggleHaptics,
             icon: Icon(
               Icons.vibration,
-              color: _hapticsEnabled ? AppColors.teal : AppColors.textMuted,
+              color: _hapticsEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : AppColors.textMuted,
             ),
           ),
         ],
@@ -308,7 +312,7 @@ class _BreathingScreenState extends State<BreathingScreen>
                         children: [
                           if (!_sessionDone)
                             AnimatedBuilder(
-                              animation: _circleAnimation,
+                              animation: _circleController,
                               builder: (context, _) {
                                 final size = _breathCircleSize(constraints);
                                 return ConstrainedBox(
@@ -316,15 +320,19 @@ class _BreathingScreenState extends State<BreathingScreen>
                                     maxWidth: 300,
                                     maxHeight: 300,
                                   ),
-                                  child: SizedBox(
-                                    key: const Key('breath-circle'),
-                                    width: size,
-                                    height: size,
-                                    child: CustomPaint(
-                                      painter: _BreathCirclePainter(
-                                        progress: _circleAnimation.value,
-                                        color: AppColors.teal,
-                                        isRunning: _running,
+                                  child: RepaintBoundary(
+                                    child: SizedBox(
+                                      key: const Key('breath-circle'),
+                                      width: size,
+                                      height: size,
+                                      child: CustomPaint(
+                                        painter: _BreathCirclePainter(
+                                          progress: _circleController.value,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          isRunning: _running,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -333,15 +341,17 @@ class _BreathingScreenState extends State<BreathingScreen>
                             ),
                           if (!_sessionDone) const SizedBox(height: 40),
                           AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 400),
+                            duration: AppMotion.settle,
+                            switchInCurve: AppMotion.arrive,
+                            switchOutCurve: AppMotion.depart,
                             child: Text(
                               _running
                                   ? _phaseLabel(context, _currentPhase.label)
                                   : '',
                               key: ValueKey(
                                   _running ? _currentPhase.label : 'idle'),
-                              style: const TextStyle(
-                                color: AppColors.teal,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
                                 fontSize: 28,
                                 fontWeight: FontWeight.w300,
                                 letterSpacing: 2,
@@ -400,7 +410,7 @@ class _BreathingScreenState extends State<BreathingScreen>
                       max: _maxCycles.toDouble(),
                       divisions: _maxCycles - _minCycles,
                       enabled: !_running,
-                      activeColor: AppColors.teal,
+                      activeColor: Theme.of(context).colorScheme.primary,
                       sliderKey: Key(
                         widget.mode == BreathingMode.box
                             ? 'box-cycle-slider'
@@ -419,7 +429,8 @@ class _BreathingScreenState extends State<BreathingScreen>
                         onPressed: _anotherRound,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textPrimary,
-                          side: const BorderSide(color: AppColors.teal),
+                          side: BorderSide(
+                              color: Theme.of(context).colorScheme.primary),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -441,11 +452,13 @@ class _BreathingScreenState extends State<BreathingScreen>
                         onPressed: _startStop,
                         style: FilledButton.styleFrom(
                           backgroundColor: _running
-                              ? AppColors.surfaceVariant
-                              : AppColors.teal,
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                              : Theme.of(context).colorScheme.primary,
                           foregroundColor: _running
                               ? AppColors.textPrimary
-                              : AppColors.background,
+                              : Theme.of(context).scaffoldBackgroundColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -534,7 +547,7 @@ class _InfoBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.textMuted.withValues(alpha: 0.2)),
       ),

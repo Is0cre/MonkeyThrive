@@ -37,8 +37,8 @@ class _AttuneOnboardingCarouselState extends State<AttuneOnboardingCarousel> {
   void _showPage(int page) {
     _pageController.animateToPage(
       page,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOut,
+      duration: AppMotion.settle,
+      curve: AppMotion.arrive,
     );
   }
 
@@ -124,7 +124,7 @@ class _AttuneOnboardingCarouselState extends State<AttuneOnboardingCarousel> {
                 child: FilledButton(
                   onPressed: () => _showPage(_page + 1),
                   style: FilledButton.styleFrom(
-                    backgroundColor: attuneViolet,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -172,20 +172,27 @@ class _InfoCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: attuneViolet.withValues(alpha: 0.12),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: attuneViolet.withValues(alpha: 0.28),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.28),
                 ),
               ),
-              child: Icon(icon, color: attuneViolet, size: 28),
+              child: Icon(icon,
+                  color: Theme.of(context).colorScheme.primary, size: 28),
             ),
           ),
           const SizedBox(height: 22),
           Text(
             kicker.toUpperCase(),
-            style: const TextStyle(
-              color: attuneViolet,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.6,
@@ -254,11 +261,14 @@ class _DeckDots extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: AppMotion.press,
+                  curve: AppMotion.arrive,
                   width: i == index ? 18 : 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color: i == index ? attuneViolet : AppColors.surfaceVariant,
+                    color: i == index
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),

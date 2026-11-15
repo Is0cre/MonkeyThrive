@@ -105,7 +105,7 @@ class _PanicScreenState extends State<PanicScreen>
         _circleController.animateTo(
           0.65,
           duration: const Duration(milliseconds: _inhale1Ms),
-          curve: Curves.easeInOut,
+          curve: AppMotion.breathe,
         );
         _phaseTimer = Timer(const Duration(milliseconds: _inhale1Ms), () {
           if (mounted) _startPhase(_Phase.inhale2);
@@ -115,7 +115,7 @@ class _PanicScreenState extends State<PanicScreen>
         _circleController.animateTo(
           1.0,
           duration: const Duration(milliseconds: _inhale2Ms),
-          curve: Curves.easeOut,
+          curve: AppMotion.arrive,
         );
         _phaseTimer = Timer(const Duration(milliseconds: _inhale2Ms), () {
           if (mounted) _startPhase(_Phase.exhale);
@@ -125,7 +125,7 @@ class _PanicScreenState extends State<PanicScreen>
         _circleController.animateTo(
           0.0,
           duration: const Duration(milliseconds: _exhaleMs),
-          curve: Curves.easeInOut,
+          curve: AppMotion.breathe,
         );
         _phaseTimer = Timer(const Duration(milliseconds: _exhaleMs), () {
           if (mounted) _startPhase(_Phase.between);
@@ -223,10 +223,17 @@ class _BreathView extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF8A6228).withValues(alpha: 0.16 + t * 0.20),
+              color: Color.lerp(
+                Theme.of(context).colorScheme.primary,
+                const Color(0xFF000000),
+                0.45,
+              )!
+                  .withValues(alpha: 0.16 + t * 0.20),
               border: Border.all(
-                color:
-                    const Color(0xFFE8A645).withValues(alpha: 0.22 + t * 0.18),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.22 + t * 0.18),
                 width: 1.5,
               ),
             ),
@@ -277,8 +284,8 @@ class _DoneView extends StatelessWidget {
           onPressed: onGoRegulate,
           child: Text(
             context.l10n.goToRegulate,
-            style: const TextStyle(
-              color: Color(0xFFE8A645),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 15,
               fontWeight: FontWeight.w500,
             ),

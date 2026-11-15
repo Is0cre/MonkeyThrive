@@ -66,7 +66,8 @@ class CountSlider extends StatelessWidget {
             divisions: divisions,
             label: valueLabel,
             activeColor: enabled ? activeColor : AppColors.textMuted,
-            inactiveColor: AppColors.surfaceVariant,
+            inactiveColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             onChanged: enabled ? onChanged : null,
           ),
         ),

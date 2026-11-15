@@ -1627,6 +1627,46 @@ class AppLocalizationsMy extends AppLocalizations {
       'Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.';
 
   @override
+  String get attunePickMusic => 'Choose music';
+
+  @override
+  String get attuneAddPack => 'Add a pack from this device';
+
+  @override
+  String get attuneIncluded => 'Included';
+
+  @override
+  String get attunePackOnDevice => 'This recording stays on this device.';
+
+  @override
+  String attunePackAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks added on this device',
+      one: '1 track added on this device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attunePackUnusable =>
+      'Name the zip with letters and numbers, then try again.';
+
+  @override
+  String get attunePackNotAPack => 'That file is not a music pack.';
+
+  @override
+  String get attunePackTooLarge => 'That pack is too large for this device.';
+
+  @override
+  String get attunePackUnavailable => 'Packs can be added in the Android app.';
+
+  @override
+  String get attunePackSaveFailed =>
+      'That file could not be saved on this device.';
+
+  @override
   String get attuneFocus => 'Slow shape';
 
   @override
