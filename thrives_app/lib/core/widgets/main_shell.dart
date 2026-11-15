@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/storage/tier_service.dart';
+import '../../core/storage/vault_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/attune/screens/attune_home_screen.dart';
 import '../../features/build/screens/build_home_screen.dart';
@@ -56,7 +57,7 @@ const _allTabs = [
     minTier: 1,
   ),
   _Tab(
-    screen: AttuneHomeScreen(),
+    screen: AttuneScreen(),
     icon: Icons.music_note_rounded,
     label: 'Attune',
     minTier: 1,
@@ -107,7 +108,7 @@ class MainShell extends StatefulWidget {
   }
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   int _index = 0;
 
   static _MainShellState? _current;
@@ -116,12 +117,30 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _current = this;
+    WidgetsBinding.instance.addObserver(this);
+    VaultService.instance.ensureLoaded();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (_current == this) _current = null;
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final vault = VaultService.instance;
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        vault.onBackgrounded();
+      case AppLifecycleState.resumed:
+        vault.onResumed();
+      case AppLifecycleState.detached:
+        break;
+    }
   }
 
   void jumpToRegulate() => setState(() => _index = 0);
@@ -161,49 +180,53 @@ class _MainShellState extends State<MainShell> {
               .addPostFrameCallback((_) => setState(() => _index = safeIndex));
         }
 
-        return BaselineCheckInHost(
-          child: Scaffold(
-            body: Stack(
-              children: [
-                IndexedStack(
-                  index: safeIndex,
-                  children: tabs.map((t) => t.screen).toList(),
-                ),
-                // Settings button — top right, always accessible
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  right: 16,
-                  child: Material(
-                    color: colors.surface.withValues(alpha: 0.90),
-                    borderRadius: BorderRadius.circular(8),
-                    child: InkWell(
-                      onTap: _openSettings,
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => VaultService.instance.onUserActivity(),
+          child: BaselineCheckInHost(
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  IndexedStack(
+                    index: safeIndex,
+                    children: tabs.map((t) => t.screen).toList(),
+                  ),
+                  // Settings button — top right, always accessible
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    right: 16,
+                    child: Material(
+                      color: colors.surface.withValues(alpha: 0.90),
                       borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: colors.surfaceContainerHighest
-                                .withValues(alpha: 0.82),
+                      child: InkWell(
+                        onTap: _openSettings,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: colors.surfaceContainerHighest
+                                  .withValues(alpha: 0.82),
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          Icons.settings_rounded,
-                          color: colors.primary,
-                          size: 21,
+                          child: Icon(
+                            Icons.settings_rounded,
+                            color: colors.primary,
+                            size: 21,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            bottomNavigationBar: _ThriveNavBar(
-              currentIndex: safeIndex,
-              tabs: tabs,
-              onTap: (i) => setState(() => _index = i),
+                ],
+              ),
+              bottomNavigationBar: _ThriveNavBar(
+                currentIndex: safeIndex,
+                tabs: tabs,
+                onTap: (i) => setState(() => _index = i),
+              ),
             ),
           ),
         );

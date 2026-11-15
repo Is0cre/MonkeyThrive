@@ -1,17 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/session_log.dart';
+import '../../../core/storage/vault_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../settings/data_portability.dart';
+import 'vault_lock_screen.dart';
 
+/// Reflect stays behind the vault. Session logs are not read until the
+/// key is open, because the shell builds this tab immediately.
 class ReflectHomeScreen extends StatefulWidget {
   const ReflectHomeScreen({super.key});
 
   @override
-  State<ReflectHomeScreen> createState() => _ReflectHomeScreenState();
+  State<ReflectHomeScreen> createState() => _ReflectGateState();
 }
 
-class _ReflectHomeScreenState extends State<ReflectHomeScreen> {
+class _ReflectGateState extends State<ReflectHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    VaultService.instance.ensureLoaded();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: VaultService.instance,
+      builder: (context, _) {
+        final vault = VaultService.instance;
+        if (!vault.isReady) {
+          return const ColoredBox(color: AppColors.background);
+        }
+        if (!vault.isUnlocked || vault.storageBroken) {
+          return const VaultLockScreen();
+        }
+        return const _ReflectRecord();
+      },
+    );
+  }
+}
+
+class _ReflectRecord extends StatefulWidget {
+  const _ReflectRecord();
+
+  @override
+  State<_ReflectRecord> createState() => _ReflectHomeScreenState();
+}
+
+class _ReflectHomeScreenState extends State<_ReflectRecord> {
   List<ToleranceEntry> _toleranceLog = [];
   List<SessionEntry> _sessionLog = [];
   bool _loading = true;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/journal_service.dart';
 import '../../../core/storage/session_tracker.dart';
+import '../../../core/storage/vault_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
 
@@ -48,6 +49,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
     _entry = widget.entry;
     _controller = TextEditingController(text: _entry.body);
     _controller.addListener(_onChanged);
+    VaultService.instance.addListener(_onVault);
     beginTracking('Journaling', 'Build');
     if (widget.isNew) {
       // Autofocus on new entries
@@ -59,12 +61,23 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
 
   @override
   void dispose() {
+    VaultService.instance.removeListener(_onVault);
     _saveTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
+  void _onVault() {
+    final vault = VaultService.instance;
+    if (!vault.isProtected || vault.isUnlocked) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    });
+  }
+
   void _onChanged() {
+    VaultService.instance.onUserActivity();
     setState(() => _saved = false);
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 600), _flush);
@@ -73,7 +86,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen>
   Future<void> _flush() async {
     final updated = _entry.copyWith(body: _controller.text);
     _entry = updated;
-    await JournalService.save(updated);
+    try {
+      await JournalService.save(updated);
+    } on VaultLockedException {
+      if (mounted) setState(() => _saved = false);
+      return;
+    }
     if (mounted) setState(() => _saved = true);
   }
 

@@ -6,6 +6,7 @@ import '../../../core/baseline/baseline_monitor.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/tier_service.dart';
+import '../../../core/storage/vault_service.dart';
 import '../../../core/theme/app_appearance.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../support/trusted_people_screen.dart';
@@ -75,6 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await VaultService.instance.wipe();
     AppAppearanceController.instance.notifier.value =
         const AppearanceSettings();
 
@@ -363,8 +365,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
                         child: Text(context.l10n.cancel,
-                            style:
-                                const TextStyle(color: AppColors.textSecondary)),
+                            style: const TextStyle(
+                                color: AppColors.textSecondary)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),

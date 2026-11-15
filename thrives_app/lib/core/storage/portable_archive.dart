@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'journal_service.dart';
 import 'local_encrypted_store.dart';
 import 'passphrase_seal.dart';
 import 'prefs_service.dart';
+import 'vault_service.dart';
 
 /// A local copy of history and preferences, sealed with a passphrase.
 ///
@@ -35,6 +37,9 @@ class PortableArchive {
     'profile_has_therapist',
     'crisis_directory_country',
     PrefsService.trustedPeopleKey,
+    PrefsService.attuneIntroKey,
+    PrefsService.attuneWaiverKey,
+    PrefsService.attuneUnlockedKey,
     'appearance_accent',
     'appearance_contrast',
     'tier2_unlocked',
@@ -50,11 +55,18 @@ class PortableArchive {
     String passphrase, {
     int iterations = PassphraseSeal.productionIterations,
   }) async {
+    await VaultService.instance.ensureLoaded();
     final prefs = await SharedPreferences.getInstance();
     final plain = <String, dynamic>{};
     for (final key in plainKeys) {
       final value = prefs.get(key);
       if (value == null) continue;
+      if (key == 'journal_entries' && value is String) {
+        plain[key] = _encodeValue(
+          await JournalService.plaintextSnapshot(value),
+        );
+        continue;
+      }
       plain[key] = _encodeValue(value);
     }
 
@@ -75,6 +87,11 @@ class PortableArchive {
   }
 
   static Future<void> importSealed(String token, String passphrase) async {
+    await VaultService.instance.ensureLoaded();
+    final vault = VaultService.instance;
+    if (vault.storageBroken || (vault.isProtected && !vault.isUnlocked)) {
+      throw const VaultLockedException();
+    }
     final document = jsonDecode(PassphraseSeal.open(token, passphrase));
     if (document is! Map<String, dynamic> || document['format'] != format) {
       throw const FormatException('This is not a MonkeyThrive copy.');
@@ -114,6 +131,7 @@ class PortableArchive {
       }
       await LocalEncryptedStore.writeJsonList(key, rows);
     }
+    await JournalService.resealAll();
   }
 
   static Map<String, dynamic> _encodeValue(Object value) {

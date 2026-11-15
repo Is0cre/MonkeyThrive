@@ -77,7 +77,6 @@ class BinauralBeatSource extends CachedWavSource {
   final double amplitude;
 
   static const int _sampleRate = 44100;
-  static const int _durationSeconds = 30; // loop chunk length
 
   BinauralBeatSource({
     required this.carrierHz,
@@ -87,7 +86,10 @@ class BinauralBeatSource extends CachedWavSource {
 
   @override
   Uint8List buildWav() {
-    final numSamples = _sampleRate * _durationSeconds;
+    final numSamples = toneLoopSamples(
+      _sampleRate,
+      [carrierHz, carrierHz + beatHz],
+    );
     // 44-byte WAV header + stereo int16 samples (2 channels × 2 bytes)
     final buf = ByteData(44 + numSamples * 4);
     writeWavHeader(
@@ -99,21 +101,23 @@ class BinauralBeatSource extends CachedWavSource {
 
     for (int i = 0; i < numSamples; i++) {
       final t = i / _sampleRate;
-      // Fade in/out over first/last 0.1s to avoid clicks
-      final env = _envelope(i, numSamples);
-      final left = env * amplitude * math.sin(2 * math.pi * carrierHz * t);
+      final left = amplitude * math.sin(2 * math.pi * carrierHz * t);
       final right =
-          env * amplitude * math.sin(2 * math.pi * (carrierHz + beatHz) * t);
+          amplitude * math.sin(2 * math.pi * (carrierHz + beatHz) * t);
       buf.setInt16(44 + i * 4, pcm16(left), Endian.little);
       buf.setInt16(44 + i * 4 + 2, pcm16(right), Endian.little);
     }
     return buf.buffer.asUint8List();
   }
+}
 
-  static double _envelope(int i, int total) {
-    const fadeFrames = 4410; // 0.1s
-    return fadeEnvelope(i, total, fadeFrames);
-  }
+/// Top-level so [compute] can run it in a release isolate.
+/// [carrierAndBeat] is `[carrierHz, beatHz]`.
+Uint8List synthesizeBinauralWav(List<double> carrierAndBeat) {
+  return BinauralBeatSource(
+    carrierHz: carrierAndBeat[0],
+    beatHz: carrierAndBeat[1],
+  ).bytes;
 }
 
 /// Generates isochronic tones — works without headphones.
@@ -126,7 +130,6 @@ class IsochronicToneSource extends CachedWavSource {
   final double amplitude;
 
   static const int _sampleRate = 44100;
-  static const int _durationSeconds = 30;
 
   IsochronicToneSource({
     required this.carrierHz,
@@ -136,7 +139,10 @@ class IsochronicToneSource extends CachedWavSource {
 
   @override
   Uint8List buildWav() {
-    final numSamples = _sampleRate * _durationSeconds;
+    final numSamples = toneLoopSamples(
+      _sampleRate,
+      [carrierHz, beatHz],
+    );
     // Mono: 1 channel × 2 bytes per sample
     final buf = ByteData(44 + numSamples * 2);
     writeWavHeader(
@@ -152,11 +158,8 @@ class IsochronicToneSource extends CachedWavSource {
       final gate = math.sin(math.pi * beatHz * t) >= 0 ? 1.0 : 0.0;
       // Smooth the gate edges slightly to reduce harshness
       final smoothedGate = gate * _softgate(i, beatHz);
-      final env = BinauralBeatSource._envelope(i, numSamples);
-      final sample = env *
-          amplitude *
-          smoothedGate *
-          math.sin(2 * math.pi * carrierHz * t);
+      final sample =
+          amplitude * smoothedGate * math.sin(2 * math.pi * carrierHz * t);
       buf.setInt16(44 + i * 2, pcm16(sample), Endian.little);
     }
     return buf.buffer.asUint8List();
@@ -179,4 +182,32 @@ class IsochronicToneSource extends CachedWavSource {
     if (phaseInCycle >= 0.5) return 0.0;
     return 1.0;
   }
+}
+
+/// Top-level so [compute] can run it in a release isolate.
+/// [carrierAndBeat] is `[carrierHz, beatHz]`.
+Uint8List synthesizeIsochronicWav(List<double> carrierAndBeat) {
+  return IsochronicToneSource(
+    carrierHz: carrierAndBeat[0],
+    beatHz: carrierAndBeat[1],
+  ).bytes;
+}
+
+/// Shortest loop, up to ten seconds, that brings every frequency back to a
+/// whole cycle. An integer rate stays one second. 164.8 Hz needs five,
+/// because 164.8 × 5 is a whole number of cycles, so the join does not click.
+int toneLoopSamples(int sampleRate, List<double> frequencies) {
+  const maxSeconds = 10;
+  for (var seconds = 1; seconds <= maxSeconds; seconds++) {
+    var closed = true;
+    for (final hz in frequencies) {
+      final cycles = hz * seconds;
+      if ((cycles - cycles.round()).abs() > 0.0001) {
+        closed = false;
+        break;
+      }
+    }
+    if (closed) return sampleRate * seconds;
+  }
+  return sampleRate * maxSeconds;
 }

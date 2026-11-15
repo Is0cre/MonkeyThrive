@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/haptics/breath_haptics_controller.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/count_slider.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
 import '../../../l10n/l10n.dart';
@@ -31,9 +33,13 @@ const _inhale2Ms = 1200;
 const _exhaleMs = 7000;
 const _restMs = 1000;
 const _defaultRounds = 5;
+const _minRounds = 2;
+const _maxRounds = 30;
 
 class PhysiologicalSighScreen extends StatefulWidget {
-  const PhysiologicalSighScreen({super.key});
+  final BreathHapticsController? haptics;
+
+  const PhysiologicalSighScreen({super.key, this.haptics});
 
   @override
   State<PhysiologicalSighScreen> createState() =>
@@ -50,15 +56,21 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
   bool _running = false;
   bool _done = false;
   Timer? _phaseTimer;
+  late final BreathHapticsController _haptics;
+  bool _hapticsEnabled = true;
+  DateTime? _phaseStarted;
+  int _phaseMs = _inhale1Ms;
 
   @override
   void initState() {
     super.initState();
+    _haptics = widget.haptics ?? BreathHapticsController();
     _circleController = AnimationController(vsync: this);
   }
 
   @override
   void dispose() {
+    _haptics.stopBreathingHaptics();
     _phaseTimer?.cancel();
     _circleController.dispose();
     super.dispose();
@@ -88,12 +100,14 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
   void _pause() {
     _phaseTimer?.cancel();
     _circleController.stop();
+    _haptics.stopBreathingHaptics();
     endTracking();
     if (mounted) setState(() => _running = false);
   }
 
   void _reset() {
     _phaseTimer?.cancel();
+    _haptics.stopBreathingHaptics();
     _circleController.reset();
     setState(() {
       _round = 0;
@@ -106,6 +120,9 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
   void _runPhase(_SighPhase phase) {
     if (!mounted) return;
     setState(() => _phase = phase);
+    _phaseMs = _milliseconds(phase);
+    _phaseStarted = DateTime.now();
+    _paceHaptics(fromStart: true);
 
     switch (phase) {
       case _SighPhase.inhale1:
@@ -149,6 +166,7 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
           () {
             if (!mounted) return;
             if (_round >= _targetRounds) {
+              _haptics.stopBreathingHaptics();
               setState(() {
                 _running = false;
                 _done = true;
@@ -163,6 +181,50 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
             }
           },
         );
+    }
+  }
+
+  void _toggleHaptics() {
+    setState(() => _hapticsEnabled = !_hapticsEnabled);
+    if (_running) _paceHaptics(fromStart: false);
+  }
+
+  /// The motor follows this sigh. The rest is silence.
+  void _paceHaptics({required bool fromStart}) {
+    if (!_hapticsEnabled || !_running) {
+      _haptics.stopBreathingHaptics();
+      return;
+    }
+    var ms = _phaseMs;
+    final started = _phaseStarted;
+    if (!fromStart && started != null) {
+      ms -= DateTime.now().difference(started).inMilliseconds;
+    }
+    unawaited(_haptics.playPhase(durationMs: ms, motion: _motion(_phase)));
+  }
+
+  int _milliseconds(_SighPhase phase) {
+    switch (phase) {
+      case _SighPhase.inhale1:
+        return _inhale1Ms;
+      case _SighPhase.inhale2:
+        return _inhale2Ms;
+      case _SighPhase.exhale:
+        return _exhaleMs;
+      case _SighPhase.rest:
+        return _restMs;
+    }
+  }
+
+  BreathHapticMotion _motion(_SighPhase phase) {
+    switch (phase) {
+      case _SighPhase.inhale1:
+      case _SighPhase.inhale2:
+        return BreathHapticMotion.rise;
+      case _SighPhase.exhale:
+        return BreathHapticMotion.fall;
+      case _SighPhase.rest:
+        return BreathHapticMotion.still;
     }
   }
 
@@ -201,6 +263,18 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            key: const Key('breath-haptics-toggle'),
+            tooltip:
+                _hapticsEnabled ? l10n.breathHapticsOn : l10n.breathHapticsOff,
+            onPressed: _toggleHaptics,
+            icon: Icon(
+              Icons.vibration,
+              color: _hapticsEnabled ? AppColors.teal : AppColors.textMuted,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
@@ -228,76 +302,87 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
 
             // ── Breathing circle ────────────────────────────────────────────
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Round counter
-                    AnimatedOpacity(
-                      opacity: _round > 0 && !_done ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        l10n.breathFraction(_round, _targetRounds),
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 13,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Round counter
+                          AnimatedOpacity(
+                            opacity: _round > 0 && !_done ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 300),
+                            child: Text(
+                              l10n.breathFraction(_round, _targetRounds),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
 
-                    // Animated circle
-                    AnimatedBuilder(
-                      animation: _circleController,
-                      builder: (context, _) {
-                        final scale = 0.45 + _circleController.value * 0.55;
-                        final size = circleSize * scale;
-                        final alpha = 0.08 + _circleController.value * 0.14;
-                        final borderAlpha =
-                            0.25 + _circleController.value * 0.5;
-                        return SizedBox(
-                          width: circleSize,
-                          height: circleSize,
-                          child: Center(
-                            child: Container(
-                              width: size,
-                              height: size,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.teal.withValues(alpha: alpha),
-                                border: Border.all(
-                                  color: AppColors.teal
-                                      .withValues(alpha: borderAlpha),
-                                  width: 1.5,
+                          // Animated circle
+                          AnimatedBuilder(
+                            animation: _circleController,
+                            builder: (context, _) {
+                              final scale =
+                                  0.45 + _circleController.value * 0.55;
+                              final size = circleSize * scale;
+                              final alpha =
+                                  0.08 + _circleController.value * 0.14;
+                              final borderAlpha =
+                                  0.25 + _circleController.value * 0.5;
+                              return SizedBox(
+                                width: circleSize,
+                                height: circleSize,
+                                child: Center(
+                                  child: Container(
+                                    width: size,
+                                    height: size,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.teal
+                                          .withValues(alpha: alpha),
+                                      border: Border.all(
+                                        color: AppColors.teal
+                                            .withValues(alpha: borderAlpha),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Phase label
+                          SizedBox(
+                            height: 28,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              child: Text(
+                                phaseLabel,
+                                key: ValueKey(phaseLabel),
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w300,
                                 ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Phase label
-                    SizedBox(
-                      height: 28,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: Text(
-                          phaseLabel,
-                          key: ValueKey(phaseLabel),
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
@@ -307,55 +392,20 @@ class _PhysiologicalSighScreenState extends State<PhysiologicalSighScreen>
               child: Column(
                 children: [
                   if (!_running && _round == 0 && !_done) ...[
-                    Text(
-                      l10n.sighRounds,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (final n in [3, 5, 10])
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: GestureDetector(
-                              onTap: () => setState(() => _targetRounds = n),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                width: 56,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: _targetRounds == n
-                                      ? AppColors.teal.withValues(alpha: 0.15)
-                                      : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: _targetRounds == n
-                                        ? AppColors.teal
-                                        : Colors.transparent,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '$n',
-                                    style: TextStyle(
-                                      color: _targetRounds == n
-                                          ? AppColors.teal
-                                          : AppColors.textSecondary,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+                    CountSlider(
+                      label: l10n.sighRounds,
+                      valueLabel: '$_targetRounds',
+                      minLabel: '$_minRounds',
+                      maxLabel: '$_maxRounds',
+                      value: _targetRounds.toDouble(),
+                      min: _minRounds.toDouble(),
+                      max: _maxRounds.toDouble(),
+                      divisions: _maxRounds - _minRounds,
+                      enabled: true,
+                      activeColor: AppColors.teal,
+                      sliderKey: const Key('sigh-round-slider'),
+                      onChanged: (v) =>
+                          setState(() => _targetRounds = v.round()),
                     ),
                     const SizedBox(height: 20),
                   ],

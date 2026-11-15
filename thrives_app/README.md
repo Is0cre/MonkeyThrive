@@ -21,7 +21,7 @@ It exists because the person building it needed it, and couldn't find anything t
 ### 🌊 Regulate
 Immediate tools for when you are overwhelmed, anxious, or activated.
 
-- Box Breathing (3/4/5 count, animated circle, haptic)
+- Box Breathing (2–30 cycles, animated circle, haptic)
 - 4-7-8 Breathing
 - Wim Hof guided rounds with Window of Tolerance lock and per-session safety confirmations
 - 5-4-3-2-1 Sensory Grounding

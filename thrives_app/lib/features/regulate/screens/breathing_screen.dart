@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/haptics/breath_haptics_controller.dart';
 import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/count_slider.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
 import '../../../l10n/l10n.dart';
@@ -20,7 +22,9 @@ class _Phase {
 
 class BreathingScreen extends StatefulWidget {
   final BreathingMode mode;
-  const BreathingScreen({super.key, required this.mode});
+  final BreathHapticsController? haptics;
+
+  const BreathingScreen({super.key, required this.mode, this.haptics});
 
   @override
   State<BreathingScreen> createState() => _BreathingScreenState();
@@ -32,7 +36,6 @@ class _BreathingScreenState extends State<BreathingScreen>
   late Animation<double> _circleAnimation;
 
   static const int _boxSideSeconds = 4;
-  static const int _fourSevenEightCycles = 4;
 
   bool _running = false;
   bool _sessionDone = false;
@@ -41,11 +44,15 @@ class _BreathingScreenState extends State<BreathingScreen>
   int _cycleCount = 0;
   Timer? _timer;
 
-  /// Box rounds the person picked: 3, 4, or 5. Each side stays a 4 count.
-  int _boxCycles = 4;
+  /// Rounds the person picked, from 2 to 30. Box sides stay a 4 count.
+  /// 4-7-8 keeps its 4, 7, and 8 counts. The regulated-state lock stays.
+  static const int _minCycles = 2;
+  static const int _maxCycles = 30;
+  int _cycles = 4;
+  late final BreathHapticsController _haptics;
+  bool _hapticsEnabled = true;
 
-  int get _roundCycles =>
-      widget.mode == BreathingMode.box ? _boxCycles : _fourSevenEightCycles;
+  int get _roundCycles => _cycles;
 
   List<_Phase> get _phases {
     switch (widget.mode) {
@@ -70,6 +77,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   @override
   void initState() {
     super.initState();
+    _haptics = widget.haptics ?? BreathHapticsController();
     _circleController = AnimationController(vsync: this);
     _circleAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
       CurvedAnimation(parent: _circleController, curve: Curves.easeInOut),
@@ -78,6 +86,7 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   @override
   void dispose() {
+    _haptics.stopBreathingHaptics();
     _timer?.cancel();
     _circleController.dispose();
     super.dispose();
@@ -113,6 +122,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     });
     _animatePhase();
     _startTimer();
+    _paceHaptics();
   }
 
   void _showLockedMessage(ToleranceState? wot) {
@@ -121,7 +131,8 @@ class _BreathingScreenState extends State<BreathingScreen>
         content: Text(
           wot == null
               ? context.l10n.breathing478NeedsCheckin
-              : context.l10n.breathing478Locked(toleranceLock(context.l10n, wot)),
+              : context.l10n
+                  .breathing478Locked(toleranceLock(context.l10n, wot)),
         ),
         backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
@@ -132,6 +143,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   void _pause() {
     _timer?.cancel();
     _circleController.stop();
+    _haptics.stopBreathingHaptics();
     endTracking();
     if (mounted) setState(() => _running = false);
   }
@@ -165,11 +177,13 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
     _secondsLeft = _currentPhase.durationSeconds;
     _animatePhase();
+    _paceHaptics();
   }
 
   void _finishSession() {
     _timer?.cancel();
     _circleController.stop();
+    _haptics.stopBreathingHaptics();
     endTracking();
     _running = false;
     _sessionDone = true;
@@ -207,6 +221,28 @@ class _BreathingScreenState extends State<BreathingScreen>
     _start(fresh: true);
   }
 
+  void _toggleHaptics() {
+    setState(() => _hapticsEnabled = !_hapticsEnabled);
+    if (_running) _paceHaptics();
+  }
+
+  /// The motor follows this exercise. A hold is silence.
+  void _paceHaptics() {
+    if (!_hapticsEnabled || !_running) {
+      _haptics.stopBreathingHaptics();
+      return;
+    }
+    final label = _currentPhase.label;
+    final motion = switch (label) {
+      'Exhale' => BreathHapticMotion.fall,
+      'Hold' => BreathHapticMotion.still,
+      _ => BreathHapticMotion.rise,
+    };
+    final seconds =
+        _secondsLeft > 0 ? _secondsLeft : _currentPhase.durationSeconds;
+    unawaited(_haptics.playPhase(durationMs: seconds * 1000, motion: motion));
+  }
+
   String _title(BuildContext context) {
     switch (widget.mode) {
       case BreathingMode.box:
@@ -230,8 +266,6 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isBox = widget.mode == BreathingMode.box;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_title(context)),
@@ -242,6 +276,19 @@ class _BreathingScreenState extends State<BreathingScreen>
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            key: const Key('breath-haptics-toggle'),
+            tooltip: _hapticsEnabled
+                ? context.l10n.breathHapticsOn
+                : context.l10n.breathHapticsOff,
+            onPressed: _toggleHaptics,
+            icon: Icon(
+              Icons.vibration,
+              color: _hapticsEnabled ? AppColors.teal : AppColors.textMuted,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const AnchorBar(),
       body: SafeArea(
@@ -342,11 +389,24 @@ class _BreathingScreenState extends State<BreathingScreen>
               padding: const EdgeInsets.fromLTRB(32, 0, 32, 32),
               child: Column(
                 children: [
-                  if (isBox && !_sessionDone) ...[
-                    _CountSelector(
-                      current: _boxCycles,
+                  if (!_sessionDone) ...[
+                    CountSlider(
+                      label: context.l10n.breathingCycles,
+                      valueLabel: '$_cycles',
+                      minLabel: '$_minCycles',
+                      maxLabel: '$_maxCycles',
+                      value: _cycles.toDouble(),
+                      min: _minCycles.toDouble(),
+                      max: _maxCycles.toDouble(),
+                      divisions: _maxCycles - _minCycles,
                       enabled: !_running,
-                      onChanged: (v) => setState(() => _boxCycles = v),
+                      activeColor: AppColors.teal,
+                      sliderKey: Key(
+                        widget.mode == BreathingMode.box
+                            ? 'box-cycle-slider'
+                            : 'breath-cycle-slider',
+                      ),
+                      onChanged: (v) => setState(() => _cycles = v.round()),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -462,67 +522,6 @@ class _BreathCirclePainter extends CustomPainter {
   @override
   bool shouldRepaint(_BreathCirclePainter old) =>
       old.progress != progress || old.isRunning != isRunning;
-}
-
-class _CountSelector extends StatelessWidget {
-  final int current;
-  final bool enabled;
-  final ValueChanged<int> onChanged;
-
-  const _CountSelector({
-    required this.current,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          context.l10n.breathingCycles,
-          style: TextStyle(
-            color: enabled ? AppColors.textSecondary : AppColors.textMuted,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(width: 16),
-        for (final count in [3, 4, 5]) ...[
-          GestureDetector(
-            onTap: enabled ? () => onChanged(count) : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: current == count
-                    ? AppColors.teal.withValues(alpha: 0.2)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: current == count
-                      ? AppColors.teal
-                      : AppColors.textMuted.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Text(
-                '$count',
-                style: TextStyle(
-                  color: current == count
-                      ? AppColors.teal
-                      : (enabled
-                          ? AppColors.textSecondary
-                          : AppColors.textMuted),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
 }
 
 class _InfoBanner extends StatelessWidget {

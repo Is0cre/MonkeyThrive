@@ -4,13 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/audio/acoustic_synthesis_gate.dart';
+import '../../../core/audio/attune_audio_session.dart';
 import '../../../core/audio/local_audio_cache.dart';
 import '../../../core/audio/noise_generator.dart';
 import '../../../core/audio/tone_generator.dart';
+import '../attune_mask_playlist.dart';
+import '../../../core/storage/prefs_service.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/acoustic_coming_soon.dart';
 import '../../../core/widgets/app_chrome.dart';
+import '../../../core/widgets/count_slider.dart';
+import '../widgets/attune_listening.dart';
+import 'attune_frequency_intro.dart';
+import 'attune_onboarding_carousel.dart';
+import 'physics_explanation_screen.dart';
 
 enum AttuneMode { none, binaural, isochronic }
 
@@ -23,12 +31,19 @@ const _noiseIcons = {
   NatureNoiseType.wind: Icons.air_rounded,
 };
 
+class AttuneScreen extends StatelessWidget {
+  const AttuneScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => const AttuneHomeScreen();
+}
+
 class AttuneHomeScreen extends StatelessWidget {
   const AttuneHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (!AcousticSynthesisGate.enabled) {
+    if (!AcousticSynthesisGate.tonesEnabled) {
       return const _AttuneUnavailableScreen();
     }
     return const _AttunePlayerScreen();
@@ -81,6 +96,13 @@ class _AttuneUnavailableScreen extends StatelessWidget {
   }
 }
 
+// CLINICAL SAFETY — Attune frequency introduction
+// What this does: Holds binaural and isochronic playback until the person
+//   has stepped through the introduction on this device.
+// Why it exists: Two-ear beats and pulsed tones are strong sensory input.
+//   Headphones, seizure history, and not driving have to be said before Play.
+// What happens if removed or modified: Play can start on an unexplained tone.
+// Informed by: the acoustic safety gate for this tool.
 class _AttunePlayerScreen extends StatefulWidget {
   const _AttunePlayerScreen();
 
@@ -90,13 +112,31 @@ class _AttunePlayerScreen extends StatefulWidget {
 
 class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     with SessionTracking {
+  // Null until the device flags have been read. Play stays unbuilt until then.
+  bool? _introSeen;
+  bool? _waiverAccepted;
+  bool _rereadIntro = false;
+
+  /// Mix levels. The tone rises from silence to [_engineVolume].
+  double _engineVolume = 0.25;
+  double _maskVolume = 0.75;
+
   // ── tone state ────────────────────────────────────────────────────────────
   AttuneMode _mode = AttuneMode.none;
   BrainwaveBand _band = BrainwaveBand.alpha;
-  double _carrierHz = 200.0;
+  double _carrierHz = attuneMaskCarrierHz(0);
   bool _toneLoading = false;
   bool _tonePlaying = false;
   String? _toneError;
+  int _toneFade = 0;
+
+  // The slider cannot run past the current recording. The floor is 10
+  // minutes unless that recording is shorter. The value starts at the
+  // length of the first season.
+  static const int _minSessionMinutes = 10;
+  int _sessionMinutes = attuneMaskDurationMinutes(0);
+  int _secondsLeft = 0;
+  Timer? _sessionTimer;
 
   // ── nature sounds ─────────────────────────────────────────────────────────
   final Set<NatureNoiseType> _activeSounds = {};
@@ -105,11 +145,156 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   /// Created only after the gate check inside a playback method.
   AudioPlayer? _tonePlayer;
 
-  AudioPlayer _ensureTonePlayer() => _tonePlayer ??= AudioPlayer();
+  /// Local classical mask. This is not nature synthesis, so the acoustic
+  /// gate stays closed.
+  AudioPlayer? _maskPlayer;
+  StreamSubscription<PlayerState>? _maskStateSub;
+  int _maskIndex = 0;
+  int _maskFade = 0;
+
+  /// True only after this recording has actually started. A later
+  /// [ProcessingState.completed] then ends the session.
+  bool _maskHeardPlayback = false;
+
+  /// The binaural engine is held. The recording keeps playing.
+  bool _toneEnginePaused = false;
+
+  AudioPlayer _mixPlayer() => AudioPlayer(handleAudioSessionActivation: false);
+
+  AudioPlayer _ensureTonePlayer() => _tonePlayer ??= _mixPlayer();
+
+  AudioPlayer _ensureMaskPlayer() {
+    final player = _maskPlayer ??= _mixPlayer();
+    _maskStateSub ??= player.playerStateStream.listen(_onMaskPlayback);
+    return player;
+  }
+
+  /// Whole minutes the person can choose for the season now selected.
+  int get _sessionMaxMinutes => attuneMaskDurationMinutes(_maskIndex);
+
+  int get _sessionMinMinutes {
+    final maxMinutes = _sessionMaxMinutes;
+    if (maxMinutes < _minSessionMinutes) return maxMinutes;
+    return _minSessionMinutes;
+  }
+
+  void _selectMask(int index) {
+    final previousMax = attuneMaskDurationMinutes(_maskIndex);
+    final wasFullPiece = _sessionMinutes >= previousMax;
+    _maskIndex = index;
+    final maxMinutes = attuneMaskDurationMinutes(index);
+    final minMinutes =
+        maxMinutes < _minSessionMinutes ? maxMinutes : _minSessionMinutes;
+    if (wasFullPiece || _sessionMinutes > maxMinutes) {
+      _sessionMinutes = maxMinutes;
+    } else if (_sessionMinutes < minMinutes) {
+      _sessionMinutes = minMinutes;
+    }
+    final cap = attuneMaskDurationSeconds[index];
+    if (_tonePlaying && _secondsLeft > cap) _secondsLeft = cap;
+    _carrierHz = attuneMaskCarrierHz(index);
+  }
+
+  void _onMaskPlayback(PlayerState state) {
+    if (!_maskHeardPlayback) {
+      if (state.playing && state.processingState == ProcessingState.ready) {
+        _maskHeardPlayback = true;
+      }
+      return;
+    }
+    if (state.processingState != ProcessingState.completed) return;
+    _maskHeardPlayback = false;
+    unawaited(_stopSession());
+  }
+
+  bool get _mayPlayTone =>
+      _introSeen == true &&
+      _waiverAccepted == true &&
+      !_rereadIntro &&
+      AcousticSynthesisGate.tonesEnabled;
+
+  /// True once the tone is actually playing. Setup controls fold away then.
+  bool get _isSessionActive => _tonePlaying;
+
+  String _maskTitle(BuildContext context) {
+    final l10n = context.l10n;
+    switch (_maskIndex) {
+      case 0:
+        return l10n.attuneMaskTrackSpring;
+      case 1:
+        return l10n.attuneMaskTrackSummer;
+      case 2:
+        return l10n.attuneMaskTrackAutumn;
+      case 3:
+        return l10n.attuneMaskTrackWinter;
+      default:
+        return l10n.attuneMaskTrackSpring;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIntro();
+  }
+
+  Future<void> _loadIntro() async {
+    final seen = await PrefsService.hasSeenAttuneIntro();
+    final waiver = await PrefsService.hasAcceptedAttuneWaiver();
+    if (seen && waiver) await PrefsService.rememberAttuneUnlocked();
+    if (!mounted) return;
+    setState(() {
+      _introSeen = seen;
+      _waiverAccepted = waiver;
+    });
+  }
+
+  Future<void> _finishCarousel() async {
+    await PrefsService.setAttuneUnlocked();
+    if (!mounted) return;
+    setState(() {
+      _introSeen = true;
+      _waiverAccepted = true;
+      _rereadIntro = false;
+    });
+  }
+
+  Future<void> _completeIntro() async {
+    await PrefsService.setAttuneIntroSeen();
+    if (!mounted) return;
+    setState(() {
+      _introSeen = true;
+      _rereadIntro = false;
+    });
+  }
+
+  void _openPhysics() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const PhysicsExplanationScreen(),
+      ),
+    );
+  }
+
+  void _openIntroAgain() {
+    _sessionTimer?.cancel();
+    _sessionTimer = null;
+    _toneFade++;
+    unawaited(_tonePlayer?.stop());
+    if (_tonePlaying && _activeSounds.isEmpty) endTracking();
+    setState(() {
+      _tonePlaying = false;
+      _toneLoading = false;
+      _rereadIntro = true;
+    });
+  }
 
   @override
   void dispose() {
+    _sessionTimer?.cancel();
+    _maskStateSub?.cancel();
     _tonePlayer?.dispose();
+    _maskPlayer?.dispose();
     for (final p in _naturePlayers.values) {
       p.dispose();
     }
@@ -118,52 +303,66 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
 
   // ── tone playback ──────────────────────────────────────────────────────────
 
-  Future<void> _startTone() async {
-    if (!AcousticSynthesisGate.enabled || _mode == AttuneMode.none) return;
+  Future<void> _startTone({bool resumeClock = false}) async {
+    if (!_mayPlayTone || _mode == AttuneMode.none) return;
     setState(() {
       _toneLoading = true;
       _toneError = null;
     });
 
     try {
+      await AttuneAudioSession.configureForMix();
       final band = _band;
       final carrier = _carrierHz;
       final beatHz = band.defaultBeatHz;
 
       final sourceKey =
           '${_mode.name}_${band.name}_${carrier.toStringAsFixed(1)}_$beatHz';
-      late final AudioSource source;
-      if (_mode == AttuneMode.binaural) {
-        source = await LocalAudioCache.audioSource(
-          sourceKey,
-          () => BinauralBeatSource(carrierHz: carrier, beatHz: beatHz).bytes,
-        );
-      } else {
-        source = await LocalAudioCache.audioSource(
-          sourceKey,
-          () => IsochronicToneSource(carrierHz: carrier, beatHz: beatHz).bytes,
-        );
-      }
+      final source = await LocalAudioCache.toneSource(
+        key: sourceKey,
+        binaural: _mode == AttuneMode.binaural,
+        carrierHz: carrier,
+        beatHz: beatHz,
+      );
 
       final tonePlayer = _ensureTonePlayer();
       await tonePlayer.setAudioSource(source, preload: true);
       await tonePlayer.setLoopMode(LoopMode.one);
-      await tonePlayer.play();
-
-      if (mounted) {
-        final label = _mode == AttuneMode.binaural
-            ? 'Binaural Beats — ${_band.label}'
-            : 'Isochronic Tones — ${_band.label}';
-        beginTracking(label, 'Attune', onEmergencyStop: _stopAllAudio);
+      try {
+        await tonePlayer.setVolume(0);
+      } catch (_) {}
+      if (!mounted || !_mayPlayTone) {
+        _toneFade++;
+        await tonePlayer.stop();
+        return;
+      }
+      // play() stays pending while the looping chunk repeats.
+      unawaited(tonePlayer.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES audio play failed: $error\n$stack');
+        if (!mounted) return;
+        _toneFade++;
         setState(() {
           _toneLoading = false;
-          _tonePlaying = true;
+          _tonePlaying = false;
+          _toneError = context.l10n.couldNotStartAudio;
         });
+      }));
+      unawaited(_raiseTone(tonePlayer));
+
+      final label = _mode == AttuneMode.binaural
+          ? 'Binaural Beats — ${_band.label}'
+          : 'Isochronic Tones — ${_band.label}';
+      if (!resumeClock) {
+        beginTracking(label, 'Attune', onEmergencyStop: _stopAllAudio);
+        _beginSessionClock();
+        unawaited(_startMask());
       }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('THRIVES audio start failed: $e');
-      }
+      setState(() {
+        _toneLoading = false;
+        _tonePlaying = true;
+      });
+    } catch (e, stackTrace) {
+      debugPrint('THRIVES audio start failed: $e\n$stackTrace');
       if (mounted) {
         setState(() {
           _toneLoading = false;
@@ -173,31 +372,206 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     }
   }
 
+  Future<void> _raiseTone(AudioPlayer player) async {
+    final fade = ++_toneFade;
+    const steps = 10;
+    for (var step = 1; step <= steps; step++) {
+      await Future<void>.delayed(const Duration(milliseconds: 70));
+      if (fade != _toneFade || !mounted) return;
+      try {
+        await player.setVolume((step / steps) * _engineVolume);
+      } catch (_) {
+        return;
+      }
+    }
+  }
+
+  // CLINICAL SAFETY — Attune session timer
+  // What this does: Keeps a binaural or isochronic tone inside a length the
+  //   person set, then fades it out.
+  // Why it exists: Hemispheric sound is sustained sensory input. An open-ended
+  //   loop can run past the point where the person meant to stop.
+  // What happens if removed or modified: The tone can continue with no end.
+  // Informed by: the acoustic safety gate for this tool.
+  void _beginSessionClock() {
+    _sessionTimer?.cancel();
+    _secondsLeft = _sessionMinutes * 60;
+    _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || !_tonePlaying) return;
+      if (_secondsLeft <= 1) {
+        _sessionTimer?.cancel();
+        _sessionTimer = null;
+        setState(() => _secondsLeft = 0);
+        unawaited(_endSession());
+        return;
+      }
+      setState(() => _secondsLeft -= 1);
+    });
+  }
+
+  Future<void> _endSession() async {
+    _sessionTimer?.cancel();
+    _sessionTimer = null;
+    final player = _tonePlayer;
+    if (player == null) {
+      await _stopTone();
+      return;
+    }
+    await _lowerTone(player);
+  }
+
+  Future<void> _lowerTone(AudioPlayer player) async {
+    final fade = ++_toneFade;
+    const steps = 10;
+    for (var step = steps - 1; step >= 0; step--) {
+      await Future<void>.delayed(const Duration(milliseconds: 70));
+      if (fade != _toneFade || !mounted) return;
+      try {
+        await player.setVolume((step / steps) * _engineVolume);
+        await _maskPlayer?.setVolume((step / steps) * _maskVolume);
+      } catch (_) {
+        return;
+      }
+    }
+    if (fade != _toneFade || !mounted) return;
+    await _stopTone();
+  }
+
+  Future<void> _startMask() async {
+    if (!_mayPlayTone || attuneMaskAssets.isEmpty) return;
+    try {
+      await AttuneAudioSession.configureForMix();
+      final player = _ensureMaskPlayer();
+      _maskHeardPlayback = false;
+      await player.setAudioSource(
+        AudioSource.asset(attuneMaskAssets[_maskIndex]),
+        preload: true,
+      );
+      await player.setLoopMode(LoopMode.off);
+      try {
+        await player.setVolume(0);
+      } catch (_) {}
+      if (!mounted || !_mayPlayTone) {
+        _maskFade++;
+        await player.stop();
+        return;
+      }
+      unawaited(player.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES mask play failed: $error\n$stack');
+      }));
+      unawaited(_raiseMask(player));
+    } catch (e, stackTrace) {
+      debugPrint('THRIVES mask start failed: $e\n$stackTrace');
+    }
+  }
+
+  Future<void> _raiseMask(AudioPlayer player) async {
+    final fade = ++_maskFade;
+    const steps = 10;
+    for (var step = 1; step <= steps; step++) {
+      await Future<void>.delayed(const Duration(milliseconds: 70));
+      if (fade != _maskFade || !mounted) return;
+      try {
+        await player.setVolume((step / steps) * _maskVolume);
+      } catch (_) {
+        return;
+      }
+    }
+  }
+
+  Future<void> _nextMaskTrack() async {
+    final next = (_maskIndex + 1) % attuneMaskAssets.length;
+    final player = _maskPlayer;
+    final playing = player != null && _tonePlaying;
+    setState(() => _selectMask(next));
+    if (playing) unawaited(_restartTone());
+    if (!playing) return;
+    _maskHeardPlayback = false;
+    try {
+      await player.setAudioSource(
+        AudioSource.asset(attuneMaskAssets[next]),
+        preload: true,
+      );
+      await player.setLoopMode(LoopMode.off);
+      await player.setVolume(_maskVolume);
+      unawaited(player.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES mask skip failed: $error\n$stack');
+      }));
+    } catch (e, stackTrace) {
+      debugPrint('THRIVES mask skip failed: $e\n$stackTrace');
+    }
+  }
+
+  Future<void> _toggleToneEngine() async {
+    final player = _tonePlayer;
+    if (player == null || !_tonePlaying || _toneLoading) return;
+    if (_toneEnginePaused) {
+      unawaited(player.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES audio play failed: $error\n$stack');
+      }));
+      try {
+        await player.setVolume(_engineVolume);
+      } catch (_) {}
+      if (mounted) setState(() => _toneEnginePaused = false);
+      return;
+    }
+    try {
+      await player.pause();
+    } catch (e, stackTrace) {
+      debugPrint('THRIVES audio pause failed: $e\n$stackTrace');
+      return;
+    }
+    if (mounted) setState(() => _toneEnginePaused = true);
+  }
+
+  /// Stops the tone as soon as the recording ends, with no fade.
+  Future<void> _stopSession() => _stopTone();
+
+  Future<void> _stopMask() async {
+    _maskFade++;
+    await _maskPlayer?.stop();
+  }
+
   void _stopAllAudio() {
+    _sessionTimer?.cancel();
+    _sessionTimer = null;
+    _toneFade++;
     final tonePlayer = _tonePlayer;
+    final maskPlayer = _maskPlayer;
     if (tonePlayer != null) unawaited(tonePlayer.stop());
+    if (maskPlayer != null) unawaited(maskPlayer.stop());
     for (final p in _naturePlayers.values) {
       unawaited(p.stop());
       p.dispose();
     }
     _naturePlayers.clear();
+    _maskHeardPlayback = false;
     if (mounted) {
       setState(() {
         _tonePlaying = false;
+        _toneEnginePaused = false;
         _activeSounds.clear();
       });
     }
   }
 
-  Future<void> _stopTone() async {
+  Future<void> _stopTone({bool endSession = true}) async {
+    _toneFade++;
+    _toneEnginePaused = false;
+    if (endSession) {
+      _sessionTimer?.cancel();
+      _sessionTimer = null;
+      _maskHeardPlayback = false;
+    }
     await _tonePlayer?.stop();
-    if (_activeSounds.isEmpty) endTracking();
+    if (endSession) await _stopMask();
+    if (endSession && _activeSounds.isEmpty) endTracking();
     if (mounted) setState(() => _tonePlaying = false);
   }
 
   Future<void> _restartTone() async {
-    await _stopTone();
-    await _startTone();
+    await _stopTone(endSession: false);
+    await _startTone(resumeClock: true);
   }
 
   // ── nature playback ────────────────────────────────────────────────────────
@@ -218,7 +592,8 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
           () => NatureNoiseSource(type).bytes,
         );
         if (!mounted || !AcousticSynthesisGate.enabled) return;
-        player = AudioPlayer();
+        await AttuneAudioSession.configureForMix();
+        player = AudioPlayer(handleAudioSessionActivation: false);
         await player.setAudioSource(source, preload: true);
         await player.setLoopMode(LoopMode.one);
         await player.play();
@@ -241,123 +616,329 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_introSeen == null || _waiverAccepted == null) {
+      return const AppBackdrop(child: SizedBox.expand());
+    }
+    // CLINICAL SAFETY — Attune listening confirmation
+    // What this does: Blocks the player until three confirmations are stored
+    //   on this device.
+    // Why it exists: Seizure history and driving have to be declined before a
+    //   sustained tone. The third line is the person's own risk statement.
+    // What happens if removed or modified: Play can start without that record.
+    // Informed by: the acoustic safety gate for this tool.
+    if (_introSeen != true || _waiverAccepted != true) {
+      return AppBackdrop(
+        child: AttuneOnboardingCarousel(
+          onAccepted: _finishCarousel,
+          onOpenPhysics: _openPhysics,
+        ),
+      );
+    }
+    if (_rereadIntro) {
+      return AppBackdrop(
+        child: AttuneFrequencyIntro(
+          allowClose: true,
+          onDone: _completeIntro,
+          onClose: () => setState(() => _rereadIntro = false),
+        ),
+      );
+    }
+    return _buildPlayer(context);
+  }
+
+  Widget _buildPlayer(BuildContext context) {
     return AppBackdrop(
       child: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              sliver: SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 42),
-                  child: AppHeader(
-                    title: context.l10n.navAttune,
-                    subtitle: context.l10n.attuneSubtitle,
-                    icon: Icons.graphic_eq_rounded,
-                  ),
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 100),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 100),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // ── Mode selector ───────────────────────────────────────
-                  AppSectionLabel(context.l10n.attuneType, icon: Icons.tune_rounded),
-                  const SizedBox(height: 12),
-                  _ModeRow(
-                    selected: _mode,
-                    onSelect: (m) {
-                      if (_tonePlaying) _stopTone();
-                      setState(() => _mode = m);
-                    },
-                  ),
-
-                  if (_mode == AttuneMode.binaural) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
-                            .withValues(alpha: 0.84),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: AppColors.amber.withValues(alpha: 0.24),
+                  ZenCollapse(
+                    show: !_isSessionActive,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 42),
+                          child: AppHeader(
+                            title: context.l10n.navAttune,
+                            subtitle: context.l10n.attuneSubtitle,
+                            icon: Icons.graphic_eq_rounded,
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.headphones_rounded,
-                              color: AppColors.amber, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              context.l10n.headphonesNote,
-                              style: const TextStyle(
-                                  color: AppColors.amber,
-                                  fontSize: 12,
-                                  height: 1.4),
+                        const SizedBox(height: 30),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            spacing: 12,
+                            children: [
+                              TextButton(
+                                onPressed: _openIntroAgain,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF7B68EE),
+                                  alignment: Alignment.centerLeft,
+                                ),
+                                child: Text(context.l10n.attuneIntroAgain),
+                              ),
+                              TextButton(
+                                onPressed: _openPhysics,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF7B68EE),
+                                  alignment: Alignment.centerLeft,
+                                ),
+                                child: Text(context.l10n.physicsOpen),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // ── Mode selector ───────────────────────────────────────
+                        AppSectionLabel(context.l10n.attuneType,
+                            icon: Icons.tune_rounded),
+                        const SizedBox(height: 12),
+                        _ModeRow(
+                          selected: _mode,
+                          onSelect: (m) {
+                            if (_tonePlaying) _stopTone();
+                            setState(() => _mode = m);
+                          },
+                        ),
+
+                        if (_mode == AttuneMode.binaural) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surface
+                                  .withValues(alpha: 0.84),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.amber.withValues(alpha: 0.24),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.headphones_rounded,
+                                    color: AppColors.amber, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    context.l10n.headphonesNote,
+                                    style: const TextStyle(
+                                        color: AppColors.amber,
+                                        fontSize: 12,
+                                        height: 1.4),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
-
+                  ),
                   if (_mode != AttuneMode.none) ...[
-                    const SizedBox(height: 24),
+                    ZenCollapse(
+                      show: !_isSessionActive,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 24),
 
-                    // ── Band selector ─────────────────────────────────────
-                    AppSectionLabel(
-                      context.l10n.frequencyBand,
-                      icon: Icons.equalizer_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    _BandGrid(
-                      selected: _band,
-                      onSelect: (b) {
-                        setState(() => _band = b);
-                        if (_tonePlaying) _restartTone();
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Carrier frequency ─────────────────────────────────
-                    AppSectionLabel(
-                      context.l10n.carrierFrequency,
-                      icon: Icons.radio_button_checked_rounded,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(context.l10n.hertz('100'),
-                            style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 11)),
-                        Expanded(
-                          child: Slider(
-                            value: _carrierHz,
-                            min: 100,
-                            max: 400,
-                            divisions: 30,
-                            activeColor: const Color(0xFF7B68EE),
-                            inactiveColor: AppColors.surfaceVariant,
-                            onChanged: (v) {
-                              setState(() => _carrierHz = v);
-                            },
-                            onChangeEnd: (_) {
+                          // ── Band selector ─────────────────────────────────
+                          AppSectionLabel(
+                            context.l10n.frequencyBand,
+                            icon: Icons.equalizer_rounded,
+                          ),
+                          const SizedBox(height: 12),
+                          _BandGrid(
+                            selected: _band,
+                            onSelect: (b) {
+                              setState(() => _band = b);
                               if (_tonePlaying) _restartTone();
                             },
                           ),
-                        ),
-                        Text(context.l10n.hertz('${_carrierHz.round()}'),
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 12)),
-                      ],
+                          const SizedBox(height: 24),
+
+                          // ── Carrier frequency ─────────────────────────────────
+                          AppSectionLabel(
+                            context.l10n.carrierFrequency,
+                            icon: Icons.radio_button_checked_rounded,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(context.l10n.hertz('100'),
+                                  style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 11)),
+                              Expanded(
+                                child: Slider(
+                                  key: const Key('attune-carrier-slider'),
+                                  value: _carrierHz,
+                                  min: 100,
+                                  max: 400,
+                                  activeColor: const Color(0xFF7B68EE),
+                                  inactiveColor: AppColors.surfaceVariant,
+                                  onChanged: (v) {
+                                    setState(() => _carrierHz = v);
+                                  },
+                                  onChangeEnd: (_) {
+                                    if (_tonePlaying) _restartTone();
+                                  },
+                                ),
+                              ),
+                              Text(
+                                  context.l10n.hertz(
+                                    _carrierHz.toStringAsFixed(1),
+                                  ),
+                                  style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12)),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 24),
+                    AttuneVisualizer(
+                      active: _tonePlaying && !_toneEnginePaused,
+                    ),
+                    const SizedBox(height: 8),
+                    AttuneSliderRow(
+                      label: context.l10n.attuneToneLevel,
+                      value: _engineVolume,
+                      enabled: !_toneLoading,
+                      sliderKey: const Key('attune-engine-slider'),
+                      onChanged: (value) {
+                        setState(() => _engineVolume = value);
+                        if (_tonePlaying && !_toneEnginePaused) {
+                          unawaited(_tonePlayer?.setVolume(value));
+                        }
+                      },
+                      trailingAction: IconButton(
+                        key: const Key('attune-tone-toggle'),
+                        tooltip: _toneEnginePaused
+                            ? context.l10n.play
+                            : context.l10n.breathingPause,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
+                        onPressed: _tonePlaying && !_toneLoading
+                            ? () => unawaited(_toggleToneEngine())
+                            : null,
+                        icon: Icon(
+                          _toneEnginePaused ? Icons.play_arrow : Icons.pause,
+                        ),
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    AttuneSliderRow(
+                      label: context.l10n.attuneMaskLevel,
+                      value: _maskVolume,
+                      enabled: !_toneLoading,
+                      sliderKey: const Key('attune-mask-slider'),
+                      onChanged: (value) {
+                        setState(() => _maskVolume = value);
+                        final mask = _maskPlayer;
+                        if (_tonePlaying && mask != null) {
+                          _maskFade++;
+                          unawaited(mask.setVolume(value));
+                        }
+                      },
+                      trailingAction: IconButton(
+                        key: const Key('attune-mask-next'),
+                        tooltip: context.l10n.attuneMaskNext,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
+                        onPressed: _toneLoading
+                            ? null
+                            : () => unawaited(_nextMaskTrack()),
+                        icon: const Icon(Icons.skip_next_rounded),
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const AttuneMaskMusicNote(),
+                    const SizedBox(height: 8),
+                    Text(
+                      _maskTitle(context),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      context.l10n.attuneMaskCredit,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                        height: 1.4,
+                      ),
+                    ),
+                    ZenCollapse(
+                      show: !_isSessionActive,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: CountSlider(
+                          label: context.l10n.sessionLength,
+                          valueLabel:
+                              context.l10n.minutesShort(_sessionMinutes),
+                          minLabel:
+                              context.l10n.minutesShort(_sessionMinMinutes),
+                          maxLabel:
+                              context.l10n.minutesShort(_sessionMaxMinutes),
+                          value: _sessionMinutes.toDouble(),
+                          min: _sessionMinMinutes.toDouble(),
+                          max: _sessionMaxMinutes.toDouble(),
+                          divisions: _sessionMaxMinutes == _sessionMinMinutes
+                              ? null
+                              : _sessionMaxMinutes - _sessionMinMinutes,
+                          enabled: !_tonePlaying && !_toneLoading,
+                          activeColor: const Color(0xFF7B68EE),
+                          sliderKey: const Key('attune-session-slider'),
+                          onChanged: (v) => setState(
+                            () => _sessionMinutes = v.round(),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    ZenCollapse(
+                      show: _isSessionActive,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 28, bottom: 28),
+                        child: Text(
+                          context.l10n.clock(
+                            (_secondsLeft ~/ 60).toString().padLeft(2, '0'),
+                            (_secondsLeft % 60).toString().padLeft(2, '0'),
+                          ),
+                          key: const Key('attune-session-clock'),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 40,
+                            height: 1,
+                            fontFamily: 'monospace',
+                            fontFeatures: [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ),
 
                     // ── Play/stop ─────────────────────────────────────────
                     if (_toneError != null)
@@ -408,30 +989,41 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                         ),
                       ),
                     ),
-
-                    if (_tonePlaying) ...[
-                      const SizedBox(height: 12),
-                      _PlayingBadge(band: _band, mode: _mode),
-                    ],
                   ],
+                  ZenCollapse(
+                    show: !_isSessionActive,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 32),
 
-                  const SizedBox(height: 32),
-
-                  // ── Nature sounds ─────────────────────────────────────────
-                  AppSectionLabel(
-                    context.l10n.natureSounds,
-                    icon: Icons.forest_rounded,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.l10n.natureLayer,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 12, height: 1.4),
-                  ),
-                  const SizedBox(height: 12),
-                  _NoiseSoundGrid(
-                    active: _activeSounds,
-                    onTap: _toggleNature,
+                        // ── Nature sounds ─────────────────────────────────────────
+                        AppSectionLabel(
+                          context.l10n.natureSounds,
+                          icon: Icons.forest_rounded,
+                        ),
+                        const SizedBox(height: 12),
+                        if (AcousticSynthesisGate.enabled) ...[
+                          Text(
+                            context.l10n.natureLayer,
+                            style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                                height: 1.4),
+                          ),
+                          const SizedBox(height: 12),
+                          _NoiseSoundGrid(
+                            active: _activeSounds,
+                            onTap: _toggleNature,
+                          ),
+                        ] else
+                          AcousticUnavailableCard(
+                            icon: Icons.forest_rounded,
+                            title: context.l10n.natureSoundscapes,
+                            subtitle: context.l10n.comingSoon,
+                          ),
+                      ],
+                    ),
                   ),
                 ]),
               ),
@@ -653,75 +1245,6 @@ class _NoiseSoundGrid extends StatelessWidget {
           ),
         );
       }).toList(),
-    );
-  }
-}
-
-class _PlayingBadge extends StatefulWidget {
-  final BrainwaveBand band;
-  final AttuneMode mode;
-  const _PlayingBadge({required this.band, required this.mode});
-
-  @override
-  State<_PlayingBadge> createState() => _PlayingBadgeState();
-}
-
-class _PlayingBadgeState extends State<_PlayingBadge>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulse;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulse,
-      builder: (context, _) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF7B68EE)
-                .withValues(alpha: 0.08 + _pulse.value * 0.06),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF7B68EE),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${widget.mode == AttuneMode.binaural ? context.l10n.binauralShort : context.l10n.isochronicShort} · '
-                '${_bandName(context.l10n, widget.band)} · ${context.l10n.hertz(widget.band.defaultBeatHz.toStringAsFixed(1))}',
-                style: const TextStyle(
-                  color: Color(0xFF7B68EE),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

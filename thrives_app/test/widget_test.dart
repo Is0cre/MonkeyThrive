@@ -114,7 +114,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,home: PanicScreen()));
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: PanicScreen()));
     await tester.pump();
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
@@ -132,14 +133,21 @@ void main() {
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.regulated),
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,home: WimHofScreen()),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: WimHofScreen()),
       ),
     );
     await tester.pump();
 
     FilledButton beginButton() =>
         tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Begin'));
+
+    final rounds =
+        tester.widget<Slider>(find.byKey(const Key('wim-hof-round-slider')));
+    expect(rounds.min, 1);
+    expect(rounds.max, 4);
+    expect(rounds.value, 3);
 
     expect(beginButton().onPressed, isNull);
 

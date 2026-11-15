@@ -5,6 +5,7 @@ import '../../../core/models/tolerance_state.dart';
 import '../../../core/state/wot_scope.dart';
 import '../../../core/storage/session_tracker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/count_slider.dart';
 import '../../../core/widgets/emergency_button.dart';
 import '../../../core/widgets/feeling_better_prompt.dart';
 import '../../../l10n/l10n.dart';
@@ -22,6 +23,10 @@ class _WimHofScreenState extends State<WimHofScreen>
     with TickerProviderStateMixin, SessionTracking {
   static const int _totalBreaths = 30;
 
+  /// One round is 30 breaths plus the holds. The chooser stops at 4.
+  static const int _minRounds = 1;
+  static const int _maxRounds = 4;
+
   List<String> _safetyItems(AppLocalizations l10n) => [
         l10n.wimHofCheck1,
         l10n.wimHofCheck2,
@@ -36,6 +41,7 @@ class _WimHofScreenState extends State<WimHofScreen>
   int _breathCount = 0;
   int _timerSeconds = 0;
   int _round = 1;
+  int _plannedRounds = 3;
   Timer? _timer;
   final Set<int> _confirmedSafetyItems = {};
 
@@ -219,7 +225,7 @@ class _WimHofScreenState extends State<WimHofScreen>
               const SizedBox(height: 12),
 
               Text(
-                l10n.roundNumber(_round),
+                '${l10n.roundNumber(_round)}  ·  ${l10n.breathFraction(_round, _plannedRounds)}',
                 style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 13,
@@ -333,10 +339,10 @@ class _WimHofScreenState extends State<WimHofScreen>
         return _BigButton(
           label: context.l10n.breathingBegin,
           color: AppColors.teal,
-          onTap: _confirmedSafetyItems.length ==
-                  _safetyItems(context.l10n).length
-              ? _startBreathing
-              : null,
+          onTap:
+              _confirmedSafetyItems.length == _safetyItems(context.l10n).length
+                  ? _startBreathing
+                  : null,
         );
       case _WimHofPhase.breathing:
         return const SizedBox.shrink();
@@ -359,12 +365,14 @@ class _WimHofScreenState extends State<WimHofScreen>
           children: [
             const FeelingBetterPrompt(),
             const SizedBox(height: 16),
-            _BigButton(
-              label: context.l10n.nextRound,
-              color: AppColors.teal,
-              onTap: _nextRound,
-            ),
-            const SizedBox(height: 10),
+            if (_round < _plannedRounds) ...[
+              _BigButton(
+                label: context.l10n.nextRound,
+                color: AppColors.teal,
+                onTap: _nextRound,
+              ),
+              const SizedBox(height: 10),
+            ],
             TextButton(
               onPressed: () {
                 _reset();
@@ -385,6 +393,23 @@ class _WimHofScreenState extends State<WimHofScreen>
     final items = _safetyItems(l10n);
     return ListView(
       children: [
+        if (_round == 1) ...[
+          CountSlider(
+            label: l10n.sighRounds,
+            valueLabel: '$_plannedRounds',
+            minLabel: '$_minRounds',
+            maxLabel: '$_maxRounds',
+            value: _plannedRounds.toDouble(),
+            min: _minRounds.toDouble(),
+            max: _maxRounds.toDouble(),
+            divisions: _maxRounds - _minRounds,
+            enabled: true,
+            activeColor: AppColors.teal,
+            sliderKey: const Key('wim-hof-round-slider'),
+            onChanged: (v) => setState(() => _plannedRounds = v.round()),
+          ),
+          const SizedBox(height: 12),
+        ],
         _CentredContent(
           icon: Icons.waves_rounded,
           title: l10n.thirtyBreaths,

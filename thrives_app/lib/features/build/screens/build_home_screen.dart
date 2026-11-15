@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:monkeythrive/l10n/l10n.dart';
 import '../../../core/storage/journal_service.dart';
+import '../../../core/storage/vault_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../reflect/screens/vault_lock_screen.dart';
 import 'journal_entry_screen.dart';
 
 class BuildHomeScreen extends StatefulWidget {
@@ -15,24 +17,70 @@ class BuildHomeScreen extends StatefulWidget {
 class _BuildHomeScreenState extends State<BuildHomeScreen> {
   List<JournalEntry> _entries = [];
   bool _loading = true;
+  bool _locked = false;
 
   @override
   void initState() {
     super.initState();
+    VaultService.instance.addListener(_onVault);
+    _load();
+  }
+
+  @override
+  void dispose() {
+    VaultService.instance.removeListener(_onVault);
+    super.dispose();
+  }
+
+  void _onVault() {
+    if (!mounted) return;
+    final vault = VaultService.instance;
+    if (vault.isProtected && !vault.isUnlocked) {
+      setState(() {
+        _entries = [];
+        _locked = true;
+        _loading = false;
+      });
+      return;
+    }
     _load();
   }
 
   Future<void> _load() async {
-    final entries = await JournalService.load();
-    if (mounted) {
+    try {
+      final entries = await JournalService.load();
+      if (!mounted) return;
       setState(() {
         _entries = entries;
+        _locked = false;
+        _loading = false;
+      });
+    } on VaultLockedException {
+      if (!mounted) return;
+      setState(() {
+        _entries = [];
+        _locked = true;
         _loading = false;
       });
     }
   }
 
+  Future<void> _unlock() async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(builder: (_) => const VaultLockScreen()),
+    );
+    if (mounted) await _load();
+  }
+
   Future<void> _newEntry() async {
+    final vault = VaultService.instance;
+    await vault.ensureLoaded();
+    if (!mounted) return;
+    if (vault.isProtected && !vault.isUnlocked) {
+      await _unlock();
+      return;
+    }
     final entry = JournalEntry(
       id: JournalService.newId(),
       timestamp: DateTime.now(),
@@ -102,11 +150,15 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
             padding: const EdgeInsets.only(bottom: 72),
             child: FloatingActionButton(
               heroTag: 'new_journal_entry',
-              onPressed: _newEntry,
+              onPressed: _locked ? _unlock : _newEntry,
               backgroundColor: AppColors.surface,
               foregroundColor: AppColors.textPrimary,
-              tooltip: context.l10n.newEntry,
-              child: const Icon(Icons.edit_rounded, size: 22),
+              tooltip:
+                  _locked ? context.l10n.vaultUnlock : context.l10n.newEntry,
+              child: Icon(
+                _locked ? Icons.lock_outline_rounded : Icons.edit_rounded,
+                size: 22,
+              ),
             ),
           ),
           const EmergencyButton(),
@@ -139,6 +191,34 @@ class _BuildHomeScreenState extends State<BuildHomeScreen> {
                 hasScrollBody: false,
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.teal),
+                ),
+              )
+            else if (_locked)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.l10n.vaultJournalLocked,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 15,
+                            height: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: _unlock,
+                          child: Text(context.l10n.vaultUnlock),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               )
             else if (_entries.isEmpty)

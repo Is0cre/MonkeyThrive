@@ -129,6 +129,12 @@ class AppLocalizationsMy extends AppLocalizations {
   String get breathingPause => 'ခေတ္တရပ်ပါ';
 
   @override
+  String get breathHapticsOn => 'Vibration pace on';
+
+  @override
+  String get breathHapticsOff => 'Vibration pace off';
+
+  @override
   String get breathingResume => 'Resume';
 
   @override
@@ -723,6 +729,39 @@ class AppLocalizationsMy extends AppLocalizations {
 
   @override
   String get reflectSubtitle => 'a record of what you\'ve explored.';
+
+  @override
+  String get vaultCreateLead => 'Choose a 6-digit key for Reflect.';
+
+  @override
+  String get vaultConfirmLead => 'Enter the same key again.';
+
+  @override
+  String get vaultEnterLead => 'Enter your key to open Reflect.';
+
+  @override
+  String get vaultMismatch => 'Those keys did not match.';
+
+  @override
+  String get vaultWrong => 'That key did not open this vault.';
+
+  @override
+  String get vaultShort => 'Use 6 digits.';
+
+  @override
+  String get vaultJournalLocked => 'The journal is locked.';
+
+  @override
+  String get vaultUnlock => 'Unlock';
+
+  @override
+  String get vaultDeleteDigit => 'Delete';
+
+  @override
+  String get vaultCopyLocked => 'Unlock Reflect before copying this record.';
+
+  @override
+  String get vaultUnread => 'The vault could not be read on this device.';
 
   @override
   String get export => 'Export';
@@ -1499,6 +1538,140 @@ class AppLocalizationsMy extends AppLocalizations {
   @override
   String get headphonesNote =>
       'Binaural beats require stereo headphones to work.';
+
+  @override
+  String get attuneIntroKicker1 => 'Frequencies';
+
+  @override
+  String get attuneIntroTitle1 => 'Two tones, one in each ear';
+
+  @override
+  String get attuneIntroBody1 =>
+      'A binaural beat is two steady tones. The left ear hears one frequency. The right ear hears a frequency a few hertz away. The pulse you notice is that difference. It is not a separate tone in the sound. Hearing builds it, and only when each ear receives its own tone.\n\nStereo headphones are required. Speakers, or a single earbud, let both tones into both ears. Then there is no binaural beat.\n\nIsochronic tones are the other choice. One tone is pulsed at the beat rate. They work on speakers, and they can feel sharper.';
+
+  @override
+  String get attuneIntroKicker2 => 'Before you listen';
+
+  @override
+  String get attuneIntroTitle2 => 'Hemispheric sound is strong';
+
+  @override
+  String get attuneIntroBody2 =>
+      'Each ear sends its tone along its own path. That split is what people mean by hemispheric synchronization. The bands name the beat rate, not a promise. Delta is about 2 Hz, theta about 6, alpha about 10, and beta about 20. The carrier, from 100 to 400 Hz, is the pitch you hear.\n\nThis app does not read your brain, and it does not place you in a state. Sit or lie down somewhere you can stop. Do not use this while driving, in water, or when your attention is needed elsewhere. Keep the volume comfortable. The sound rises over the first moment. Stop if you feel dizzy, tense, or unwell. If you have a history of seizures, skip this tool.';
+
+  @override
+  String get attuneIntroFootnote =>
+      'This is not treatment, and it is not EMDR. The Anchor stays available.';
+
+  @override
+  String get attuneIntroUnderstand => 'I understand';
+
+  @override
+  String get attuneIntroAgain => 'About these frequencies';
+
+  @override
+  String get attuneWaiverTitle => 'Before the tones';
+
+  @override
+  String get attuneWaiverRecorded => 'This choice is stored on this device.';
+
+  @override
+  String get attuneWaiverSeizure =>
+      'I do not have a history of epilepsy or seizure disorders.';
+
+  @override
+  String get attuneWaiverMachinery =>
+      'I will not operate heavy machinery or drive while listening.';
+
+  @override
+  String get attuneWaiverRisk =>
+      'I assume all risks associated with brainwave entrainment, releasing the creators from liability regarding adverse psychiatric reactions.';
+
+  @override
+  String get attuneWaiverEnter => 'Enter';
+
+  @override
+  String get attuneCarouselAccept => 'I Understand and Accept';
+
+  @override
+  String get attuneToneLevel => 'Tone';
+
+  @override
+  String get attuneMaskLevel => 'Mask';
+
+  @override
+  String get attuneMaskWaiting =>
+      'A local recording can be added later. This slider stays quiet until then.';
+
+  @override
+  String get attuneMaskMusicNote =>
+      'Using your own music? Choose ambient tracks or classical music around 60 BPM. Fast or aggressive music will clash with the entrainment frequencies and may cause anxiety.';
+
+  @override
+  String get attuneMaskNext => 'Next track';
+
+  @override
+  String get attuneMaskTrackSpring => 'Vivaldi, Spring';
+
+  @override
+  String get attuneMaskTrackSummer => 'Vivaldi, Summer';
+
+  @override
+  String get attuneMaskTrackAutumn => 'Vivaldi, Autumn';
+
+  @override
+  String get attuneMaskTrackWinter => 'Vivaldi, Winter';
+
+  @override
+  String get attuneMaskCredit =>
+      'Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.';
+
+  @override
+  String get attuneFocus => 'Slow shape';
+
+  @override
+  String get physicsOpen => 'The physics';
+
+  @override
+  String get physicsTitle => 'How the sound works';
+
+  @override
+  String get physicsLead => 'Two tones, and what they do not do.';
+
+  @override
+  String get physicsHearingTitle => 'The hearing barrier';
+
+  @override
+  String get physicsHearingBody =>
+      'You cannot hear a binaural beat as its own note in the room. One steady tone goes to the left ear. A second tone, a few hertz away, goes to the right ear. Hearing builds the pulse from that split, and only then.\n\nStereo headphones keep the tones apart. Speakers, or one earbud, let both tones into both ears. The barrier fails, and there is no binaural beat.';
+
+  @override
+  String get physicsCarrierTitle => 'Carrier and beat';
+
+  @override
+  String get physicsCarrierBody =>
+      'The carrier is the pitch you hear. In this app it runs from 100 to 400 Hz. The beat is the difference between the ears, not a second sound added on top.\n\nThe band names that difference. Delta is about 2 Hz, theta about 6, alpha about 10, and beta about 20. Those are pulse rates. They are not a promise that you will enter a named brain state.';
+
+  @override
+  String get physicsFollowingTitle => 'Frequency following response';
+
+  @override
+  String get physicsFollowingBody =>
+      'Frequency following response is a research name for brain activity that sometimes tracks a repeating sound. The evidence is mixed. It is clearer for some clicks and loudness pulses than for a quiet binaural beat.\n\nThis app does not read your brain. It does not measure a response, and it does not place you in a state. If the sound feels like too much, stop.';
+
+  @override
+  String get physicsLampTitle => 'Lamp and laser';
+
+  @override
+  String get physicsLampBody =>
+      'A lamp throws light in many directions. A laser holds one wavelength in step. Older writing used that contrast as a picture of scattered attention versus a narrow one.\n\nThe picture is not a measurement. MonkeyThrive does not turn the tone into a laser, and it does not steer the nervous system. Isochronic tones are different again: one tone, pulsed, which can feel sharper and does not need the two-ear split.';
+
+  @override
+  String get physicsWarningKicker => 'WARNING';
+
+  @override
+  String get physicsWarning =>
+      'Do not drive or operate machinery while listening. The sound can make you drowsy or unsteady. It does not put you to sleep, and it does not override your nervous system. Stop if you feel dizzy, tense, or unwell. If you have a history of seizures, skip this tool.';
 
   @override
   String get frequencyBand => 'Frequency band';

@@ -332,6 +332,18 @@ abstract class AppLocalizations {
   /// **'Pause'**
   String get breathingPause;
 
+  /// Tooltip when the breathing vibration pace is on. The phone does not measure the breath.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration pace on'**
+  String get breathHapticsOn;
+
+  /// Tooltip when the breathing vibration pace is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration pace off'**
+  String get breathHapticsOff;
+
   /// No description provided for @breathingResume.
   ///
   /// In en, this message translates to:
@@ -1411,6 +1423,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'a record of what you\'ve explored.'**
   String get reflectSubtitle;
+
+  /// No description provided for @vaultCreateLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a 6-digit key for Reflect.'**
+  String get vaultCreateLead;
+
+  /// No description provided for @vaultConfirmLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the same key again.'**
+  String get vaultConfirmLead;
+
+  /// No description provided for @vaultEnterLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your key to open Reflect.'**
+  String get vaultEnterLead;
+
+  /// No description provided for @vaultMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Those keys did not match.'**
+  String get vaultMismatch;
+
+  /// No description provided for @vaultWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'That key did not open this vault.'**
+  String get vaultWrong;
+
+  /// No description provided for @vaultShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 6 digits.'**
+  String get vaultShort;
+
+  /// No description provided for @vaultJournalLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The journal is locked.'**
+  String get vaultJournalLocked;
+
+  /// No description provided for @vaultUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get vaultUnlock;
+
+  /// No description provided for @vaultDeleteDigit.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get vaultDeleteDigit;
+
+  /// No description provided for @vaultCopyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Reflect before copying this record.'**
+  String get vaultCopyLocked;
+
+  /// No description provided for @vaultUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'The vault could not be read on this device.'**
+  String get vaultUnread;
 
   /// No description provided for @export.
   ///
@@ -2756,6 +2834,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Binaural beats require stereo headphones to work.'**
   String get headphonesNote;
+
+  /// No description provided for @attuneIntroKicker1.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequencies'**
+  String get attuneIntroKicker1;
+
+  /// No description provided for @attuneIntroTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Two tones, one in each ear'**
+  String get attuneIntroTitle1;
+
+  /// No description provided for @attuneIntroBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'A binaural beat is two steady tones. The left ear hears one frequency. The right ear hears a frequency a few hertz away. The pulse you notice is that difference. It is not a separate tone in the sound. Hearing builds it, and only when each ear receives its own tone.\n\nStereo headphones are required. Speakers, or a single earbud, let both tones into both ears. Then there is no binaural beat.\n\nIsochronic tones are the other choice. One tone is pulsed at the beat rate. They work on speakers, and they can feel sharper.'**
+  String get attuneIntroBody1;
+
+  /// No description provided for @attuneIntroKicker2.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you listen'**
+  String get attuneIntroKicker2;
+
+  /// No description provided for @attuneIntroTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hemispheric sound is strong'**
+  String get attuneIntroTitle2;
+
+  /// No description provided for @attuneIntroBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Each ear sends its tone along its own path. That split is what people mean by hemispheric synchronization. The bands name the beat rate, not a promise. Delta is about 2 Hz, theta about 6, alpha about 10, and beta about 20. The carrier, from 100 to 400 Hz, is the pitch you hear.\n\nThis app does not read your brain, and it does not place you in a state. Sit or lie down somewhere you can stop. Do not use this while driving, in water, or when your attention is needed elsewhere. Keep the volume comfortable. The sound rises over the first moment. Stop if you feel dizzy, tense, or unwell. If you have a history of seizures, skip this tool.'**
+  String get attuneIntroBody2;
+
+  /// No description provided for @attuneIntroFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not treatment, and it is not EMDR. The Anchor stays available.'**
+  String get attuneIntroFootnote;
+
+  /// No description provided for @attuneIntroUnderstand.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand'**
+  String get attuneIntroUnderstand;
+
+  /// No description provided for @attuneIntroAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'About these frequencies'**
+  String get attuneIntroAgain;
+
+  /// No description provided for @attuneWaiverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the tones'**
+  String get attuneWaiverTitle;
+
+  /// No description provided for @attuneWaiverRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'This choice is stored on this device.'**
+  String get attuneWaiverRecorded;
+
+  /// No description provided for @attuneWaiverSeizure.
+  ///
+  /// In en, this message translates to:
+  /// **'I do not have a history of epilepsy or seizure disorders.'**
+  String get attuneWaiverSeizure;
+
+  /// No description provided for @attuneWaiverMachinery.
+  ///
+  /// In en, this message translates to:
+  /// **'I will not operate heavy machinery or drive while listening.'**
+  String get attuneWaiverMachinery;
+
+  /// No description provided for @attuneWaiverRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'I assume all risks associated with brainwave entrainment, releasing the creators from liability regarding adverse psychiatric reactions.'**
+  String get attuneWaiverRisk;
+
+  /// No description provided for @attuneWaiverEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter'**
+  String get attuneWaiverEnter;
+
+  /// No description provided for @attuneCarouselAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand and Accept'**
+  String get attuneCarouselAccept;
+
+  /// No description provided for @attuneToneLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tone'**
+  String get attuneToneLevel;
+
+  /// No description provided for @attuneMaskLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask'**
+  String get attuneMaskLevel;
+
+  /// No description provided for @attuneMaskWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'A local recording can be added later. This slider stays quiet until then.'**
+  String get attuneMaskWaiting;
+
+  /// No description provided for @attuneMaskMusicNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Using your own music? Choose ambient tracks or classical music around 60 BPM. Fast or aggressive music will clash with the entrainment frequencies and may cause anxiety.'**
+  String get attuneMaskMusicNote;
+
+  /// No description provided for @attuneMaskNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next track'**
+  String get attuneMaskNext;
+
+  /// No description provided for @attuneMaskTrackSpring.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivaldi, Spring'**
+  String get attuneMaskTrackSpring;
+
+  /// No description provided for @attuneMaskTrackSummer.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivaldi, Summer'**
+  String get attuneMaskTrackSummer;
+
+  /// No description provided for @attuneMaskTrackAutumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivaldi, Autumn'**
+  String get attuneMaskTrackAutumn;
+
+  /// No description provided for @attuneMaskTrackWinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivaldi, Winter'**
+  String get attuneMaskTrackWinter;
+
+  /// No description provided for @attuneMaskCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.'**
+  String get attuneMaskCredit;
+
+  /// No description provided for @attuneFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow shape'**
+  String get attuneFocus;
+
+  /// No description provided for @physicsOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'The physics'**
+  String get physicsOpen;
+
+  /// No description provided for @physicsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the sound works'**
+  String get physicsTitle;
+
+  /// No description provided for @physicsLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Two tones, and what they do not do.'**
+  String get physicsLead;
+
+  /// No description provided for @physicsHearingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The hearing barrier'**
+  String get physicsHearingTitle;
+
+  /// No description provided for @physicsHearingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot hear a binaural beat as its own note in the room. One steady tone goes to the left ear. A second tone, a few hertz away, goes to the right ear. Hearing builds the pulse from that split, and only then.\n\nStereo headphones keep the tones apart. Speakers, or one earbud, let both tones into both ears. The barrier fails, and there is no binaural beat.'**
+  String get physicsHearingBody;
+
+  /// No description provided for @physicsCarrierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier and beat'**
+  String get physicsCarrierTitle;
+
+  /// No description provided for @physicsCarrierBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The carrier is the pitch you hear. In this app it runs from 100 to 400 Hz. The beat is the difference between the ears, not a second sound added on top.\n\nThe band names that difference. Delta is about 2 Hz, theta about 6, alpha about 10, and beta about 20. Those are pulse rates. They are not a promise that you will enter a named brain state.'**
+  String get physicsCarrierBody;
+
+  /// No description provided for @physicsFollowingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency following response'**
+  String get physicsFollowingTitle;
+
+  /// No description provided for @physicsFollowingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency following response is a research name for brain activity that sometimes tracks a repeating sound. The evidence is mixed. It is clearer for some clicks and loudness pulses than for a quiet binaural beat.\n\nThis app does not read your brain. It does not measure a response, and it does not place you in a state. If the sound feels like too much, stop.'**
+  String get physicsFollowingBody;
+
+  /// No description provided for @physicsLampTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lamp and laser'**
+  String get physicsLampTitle;
+
+  /// No description provided for @physicsLampBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A lamp throws light in many directions. A laser holds one wavelength in step. Older writing used that contrast as a picture of scattered attention versus a narrow one.\n\nThe picture is not a measurement. MonkeyThrive does not turn the tone into a laser, and it does not steer the nervous system. Isochronic tones are different again: one tone, pulsed, which can feel sharper and does not need the two-ear split.'**
+  String get physicsLampBody;
+
+  /// No description provided for @physicsWarningKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'WARNING'**
+  String get physicsWarningKicker;
+
+  /// No description provided for @physicsWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not drive or operate machinery while listening. The sound can make you drowsy or unsteady. It does not put you to sleep, and it does not override your nervous system. Stop if you feel dizzy, tense, or unwell. If you have a history of seizures, skip this tool.'**
+  String get physicsWarning;
 
   /// No description provided for @frequencyBand.
   ///

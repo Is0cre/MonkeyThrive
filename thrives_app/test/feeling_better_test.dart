@@ -8,6 +8,7 @@ import 'package:monkeythrive/core/theme/app_theme.dart';
 import 'package:monkeythrive/core/widgets/feeling_better_prompt.dart';
 import 'package:monkeythrive/features/regulate/screens/breathing_screen.dart';
 import 'package:monkeythrive/features/regulate/screens/grounding_521_screen.dart';
+import 'package:monkeythrive/features/regulate/screens/physiological_sigh_screen.dart';
 import 'package:monkeythrive/features/regulate/screens/panic_screen.dart';
 import 'package:monkeythrive/features/regulate/screens/vagal_screen.dart';
 import 'package:monkeythrive/features/settings/screens/settings_screen.dart';
@@ -30,8 +31,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Scaffold(body: Center(child: FeelingBetterPrompt())),
         ),
@@ -59,8 +60,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Scaffold(body: Center(child: FeelingBetterPrompt())),
         ),
@@ -90,27 +91,38 @@ void main() {
     expect(await SessionLog.getToleranceLog(), isEmpty);
   });
 
-  testWidgets('box breathing stops after four cycles and then asks',
+  testWidgets('box breathing stops after the chosen cycle count and then asks',
       (tester) async {
     final wot = ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused);
     await tester.pumpWidget(
       WoTScope(
         notifier: wot,
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const BreathingScreen(mode: BreathingMode.box),
         ),
       ),
     );
 
-    await tester.tap(find.text('3'));
+    final slider =
+        tester.widget<Slider>(find.byKey(const Key('box-cycle-slider')));
+    expect(slider.min, 2);
+    expect(slider.max, 30);
+    expect(slider.value, 4);
+    slider.onChanged!(3.0);
     await tester.pump();
     await tester.tap(find.text('Begin'));
     await tester.pump();
 
     expect(find.text('Cycle 1 of 3'), findsOneWidget);
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const Key('box-cycle-slider')))
+          .onChanged,
+      isNull,
+    );
     expect(find.text('Are you feeling better?'), findsNothing);
 
     for (var second = 0; second < 48; second++) {
@@ -132,13 +144,62 @@ void main() {
     expect(find.text('Marked as present.'), findsOneWidget);
   });
 
+  testWidgets('4-7-8 uses the same cycle slider and keeps its counts',
+      (tester) async {
+    await tester.pumpWidget(
+      WoTScope(
+        notifier: ValueNotifier<ToleranceState?>(ToleranceState.regulated),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark(),
+          home: const BreathingScreen(mode: BreathingMode.fourSevenEight),
+        ),
+      ),
+    );
+
+    final slider =
+        tester.widget<Slider>(find.byKey(const Key('breath-cycle-slider')));
+    expect(slider.min, 2);
+    expect(slider.max, 30);
+    expect(slider.value, 4);
+    slider.onChanged!(2.0);
+    await tester.pump();
+    await tester.ensureVisible(find.text('Begin'));
+    await tester.pump();
+    await tester.tap(find.text('Begin'));
+    await tester.pump();
+
+    expect(find.text('Cycle 1 of 2'), findsOneWidget);
+    expect(find.text('4'), findsWidgets);
+  });
+
+  testWidgets('the physiological sigh uses a round slider', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: AppTheme.dark(),
+        home: const PhysiologicalSighScreen(),
+      ),
+    );
+
+    final slider =
+        tester.widget<Slider>(find.byKey(const Key('sigh-round-slider')));
+    expect(slider.min, 2);
+    expect(slider.max, 30);
+    expect(slider.value, 5);
+    expect(find.text('3'), findsNothing);
+    expect(find.text('10'), findsNothing);
+  });
+
   testWidgets('grounding asks after the last sense', (tester) async {
     await tester.pumpWidget(
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused),
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const Grounding521Screen(),
         ),
@@ -188,8 +249,8 @@ void main() {
       WoTScope(
         notifier: wot,
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: const PanicScreen(),
         ),
@@ -233,8 +294,8 @@ void main() {
       WoTScope(
         notifier: ValueNotifier<ToleranceState?>(ToleranceState.hyperaroused),
         child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark(),
           home: SettingsScreen(onResetOnboarding: () {}),
         ),

@@ -4,6 +4,7 @@ import 'package:monkeythrive/l10n/l10n.dart';
 
 import '../../core/storage/archive_file.dart';
 import '../../core/storage/portable_archive.dart';
+import '../../core/storage/vault_service.dart';
 import '../../core/storage/tier_service.dart';
 import '../../core/theme/app_appearance.dart';
 import '../../core/theme/app_theme.dart';
@@ -67,6 +68,12 @@ class _ExportDialogState extends State<_ExportDialog> {
       if (!mounted) return;
       setState(() {
         _error = error.message?.toString();
+        _working = false;
+      });
+    } on VaultLockedException {
+      if (!mounted) return;
+      setState(() {
+        _error = context.l10n.vaultCopyLocked;
         _working = false;
       });
     }
@@ -226,6 +233,12 @@ class _ImportDialogState extends State<_ImportDialog> {
       if (!mounted) return;
       setState(() {
         _error = error.message?.toString();
+        _working = false;
+      });
+    } on VaultLockedException {
+      if (!mounted) return;
+      setState(() {
+        _error = context.l10n.vaultCopyLocked;
         _working = false;
       });
     }

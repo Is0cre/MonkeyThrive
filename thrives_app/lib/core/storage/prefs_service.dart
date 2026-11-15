@@ -29,6 +29,16 @@ class PrefsService {
   /// One or two trusted people, as JSON. Stays on this device.
   static const trustedPeopleKey = 'trusted_persons';
 
+  /// The frequency introduction has been read on this device.
+  static const attuneIntroKey = 'attune_frequency_intro_seen';
+
+  /// The three listening confirmations have been stored on this device.
+  static const attuneWaiverKey = 'attune_waiver_accepted';
+
+  /// The Attune deck has been finished on this device.
+  /// Written together with the introduction and the three confirmations.
+  static const attuneUnlockedKey = 'attune_unlocked';
+
   static Future<bool> isOnboardingDone() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_keyOnboardingDone) ?? false;
@@ -37,6 +47,55 @@ class PrefsService {
   static Future<void> setOnboardingDone() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyOnboardingDone, true);
+  }
+
+  static Future<bool> hasSeenAttuneIntro() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(attuneIntroKey) ?? false;
+  }
+
+  static Future<void> setAttuneIntroSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(attuneIntroKey, true);
+  }
+
+  static Future<bool> hasAcceptedAttuneWaiver() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(attuneWaiverKey) ?? false;
+  }
+
+  static Future<void> setAttuneWaiverAccepted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(attuneWaiverKey, true);
+  }
+
+  /// True when the deck was finished.
+  ///
+  /// An older install that already stored the introduction and the three
+  /// confirmations counts as finished. The flag alone does not.
+  static Future<bool> isAttuneUnlocked() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool(attuneIntroKey) ?? false;
+    final waiver = prefs.getBool(attuneWaiverKey) ?? false;
+    return seen && waiver;
+  }
+
+  /// Stores the deck flag and the two records it depends on.
+  static Future<void> setAttuneUnlocked() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(attuneUnlockedKey, true);
+    await prefs.setBool(attuneIntroKey, true);
+    await prefs.setBool(attuneWaiverKey, true);
+  }
+
+  /// Writes the deck flag when an older install already has both records.
+  static Future<void> rememberAttuneUnlocked() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool(attuneIntroKey) ?? false;
+    final waiver = prefs.getBool(attuneWaiverKey) ?? false;
+    if (!seen || !waiver) return;
+    if (prefs.getBool(attuneUnlockedKey) == true) return;
+    await prefs.setBool(attuneUnlockedKey, true);
   }
 
   static Future<void> resetOnboarding() async {

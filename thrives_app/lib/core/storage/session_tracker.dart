@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../haptics/breath_haptics_controller.dart';
 import 'session_log.dart';
 import 'tier_service.dart';
 
@@ -44,6 +45,7 @@ class SessionActivity {
     try {
       unawaited(Vibration.cancel().catchError((_) {}));
     } catch (_) {}
+    BreathHapticsController.stopAll();
 
     final callbacks = List<VoidCallback>.from(_bailoutCallbacks);
     _bailoutCallbacks.clear();

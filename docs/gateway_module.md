@@ -55,6 +55,8 @@ The return phase is mandatory and cannot be skipped.
 
 ## Timer
 
+Attune tones already use a separate finite timer. The length follows the loaded Vivaldi recording, in whole minutes: Spring and Summer 10, Autumn 12, Winter 9. The tone fades out when that time ends, and it stops if the recording ends first. That timer is not this module. Gateway itself stays documentation until the review below is complete.
+
 The user must set session length before starting.
 
 Modes:

@@ -73,25 +73,25 @@ The same three states can be corrected later from Monitor. That correction uses 
 
 ### Regulate and Attune (Tier 1, always on the bar)
 
-- **Box breathing.** 3, 4, or 5 cycles. Each side is a 4 count, with a visual pace and haptics.
-- **Physiological sigh.** Double inhale, long exhale.
-- **4-7-8 breathing.** Available when the reading is present.
-- **Wim Hof rounds.** Available when the reading is present, and only after the per-session confirmations.
+- **Box breathing.** 2 to 30 cycles, chosen with a slider. Each side is a 4 count, with a visual pace and haptics.
+- **Physiological sigh.** Double inhale, long exhale. 2 to 30 rounds, chosen with a slider. The default is 5.
+- **4-7-8 breathing.** Available when the reading is present. 2 to 30 cycles, chosen with the same slider. The inhale stays 4, the hold stays 7, and the exhale stays 8. The default is 4.
+- **Wim Hof rounds.** Available when the reading is present, and only after the per-session confirmations. 1 to 4 rounds, chosen before the first round. Each round stays 30 breaths plus the holds.
 - **5-4-3-2-1 grounding.**
 - **Cold water / diving reflex.** A 30-second timer.
 - **Safe place.** Stored on the device. Available when the reading is present.
 - **Vagal cues.** Humming, gargling, extended exhale.
 - **Anchor.** The panic path, docked in the bottom bar. See below.
 
-Attune’s synthesized tones, binaural beats, and isochronic layers stay behind calibration so a session cannot open on an untested acoustic trigger.
+Attune’s binaural beats and isochronic tones play when the person presses Play. The first time, a four-card deck explains the two tones, hemispheric synchronization, frequency following, and when to stop. The last card stays closed until three confirmations are stored on the device: no seizure history, no driving or machinery, and the person’s own risk statement. Returning visits keep that record. The session length follows the Vivaldi recording that is loaded, from 10 minutes up to that recording’s length in whole minutes. Winter is shorter, so its slider is 9 minutes. The tone fades out when that time ends, and it stops immediately if the recording ends first. The level rises over the first moment. The tone starts at a quarter of full volume, and the mask starts at three quarters. Both can be moved before Play. Pause holds the tone and leaves the recording running. While the tone is playing, the frequency setup folds away and the screen keeps the spiral, the clock, Stop, and the tone and mask levels. One season plays at a time: Vivaldi’s Four Seasons, in order Spring, Summer, Autumn, and Winter (The Modena Chamber Orchestra, public-domain recordings via Musopen). Next track loads the next season and the session limit updates with it. Playback mixes with other apps and does not take exclusive audio focus. Nature soundscapes stay closed until free recordings are added. EMDR audio stays behind calibration so those sessions cannot open on an untested acoustic trigger.
 
 ### Monitor, Build, and Reflect (Tier 2)
 
 These unlock after at least three completed Regulate or Attune sessions. Once open, they stay open.
 
 - Monitor holds the Window of Tolerance history and a later state correction.
-- Build is the on-device journal.
-- Reflect is the local record of sessions and check-ins, and one place to export or import that record.
+- Build is the on-device journal. After a Reflect key is set, the journal text is AES-256 sealed on the device.
+- Reflect is the local record of sessions and check-ins, and one place to export or import that record. It stays behind that key, and locks after 5 minutes in the background or without a touch. The Anchor stays available.
 
 ### Process (Tier 3)
 

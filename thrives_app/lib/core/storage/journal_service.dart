@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'vault_service.dart';
+
 /// A single journal entry. Stored locally, never leaves the device.
-/// No encryption in v0.1 — AES-256 encryption planned for v0.2.
+/// Once a Reflect key exists, the body is AES-256 sealed before it is written.
 class JournalEntry {
   final String id;
   final DateTime timestamp;
@@ -52,28 +54,83 @@ class JournalService {
   static const _key = 'journal_entries';
   static const _maxEntries = 500;
 
+  static void _requireOpen(VaultService vault) {
+    if (vault.storageBroken || (vault.isProtected && !vault.isUnlocked)) {
+      throw const VaultLockedException();
+    }
+  }
+
   static Future<List<JournalEntry>> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => JournalEntry.fromJson(e as Map<String, dynamic>))
-        .toList()
-        .reversed
-        .toList(); // newest first
+    await VaultService.instance.ensureLoaded();
+    final vault = VaultService.instance;
+    _requireOpen(vault);
+    final stored = await _readMaps();
+    if (stored == null) return [];
+
+    final opened = <JournalEntry>[];
+    var dirty = false;
+    for (final map in stored) {
+      final body = map['body'];
+      if (body is! String) continue;
+      if (vault.isUnlocked) {
+        if (body.startsWith(VaultService.textPrefix)) {
+          map['body'] = vault.openText(body);
+        } else {
+          dirty = true;
+        }
+      }
+      opened.add(JournalEntry.fromJson(map));
+    }
+    if (dirty) await _writeEntries(opened);
+    return opened.reversed.toList();
+  }
+
+  /// Plain JSON for a passphrase-sealed backup. Refuses while the vault
+  /// is locked, so a copy does not carry unreadable ciphertext.
+  static Future<String> plaintextSnapshot(String stored) async {
+    await VaultService.instance.ensureLoaded();
+    final vault = VaultService.instance;
+    _requireOpen(vault);
+    if (!vault.isProtected) return stored;
+    final list = jsonDecode(stored) as List<dynamic>;
+    final opened = <Map<String, dynamic>>[];
+    for (final item in list) {
+      final map = Map<String, dynamic>.from(item as Map);
+      final body = map['body'];
+      if (body is String) map['body'] = vault.openText(body);
+      opened.add(map);
+    }
+    return jsonEncode(opened);
+  }
+
+  /// Seals any plaintext bodies. No work until the vault is unlocked.
+  static Future<void> resealAll() async {
+    final vault = VaultService.instance;
+    if (!vault.isUnlocked) return;
+    final stored = await _readMaps();
+    if (stored == null) return;
+    final opened = <JournalEntry>[];
+    for (final map in stored) {
+      final body = map['body'];
+      if (body is String) map['body'] = vault.openText(body);
+      opened.add(JournalEntry.fromJson(map));
+    }
+    await _writeEntries(opened);
   }
 
   static Future<void> save(JournalEntry entry) async {
+    await VaultService.instance.ensureLoaded();
+    _requireOpen(VaultService.instance);
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
     final List<dynamic> list = raw != null ? jsonDecode(raw) : [];
 
+    final stored = _storedJson(entry);
     final idx = list.indexWhere((e) => (e as Map)['id'] == entry.id);
     if (idx >= 0) {
-      list[idx] = entry.toJson();
+      list[idx] = stored;
     } else {
-      list.add(entry.toJson());
+      list.add(stored);
       if (list.length > _maxEntries) {
         list.removeRange(0, list.length - _maxEntries);
       }
@@ -81,7 +138,36 @@ class JournalService {
     await prefs.setString(_key, jsonEncode(list));
   }
 
+  static Map<String, dynamic> _storedJson(JournalEntry entry) {
+    final json = entry.toJson();
+    final vault = VaultService.instance;
+    if (vault.isUnlocked) {
+      json['body'] = vault.sealText(entry.body);
+    }
+    return json;
+  }
+
+  static Future<List<Map<String, dynamic>>?> _readMaps() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_key);
+    if (raw == null) return null;
+    final list = jsonDecode(raw) as List<dynamic>;
+    return [
+      for (final item in list) Map<String, dynamic>.from(item as Map),
+    ];
+  }
+
+  static Future<void> _writeEntries(List<JournalEntry> oldestFirst) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _key,
+      jsonEncode([for (final entry in oldestFirst) _storedJson(entry)]),
+    );
+  }
+
   static Future<void> delete(String id) async {
+    await VaultService.instance.ensureLoaded();
+    _requireOpen(VaultService.instance);
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
     if (raw == null) return;
