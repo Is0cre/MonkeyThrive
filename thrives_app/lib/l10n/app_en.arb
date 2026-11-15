@@ -816,6 +816,19 @@
   "attuneMaskTrackWinter": "Vivaldi, Winter",
   "attuneMaskCredit": "Vivaldi, The Four Seasons, Op. 8. The Modena Chamber Orchestra. Public-domain recordings via Musopen.",
   "attuneFocus": "Slow shape",
+  "attuneDosageTitle": "Daily limit",
+  "attuneDosageBody": "Do not use this while driving or operating heavy machinery. A long listen can leave you drowsy. Recommended limit: 45 minutes a day.",
+  "attuneDosageToday": "{minutes, plural, =1{1 minute today} other{{minutes} minutes today}}",
+  "@attuneDosageToday": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "attuneDosageOverTitle": "Past the daily limit",
+  "attuneDosageOverBody": "You are past 45 minutes of Attune today. More listening can leave you drowsy or groggy.",
+  "attuneDosageContinue": "Continue anyway",
   "physicsOpen": "The physics",
   "physicsTitle": "How the sound works",
   "physicsLead": "Two tones, and what they do not do.",

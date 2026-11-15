@@ -2,6 +2,7 @@
 *.AppImage
 *.deb
 *.zip
+!/expansions/*.zip
 *.tar.gz
 *.dmg
 *.exe

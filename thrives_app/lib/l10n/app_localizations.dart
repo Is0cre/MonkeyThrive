@@ -2997,6 +2997,42 @@ abstract class AppLocalizations {
   /// **'Slow shape'**
   String get attuneFocus;
 
+  /// No description provided for @attuneDosageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily limit'**
+  String get attuneDosageTitle;
+
+  /// No description provided for @attuneDosageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not use this while driving or operating heavy machinery. A long listen can leave you drowsy. Recommended limit: 45 minutes a day.'**
+  String get attuneDosageBody;
+
+  /// No description provided for @attuneDosageToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{1 minute today} other{{minutes} minutes today}}'**
+  String attuneDosageToday(int minutes);
+
+  /// No description provided for @attuneDosageOverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past the daily limit'**
+  String get attuneDosageOverTitle;
+
+  /// No description provided for @attuneDosageOverBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are past 45 minutes of Attune today. More listening can leave you drowsy or groggy.'**
+  String get attuneDosageOverBody;
+
+  /// No description provided for @attuneDosageContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue anyway'**
+  String get attuneDosageContinue;
+
   /// No description provided for @physicsOpen.
   ///
   /// In en, this message translates to:

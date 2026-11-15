@@ -1630,6 +1630,34 @@ class AppLocalizationsMy extends AppLocalizations {
   String get attuneFocus => 'Slow shape';
 
   @override
+  String get attuneDosageTitle => 'Daily limit';
+
+  @override
+  String get attuneDosageBody =>
+      'Do not use this while driving or operating heavy machinery. A long listen can leave you drowsy. Recommended limit: 45 minutes a day.';
+
+  @override
+  String attuneDosageToday(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes today',
+      one: '1 minute today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get attuneDosageOverTitle => 'Past the daily limit';
+
+  @override
+  String get attuneDosageOverBody =>
+      'You are past 45 minutes of Attune today. More listening can leave you drowsy or groggy.';
+
+  @override
+  String get attuneDosageContinue => 'Continue anyway';
+
+  @override
   String get physicsOpen => 'The physics';
 
   @override

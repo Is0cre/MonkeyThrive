@@ -8,6 +8,7 @@ import '../../../core/audio/attune_audio_session.dart';
 import '../../../core/audio/local_audio_cache.dart';
 import '../../../core/audio/noise_generator.dart';
 import '../../../core/audio/tone_generator.dart';
+import '../attune_dosage.dart';
 import '../attune_mask_playlist.dart';
 import '../../../core/storage/prefs_service.dart';
 import '../../../core/storage/session_tracker.dart';
@@ -159,6 +160,12 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   /// The binaural engine is held. The recording keeps playing.
   bool _toneEnginePaused = false;
 
+  /// Seconds of Attune already listened on this local day.
+  int _dosageSeconds = 0;
+
+  /// True while the daily-limit ask is open, so Play cannot start twice.
+  bool _dosageCheck = false;
+
   AudioPlayer _mixPlayer() => AudioPlayer(handleAudioSessionActivation: false);
 
   AudioPlayer _ensureTonePlayer() => _tonePlayer ??= _mixPlayer();
@@ -241,11 +248,13 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   Future<void> _loadIntro() async {
     final seen = await PrefsService.hasSeenAttuneIntro();
     final waiver = await PrefsService.hasAcceptedAttuneWaiver();
+    final dosage = await AttuneDosage.instance.todaySeconds();
     if (seen && waiver) await PrefsService.rememberAttuneUnlocked();
     if (!mounted) return;
     setState(() {
       _introSeen = seen;
       _waiverAccepted = waiver;
+      _dosageSeconds = dosage;
     });
   }
 
@@ -282,6 +291,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     _toneFade++;
     unawaited(_tonePlayer?.stop());
     if (_tonePlaying && _activeSounds.isEmpty) endTracking();
+    if (_tonePlaying) unawaited(_finishDosage());
     setState(() {
       _tonePlaying = false;
       _toneLoading = false;
@@ -292,6 +302,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   @override
   void dispose() {
     _sessionTimer?.cancel();
+    unawaited(AttuneDosage.instance.end());
     _maskStateSub?.cancel();
     _tonePlayer?.dispose();
     _maskPlayer?.dispose();
@@ -301,7 +312,43 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     super.dispose();
   }
 
+  Future<void> _finishDosage() async {
+    await AttuneDosage.instance.end();
+    final seconds = await AttuneDosage.instance.todaySeconds();
+    if (!mounted) return;
+    setState(() => _dosageSeconds = seconds);
+  }
+
   // ── tone playback ──────────────────────────────────────────────────────────
+
+  // CLINICAL SAFETY — Attune daily listening limit
+  // What this does: Shows a standing note before Play, counts listening time
+  //   for the local day, and asks once that time is past 45 minutes.
+  // Why it exists: A long tone can leave a person drowsy. The note repeats
+  //   the driving limit and a 45 minute recommendation. The ask does not
+  //   diagnose, and it does not claim the tone forces a brain state.
+  // What happens if removed or modified: Play can start with no daily count
+  //   and no second look after a long day.
+  // Informed by: the acoustic safety gate for this tool.
+  Future<void> _onPlayPressed() async {
+    if (_tonePlaying) {
+      await _stopTone();
+      return;
+    }
+    if (_dosageCheck || _toneLoading) return;
+    setState(() => _dosageCheck = true);
+    try {
+      final seconds = await AttuneDosage.instance.todaySeconds();
+      if (!mounted) return;
+      if (AttuneDosage.needsWarning(seconds)) {
+        final proceed = await confirmAttunePastDailyLimit(context);
+        if (!proceed || !mounted) return;
+      }
+      await _startTone();
+    } finally {
+      if (mounted) setState(() => _dosageCheck = false);
+    }
+  }
 
   Future<void> _startTone({bool resumeClock = false}) async {
     if (!_mayPlayTone || _mode == AttuneMode.none) return;
@@ -339,6 +386,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
       // play() stays pending while the looping chunk repeats.
       unawaited(tonePlayer.play().catchError((Object error, StackTrace stack) {
         debugPrint('THRIVES audio play failed: $error\n$stack');
+        unawaited(_finishDosage());
         if (!mounted) return;
         _toneFade++;
         setState(() {
@@ -356,6 +404,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
         beginTracking(label, 'Attune', onEmergencyStop: _stopAllAudio);
         _beginSessionClock();
         unawaited(_startMask());
+        AttuneDosage.instance.begin();
       }
       setState(() {
         _toneLoading = false;
@@ -397,6 +446,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
     _sessionTimer?.cancel();
     _secondsLeft = _sessionMinutes * 60;
     _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      unawaited(AttuneDosage.instance.checkpointIfDue());
       if (!mounted || !_tonePlaying) return;
       if (_secondsLeft <= 1) {
         _sessionTimer?.cancel();
@@ -482,33 +532,77 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   Future<void> _nextMaskTrack() async {
     final next = (_maskIndex + 1) % attuneMaskAssets.length;
     final inSession = _tonePlaying;
+    setState(() {
+      _selectMask(next);
+      if (inSession) _sessionMinutes = attuneMaskDurationMinutes(next);
+    });
+    if (!inSession) return;
+
     final timer = _sessionTimer;
     if (timer != null && timer.isActive) timer.cancel();
     _sessionTimer = null;
-    if (inSession) {
-      await _stopSession();
-      if (!mounted) return;
-    }
-    setState(() {
-      _selectMask(next);
-      if (inSession) {
-        _sessionMinutes = attuneMaskDurationMinutes(next);
-        _secondsLeft = _sessionMinutes * 60;
-      }
-    });
-    if (!inSession) return;
-    final player = _maskPlayer;
-    if (player == null) return;
-    _maskHeardPlayback = false;
+    _beginSessionClock();
+
     try {
+      await AttuneAudioSession.configureForMix();
+      final player = _ensureMaskPlayer();
+      _maskFade++;
+      _maskHeardPlayback = false;
       await player.setAudioSource(
         AudioSource.asset(attuneMaskAssets[next]),
         preload: true,
       );
       await player.setLoopMode(LoopMode.off);
-      await player.pause();
+      await player.setVolume(_maskVolume);
+      // play() stays pending until this recording ends. Starting it is enough.
+      unawaited(player.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES mask skip failed: $error\n$stack');
+      }));
     } catch (e, stackTrace) {
       debugPrint('THRIVES mask skip failed: $e\n$stackTrace');
+    }
+    if (!mounted || !_tonePlaying) return;
+    await _retuneSessionTone();
+  }
+
+  /// Swaps the playing tone to the season's carrier without ending the session.
+  Future<void> _retuneSessionTone() async {
+    if (!_mayPlayTone || _mode == AttuneMode.none || !_tonePlaying) return;
+    try {
+      await AttuneAudioSession.configureForMix();
+      final band = _band;
+      final carrier = _carrierHz;
+      final beatHz = band.defaultBeatHz;
+      final sourceKey =
+          '${_mode.name}_${band.name}_${carrier.toStringAsFixed(1)}_$beatHz';
+      final source = await LocalAudioCache.toneSource(
+        key: sourceKey,
+        binaural: _mode == AttuneMode.binaural,
+        carrierHz: carrier,
+        beatHz: beatHz,
+      );
+      if (!mounted || !_tonePlaying) return;
+      final tonePlayer = _ensureTonePlayer();
+      _toneFade++;
+      _toneEnginePaused = false;
+      await tonePlayer.setAudioSource(source, preload: true);
+      await tonePlayer.setLoopMode(LoopMode.one);
+      await tonePlayer.setVolume(_engineVolume);
+      unawaited(tonePlayer.play().catchError((Object error, StackTrace stack) {
+        debugPrint('THRIVES audio play failed: $error\n$stack');
+        unawaited(_finishDosage());
+        if (!mounted) return;
+        _toneFade++;
+        setState(() {
+          _tonePlaying = false;
+          _toneError = context.l10n.couldNotStartAudio;
+        });
+      }));
+    } catch (e, stackTrace) {
+      debugPrint('THRIVES audio start failed: $e\n$stackTrace');
+      if (mounted) {
+        setState(() => _toneError = context.l10n.couldNotStartAudio);
+      }
     }
   }
 
@@ -545,6 +639,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
   void _stopAllAudio() {
     _sessionTimer?.cancel();
     _sessionTimer = null;
+    unawaited(_finishDosage());
     _toneFade++;
     final tonePlayer = _tonePlayer;
     final maskPlayer = _maskPlayer;
@@ -572,6 +667,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
       _sessionTimer?.cancel();
       _sessionTimer = null;
       _maskHeardPlayback = false;
+      await _finishDosage();
     }
     await _tonePlayer?.stop();
     if (endSession) await _stopMask();
@@ -678,7 +774,9 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                             icon: Icons.graphic_eq_rounded,
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
+                        _DosageNote(minutes: _dosageSeconds ~/ 60),
+                        const SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Wrap(
@@ -962,9 +1060,9 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
                       width: double.infinity,
                       height: 52,
                       child: FilledButton.icon(
-                        onPressed: _toneLoading
+                        onPressed: _toneLoading || _dosageCheck
                             ? null
-                            : (_tonePlaying ? _stopTone : _startTone),
+                            : (_tonePlaying ? _stopTone : _onPlayPressed),
                         icon: _toneLoading
                             ? const SizedBox(
                                 width: 18,
@@ -1046,6 +1144,73 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
 }
 
 // ─── Widgets ──────────────────────────────────────────────────────────────────
+
+class _DosageNote extends StatelessWidget {
+  final int minutes;
+
+  const _DosageNote({required this.minutes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('attune-dosage-note'),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.84),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.amber.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(
+              Icons.hourglass_bottom_rounded,
+              color: AppColors.amber,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.attuneDosageTitle,
+                  style: const TextStyle(
+                    color: AppColors.amber,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.attuneDosageBody,
+                  style: const TextStyle(
+                    color: AppColors.amber,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.attuneDosageToday(minutes),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _ModeRow extends StatelessWidget {
   final AttuneMode selected;

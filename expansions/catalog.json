@@ -1,0 +1,67 @@
+{
+  "satie_expansion": [
+    {
+      "file": "05_satie_gymnopedie_1.ogg",
+      "composer": "Erik Satie",
+      "title": "Gymnopédie No. 1",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "06_satie_gymnopedie_2.ogg",
+      "composer": "Erik Satie",
+      "title": "Gymnopédie No. 2",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "07_satie_gymnopedie_3.ogg",
+      "composer": "Erik Satie",
+      "title": "Gymnopédie No. 3",
+      "key": "",
+      "bpm": 0
+    }
+  ],
+  "beethoven_expansion": [
+    {
+      "file": "08_beethoven_op132_mvt1.ogg",
+      "composer": "Ludwig van Beethoven",
+      "title": "String Quartet No. 15 in A minor, Op. 132",
+      "movement": "1",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "09_beethoven_op132_mvt2.ogg",
+      "composer": "Ludwig van Beethoven",
+      "title": "String Quartet No. 15 in A minor, Op. 132",
+      "movement": "2",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "10_beethoven_op132_mvt3.ogg",
+      "composer": "Ludwig van Beethoven",
+      "title": "String Quartet No. 15 in A minor, Op. 132",
+      "movement": "3 (Heiliger Dankgesang)",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "11_beethoven_op132_mvt4.ogg",
+      "composer": "Ludwig van Beethoven",
+      "title": "String Quartet No. 15 in A minor, Op. 132",
+      "movement": "4",
+      "key": "",
+      "bpm": 0
+    },
+    {
+      "file": "12_beethoven_op132_mvt5.ogg",
+      "composer": "Ludwig van Beethoven",
+      "title": "String Quartet No. 15 in A minor, Op. 132",
+      "movement": "5",
+      "key": "",
+      "bpm": 0
+    }
+  ]
+}

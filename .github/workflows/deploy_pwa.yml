@@ -6,6 +6,7 @@ on:
     paths:
       - 'thrives_app/**'
       - 'web_landing/**'
+      - 'expansions/**'
       - '.github/workflows/deploy_pwa.yml'
   release:
     types: [published]
@@ -61,6 +62,10 @@ jobs:
           python3 web_landing/build_landing.py publish
           cp web_landing/emblem.png web_landing/favicon.ico web_landing/favicon-192.png web_landing/apple-touch-icon.png web_landing/robots.txt publish/
           cp web_landing/flutter_service_worker.js publish/flutter_service_worker.js
+          mkdir -p publish/expansions
+          if compgen -G "expansions/*" > /dev/null; then
+            cp -a expansions/. publish/expansions/
+          fi
           python3 - "$VERSION" publish << 'PY'
           import pathlib
           import re
