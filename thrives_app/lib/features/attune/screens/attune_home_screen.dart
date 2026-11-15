@@ -481,11 +481,24 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
 
   Future<void> _nextMaskTrack() async {
     final next = (_maskIndex + 1) % attuneMaskAssets.length;
+    final inSession = _tonePlaying;
+    final timer = _sessionTimer;
+    if (timer != null && timer.isActive) timer.cancel();
+    _sessionTimer = null;
+    if (inSession) {
+      await _stopSession();
+      if (!mounted) return;
+    }
+    setState(() {
+      _selectMask(next);
+      if (inSession) {
+        _sessionMinutes = attuneMaskDurationMinutes(next);
+        _secondsLeft = _sessionMinutes * 60;
+      }
+    });
+    if (!inSession) return;
     final player = _maskPlayer;
-    final playing = player != null && _tonePlaying;
-    setState(() => _selectMask(next));
-    if (playing) unawaited(_restartTone());
-    if (!playing) return;
+    if (player == null) return;
     _maskHeardPlayback = false;
     try {
       await player.setAudioSource(
@@ -493,10 +506,7 @@ class _AttunePlayerScreenState extends State<_AttunePlayerScreen>
         preload: true,
       );
       await player.setLoopMode(LoopMode.off);
-      await player.setVolume(_maskVolume);
-      unawaited(player.play().catchError((Object error, StackTrace stack) {
-        debugPrint('THRIVES mask skip failed: $error\n$stack');
-      }));
+      await player.pause();
     } catch (e, stackTrace) {
       debugPrint('THRIVES mask skip failed: $e\n$stackTrace');
     }
